@@ -1,0 +1,90 @@
+$primary-blue: #3d5af1;
+$dark-blue: #1b254b;
+$white: #ffffff;
+$text-muted: #a3aed0;
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  width: 100%;
+
+  .search-bar {
+    input {
+      background: $white;
+      border: none;
+      border-radius: 15px;
+      padding: 12px 25px;
+      width: 350px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      font-size: 0.9rem;
+      
+      &:focus {
+        outline: none;
+        box-shadow: 0 4px 15px rgba(61, 90, 241, 0.1);
+      }
+    }
+  }
+
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    .profile-info {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+
+      .profile-name {
+        font-weight: 600;
+        color: $dark-blue;
+        font-size: 0.95rem;
+      }
+
+      .profile-role {
+        font-size: 0.8rem;
+        color: $text-muted;
+      }
+    }
+
+    .profile-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      background: $primary-blue;
+      box-shadow: 0 4px 10px rgba(61, 90, 241, 0.3);
+      background-image: linear-gradient(135deg, $primary-blue 0%, #637df3 100%);
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .navbar-container {
+    padding-left: 55px; // Space for the mobile toggle button
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 5px 0;
+    
+    .search-bar {
+      display: none; // Hide search on mobile for cleaner look
+    }
+
+    .user-profile {
+      margin-left: auto;
+      
+      .profile-info {
+        display: none; // Hide name/role text on small mobiles
+      }
+
+      .profile-avatar {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  }
+}

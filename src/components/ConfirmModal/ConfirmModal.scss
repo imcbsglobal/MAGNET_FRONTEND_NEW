@@ -1,0 +1,141 @@
+$primary-blue: #3d5af1;
+$dark-blue: #1b254b;
+$white: #ffffff;
+$border: #e2e8f0;
+$text-muted: #718096;
+$danger: #f56565;
+$warning: #ed8936;
+
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+
+  .confirm-modal-container {
+    background: $white;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    transform-origin: center;
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    .modal-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 25px;
+      
+      svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      &.info {
+        background: rgba(61, 90, 241, 0.1);
+        color: $primary-blue;
+      }
+
+      &.danger {
+        background: rgba(245, 101, 101, 0.1);
+        color: $danger;
+      }
+
+      &.warning {
+        background: rgba(237, 137, 54, 0.1);
+        color: $warning;
+      }
+    }
+
+    .modal-content {
+      h3 {
+        color: $dark-blue;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        font-family: 'Outfit', sans-serif;
+      }
+
+      p {
+        color: $text-muted;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+
+      button {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'Outfit', sans-serif;
+
+        &.cancel-btn {
+          background: #f8fafc;
+          border: 1px solid $border;
+          color: #64748b;
+
+          &:hover {
+            background: #f1f5f9;
+            color: $dark-blue;
+          }
+        }
+
+        &.confirm-btn {
+          border: none;
+          color: white;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+          &.info {
+            background: $primary-blue;
+            &:hover { background: darken($primary-blue, 5%); }
+          }
+
+          &.danger {
+            background: $danger;
+            &:hover { background: darken($danger, 5%); }
+          }
+
+          &.warning {
+            background: $warning;
+            &:hover { background: darken($warning, 5%); }
+          }
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
