@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { superadminLogin, administratorLogin, teacherLogin } from '../../services/api';
+import { superadminLogin, administratorLogin, teacherLogin, parentLogin } from '../../services/api';
 import logo from '../../assets/logo.png';
 import './Login.scss';
 
@@ -47,6 +47,12 @@ const Login = () => {
       localStorage.setItem('username', data.username);
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
+    } else if (userType === 'parent') {
+      localStorage.setItem('institutionId', data.institution_id);
+      localStorage.setItem('admno', data.admno);
+      localStorage.setItem('studentName', data.student_name);
+      localStorage.setItem('token', data.access);
+      localStorage.setItem('refreshToken', data.refresh);
     }
     
     setTimeout(() => {
@@ -90,15 +96,14 @@ const Login = () => {
           handleSuccess('teacher', response.data, '/teacher-dashboard');
         }
       } else if (role === 'parent') {
-        // UI ONLY - Mock success for parent login
-        setTimeout(() => {
-          setIsSuccess(true);
-          localStorage.setItem('userType', 'parent');
-          setTimeout(() => {
-            navigate('/parent-dashboard');
-          }, 1500);
-        }, 800);
-        return;
+        response = await parentLogin({
+          institution_id: formData.institutionId,
+          admno: formData.username,
+          password: formData.password
+        });
+        if (response.data.status) {
+          handleSuccess('parent', response.data, '/parent-dashboard');
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');

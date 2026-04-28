@@ -34,6 +34,21 @@ const Sidebar = ({ userType = 'superuser' }) => {
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
       </svg>
     ),
+    PendingFee: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 5h16v14H4z"></path>
+        <path d="M4 9h16" strokeLinecap="round"></path>
+        <path d="M8 13h8" strokeLinecap="round"></path>
+      </svg>
+    ),
+    PaidFee: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 1v22"></path>
+        <path d="M6 7h12"></path>
+        <path d="M6 17h12"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    ),
     Folder: () => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -49,10 +64,17 @@ const Sidebar = ({ userType = 'superuser' }) => {
     admin: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/admin-dashboard' },
       { icon: <Icons.Teachers />, label: 'Teachers', path: '/admin/teachers' },
-      { icon: <Icons.Folder />, label: 'Job categories', path: '/admin/job-categories' },
+      { icon: <Icons.Folder />, label: 'Job Categories', path: '/admin/job-categories' },
+      { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/admin/pending-fee' },
+      { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/admin/paid-fee' },
     ],
     teacher: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/teacher-dashboard' },
+    ],
+    parent: [
+      { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/parent-dashboard' },
+      { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/parent/pending-fee' },
+      { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/parent/paid-fee' },
     ]
   };
 
@@ -99,14 +121,14 @@ const Sidebar = ({ userType = 'superuser' }) => {
         })}
       </nav>
       <div className="sidebar-footer">
-        <div className="logout-card">
+        <div className="logout-card" onClick={() => setShowLogoutConfirm(true)}>
           <div className="logout-icon-container">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M17 16L21 12M21 12L17 8M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <button className="logout-btn" onClick={() => setShowLogoutConfirm(true)}>
+          <button type="button" className="logout-btn">
             Log Out
           </button>
         </div>

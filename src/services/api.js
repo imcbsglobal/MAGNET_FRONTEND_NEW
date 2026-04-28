@@ -9,7 +9,7 @@ export const api = axios.create({
   },
 });
 
-// Add a request interceptor to inject the JWT token
+// Add a request interceptor to inject the JWT tokenh
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -33,6 +33,26 @@ export const administratorLogin = (credentials) => {
 
 export const teacherLogin = (credentials) => {
   return api.post('user-login/', credentials);
+};
+
+export const parentLogin = (credentials) => {
+  return api.post('parent-login/', credentials);
+};
+
+export const fetchPendingFees = (institutionId, admno) => {
+  return api.get(`fee_pending/pending/?institution_id=${encodeURIComponent(institutionId)}&admno=${encodeURIComponent(admno)}`);
+};
+
+export const fetchPaidFees = (institutionId, admno) => {
+  return api.get(`feepaid/paid/?institution_id=${encodeURIComponent(institutionId)}&admno=${encodeURIComponent(admno)}`);
+};
+
+export const fetchAllPendingFees = (institutionId) => {
+  return api.get(`fee_pending/all-pending/?institution_id=${encodeURIComponent(institutionId)}`);
+};
+
+export const fetchAllPaidFees = (institutionId) => {
+  return api.get(`feepaid/all-paid/?institution_id=${encodeURIComponent(institutionId)}`);
 };
 
 // Administrator CRUD
