@@ -39,6 +39,7 @@ const AdminPendingFee = () => {
 
   const filtered = fees.filter((f) =>
     f.admno.toLowerCase().includes(search.toLowerCase()) ||
+    (f.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
     (f.month || '').toLowerCase().includes(search.toLowerCase()) ||
     (f.refno || '').toLowerCase().includes(search.toLowerCase())
   );
@@ -105,6 +106,7 @@ const AdminPendingFee = () => {
                     <tr>
                       <th>No</th>
                       <th>Adm No</th>
+                      <th>Student Name</th>
                       <th>Month</th>
                       <th>Date</th>
                       <th>Ref No</th>
@@ -118,6 +120,7 @@ const AdminPendingFee = () => {
                       <tr key={fee.id}>
                         <td>{firstIndex + index + 1}</td>
                         <td>{fee.admno}</td>
+                        <td>{fee.student_name || '-'}</td>
                         <td>{fee.month}</td>
                         <td>{formatDate(fee.date)}</td>
                         <td>{fee.refno}</td>
