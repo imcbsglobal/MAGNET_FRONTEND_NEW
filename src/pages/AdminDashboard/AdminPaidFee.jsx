@@ -69,14 +69,16 @@ const AdminPaidFee = () => {
           <div className="top-filter-bar">
             <div className="table-filter">
               <label htmlFor="search">Search</label>
-              <input
-                id="search"
-                type="text"
-                placeholder="Search by Adm No, Particulars, Ref No..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd', minWidth: '240px' }}
-              />
+              <div className="search-input-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Search by Adm No, Student Name, Particulars..."
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                />
+              </div>
             </div>
           </div>
 
