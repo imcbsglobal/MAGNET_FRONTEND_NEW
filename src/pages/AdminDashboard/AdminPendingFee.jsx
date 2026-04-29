@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchAllPendingFees } from '../../services/api';
+import { getCache, setCache } from '../../services/cache';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import '../ParentDashboard/ParentPendingFee.scss';
 
@@ -28,10 +29,19 @@ const AdminPendingFee = () => {
       setLoading(false);
       return;
     }
+    const cacheKey = `pending_fees_${institutionId}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      setFees(cached);
+      setLoading(false);
+      return;
+    }
     fetchAllPendingFees(institutionId)
       .then((res) => {
-        if (res.data.status) setFees(res.data.fees || []);
-        else setError(res.data.message || 'Failed to load data.');
+        if (res.data.status) {
+          setCache(cacheKey, res.data.fees || []);
+          setFees(res.data.fees || []);
+        } else setError(res.data.message || 'Failed to load data.');
       })
       .catch((err) => setError(err.response?.data?.message || 'Failed to load data.'))
       .finally(() => setLoading(false));
