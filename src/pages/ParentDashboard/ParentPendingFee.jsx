@@ -9,12 +9,12 @@ import './ParentPendingFee.scss';
 const ParentPendingFee = () => {
   const navigate = useNavigate();
   const [fees, setFees] = useState([]);
-  const [totalDue, setTotalDue] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterType, setFilterType] = useState('all');
+  const [search, setSearch] = useState('');
 
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno = localStorage.getItem('admno') || '';
@@ -37,19 +37,22 @@ const ParentPendingFee = () => {
   }, [fees]);
 
   const filteredFees = React.useMemo(() => {
-    if (filterType === 'vehicle') {
-      return sortedFees.filter((fee) => String(fee.refno || '').startsWith('VEHICLE'));
-    }
-    if (filterType === 'feeItem') {
-      return sortedFees.filter((fee) => !String(fee.refno || '').startsWith('VEHICLE'));
-    }
-    return sortedFees;
-  }, [filterType, sortedFees]);
+    let result = sortedFees;
+    if (filterType === 'vehicle') result = result.filter((fee) => String(fee.refno || '').startsWith('VEHICLE'));
+    else if (filterType === 'feeItem') result = result.filter((fee) => !String(fee.refno || '').startsWith('VEHICLE'));
+    if (search) result = result.filter((fee) =>
+      (fee.month || '').toLowerCase().includes(search.toLowerCase()) ||
+      (fee.refno || '').toLowerCase().includes(search.toLowerCase()) ||
+      (fee.remark || '').toLowerCase().includes(search.toLowerCase())
+    );
+    return result;
+  }, [filterType, search, sortedFees]);
 
   const totalPages = Math.max(1, Math.ceil(filteredFees.length / pageSize));
   const firstIndex = (currentPage - 1) * pageSize;
   const lastIndex = Math.min(filteredFees.length, firstIndex + pageSize);
   const paginatedFees = filteredFees.slice(firstIndex, lastIndex);
+  const totalDue = filteredFees.reduce((sum, f) => sum + parseFloat(f.amount) + parseFloat(f.fine), 0);
 
   React.useEffect(() => {
     if (currentPage > totalPages) {
@@ -68,7 +71,6 @@ const ParentPendingFee = () => {
       .then((response) => {
         if (response.data.status) {
           setFees(response.data.fees || []);
-          setTotalDue(response.data.total_due || 0);
         } else {
           setError(response.data.message || 'Unable to load pending fee details.');
         }
@@ -111,6 +113,19 @@ const ParentPendingFee = () => {
                 <option value="vehicle">Vehicle</option>
                 <option value="feeItem">Fee item</option>
               </select>
+            </div>
+            <div className="table-filter">
+              <label htmlFor="search">Search</label>
+              <div className="search-input-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Search by Month, Ref No, Remark..."
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                />
+              </div>
             </div>
           </div>
 
@@ -167,7 +182,7 @@ const ParentPendingFee = () => {
                   <thead>
                     <tr>
                       <th>No</th>
-                      <th>Month</th>
+                      <th>Month/Term</th>
                       <th>Date</th>
                       <th>Ref No</th>
                       <th>Fine</th>

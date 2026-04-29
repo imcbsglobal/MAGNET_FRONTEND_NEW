@@ -76,7 +76,10 @@
 .top-filter-bar {
   display: flex;
   justify-content: flex-start;
+  align-items: center;
+  gap: 20px;
   padding: 16px 0 8px;
+  flex-wrap: wrap;
 }
 
 .top-filter-bar .table-filter {

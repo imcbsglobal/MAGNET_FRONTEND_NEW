@@ -11,6 +11,7 @@ const AdminPendingFee = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('all');
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -47,7 +48,13 @@ const AdminPendingFee = () => {
       .finally(() => setLoading(false));
   }, [institutionId]);
 
-  const filtered = fees.filter((f) =>
+  const typeFiltered = React.useMemo(() => {
+    if (filterType === 'vehicle') return fees.filter((f) => String(f.refno || '').startsWith('VEHICLE'));
+    if (filterType === 'feeItem') return fees.filter((f) => !String(f.refno || '').startsWith('VEHICLE'));
+    return fees;
+  }, [filterType, fees]);
+
+  const filtered = typeFiltered.filter((f) =>
     f.admno.toLowerCase().includes(search.toLowerCase()) ||
     (f.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
     (f.month || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -77,6 +84,18 @@ const AdminPendingFee = () => {
           </section>
 
           <div className="top-filter-bar">
+            <div className="table-filter">
+              <label htmlFor="feeFilter">Filter</label>
+              <select
+                id="feeFilter"
+                value={filterType}
+                onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}
+              >
+                <option value="all">All</option>
+                <option value="vehicle">Vehicle</option>
+                <option value="feeItem">Fee Item</option>
+              </select>
+            </div>
             <div className="table-filter">
               <label htmlFor="search">Search</label>
               <div className="search-input-wrapper">
@@ -119,7 +138,9 @@ const AdminPendingFee = () => {
                       <th>No</th>
                       <th>Adm No</th>
                       <th>Student Name</th>
-                      <th>Month</th>
+                      <th>Class</th>
+                      <th>Div</th>
+                      <th>Month/Term</th>
                       <th>Date</th>
                       <th>Ref No</th>
                       <th>Fine</th>
@@ -133,6 +154,8 @@ const AdminPendingFee = () => {
                         <td>{firstIndex + index + 1}</td>
                         <td>{fee.admno}</td>
                         <td>{fee.student_name || '-'}</td>
+                        <td>{fee.student_class || '-'}</td>
+                        <td>{fee.div || '-'}</td>
                         <td>{fee.month}</td>
                         <td>{formatDate(fee.date)}</td>
                         <td>{fee.refno}</td>

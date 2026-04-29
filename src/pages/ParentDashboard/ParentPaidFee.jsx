@@ -7,11 +7,11 @@ import './ParentPendingFee.scss';
 
 const ParentPaidFee = () => {
   const [fees, setFees] = useState([]);
-  const [totalPaid, setTotalPaid] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState('');
 
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno = localStorage.getItem('admno') || '';
@@ -33,10 +33,20 @@ const ParentPaidFee = () => {
     return [...fees].sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [fees]);
 
-  const totalPages = Math.max(1, Math.ceil(sortedFees.length / pageSize));
+  const filteredFees = React.useMemo(() => {
+    if (!search) return sortedFees;
+    return sortedFees.filter((fee) =>
+      (fee.particulars || '').toLowerCase().includes(search.toLowerCase()) ||
+      (fee.refno || '').toLowerCase().includes(search.toLowerCase()) ||
+      (fee.remark || '').toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, sortedFees]);
+
+  const totalPaid = filteredFees.reduce((sum, f) => sum + parseFloat(f.amount), 0);
+  const totalPages = Math.max(1, Math.ceil(filteredFees.length / pageSize));
   const firstIndex = (currentPage - 1) * pageSize;
-  const lastIndex = Math.min(sortedFees.length, firstIndex + pageSize);
-  const paginatedFees = sortedFees.slice(firstIndex, lastIndex);
+  const lastIndex = Math.min(filteredFees.length, firstIndex + pageSize);
+  const paginatedFees = filteredFees.slice(firstIndex, lastIndex);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -55,7 +65,6 @@ const ParentPaidFee = () => {
       .then((response) => {
         if (response.data.status) {
           setFees(response.data.fees || []);
-          setTotalPaid(response.data.total_paid || 0);
         } else {
           setError(response.data.message || 'Unable to load paid fee details.');
         }
@@ -79,9 +88,25 @@ const ParentPaidFee = () => {
             </div>
             <div className="fee-summary-banner paid-banner">
               <span>Total Paid</span>
-              <strong>₹{Number(totalPaid).toFixed(2)}</strong>
+              <strong>₹{totalPaid.toFixed(2)}</strong>
             </div>
           </section>
+
+          <div className="top-filter-bar">
+            <div className="table-filter">
+              <label htmlFor="search">Search</label>
+              <div className="search-input-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Search by Particulars, Ref No, Remark..."
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                />
+              </div>
+            </div>
+          </div>
 
           <div className="fee-table-card">
             <div className="table-controls">
@@ -102,7 +127,7 @@ const ParentPaidFee = () => {
               </div>
               <div className="table-pagination">
                 <span>
-                  Showing {sortedFees.length === 0 ? 0 : firstIndex + 1} - {lastIndex} of {sortedFees.length}
+                  Showing {filteredFees.length === 0 ? 0 : firstIndex + 1} - {lastIndex} of {filteredFees.length}
                 </span>
                 <div className="pagination-buttons">
                   <button

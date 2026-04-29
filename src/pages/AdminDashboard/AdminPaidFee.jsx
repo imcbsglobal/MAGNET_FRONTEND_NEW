@@ -119,6 +119,8 @@ const AdminPaidFee = () => {
                       <th>No</th>
                       <th>Adm No</th>
                       <th>Student Name</th>
+                      <th>Class</th>
+                      <th>Div</th>
                       <th>Particulars</th>
                       <th>Date</th>
                       <th>Ref No</th>
@@ -132,6 +134,8 @@ const AdminPaidFee = () => {
                         <td>{firstIndex + index + 1}</td>
                         <td>{fee.admno}</td>
                         <td>{fee.student_name || '-'}</td>
+                        <td>{fee.student_class || '-'}</td>
+                        <td>{fee.div || '-'}</td>
                         <td>{fee.particulars || '-'}</td>
                         <td>{formatDate(fee.date)}</td>
                         <td>{fee.refno}</td>
