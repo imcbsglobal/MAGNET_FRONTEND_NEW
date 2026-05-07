@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://magnetpro.in/api/';
-const STUDENT_BASE_URL = 'http://magnetpro.in/student_data/';
+const API_BASE_URL = 'https://magnetpro.in/api/';
+const STUDENT_BASE_URL = 'https://magnetpro.in/student_data/';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
