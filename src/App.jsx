@@ -7,11 +7,13 @@ import AdministratorForm from './pages/Administrators/AdministratorForm';
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import AdminPendingFee from './pages/AdminDashboard/AdminPendingFee';
 import AdminPaidFee from './pages/AdminDashboard/AdminPaidFee';
+import AdminStudentList from './pages/AdminDashboard/AdminStudentList';
 import JobCategoriesList from './pages/JobCategories/JobCategoriesList';
 import JobCategoryAdd from './pages/JobCategories/JobCategoryAdd';
-import TeachersList from './pages/TeachersManage/TeachersList';
-import TeacherForm from './pages/TeachersManage/TeacherForm';
-import TeacherDashboard from './pages/TeacherDashboard/TeacherDashboard';
+import StaffList from './pages/StaffManage/StaffList';
+import StaffForm from './pages/StaffManage/StaffForm';
+import StaffDashboard from './pages/StaffDashboard/StaffDashboard';
+import StaffStudentList from './pages/StaffDashboard/StaffStudentList';
 import ParentDashboard from './pages/ParentDashboard/ParentDashboard';
 import ParentPendingFee from './pages/ParentDashboard/ParentPendingFee';
 import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
@@ -28,16 +30,18 @@ function App() {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin/pending-fee" element={<AdminPendingFee />} />
           <Route path="/admin/paid-fee" element={<AdminPaidFee />} />
-          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+          <Route path="/admin/students" element={<AdminStudentList />} />
+          <Route path="/staff-dashboard" element={<StaffDashboard />} />
+          <Route path="/staff/students" element={<StaffStudentList />} />
           <Route path="/parent-dashboard" element={<ParentDashboard />} />
           <Route path="/parent/pending-fee" element={<ParentPendingFee />} />
           <Route path="/parent/paid-fee" element={<ParentPaidFee />} />
           <Route path="/admin/job-categories" element={<JobCategoriesList />} />
           <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
           <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />
-          <Route path="/admin/teachers" element={<TeachersList />} />
-          <Route path="/admin/teachers/add" element={<TeacherForm />} />
-          <Route path="/admin/teachers/edit/:id" element={<TeacherForm />} />
+          <Route path="/admin/staff" element={<StaffList />} />
+          <Route path="/admin/staff/add" element={<StaffForm />} />
+          <Route path="/admin/staff/edit/:id" element={<StaffForm />} />
           <Route path="/administrators" element={<AdministratorsList />} />
           <Route path="/administrators/add" element={<AdministratorForm />} />
           <Route path="/administrators/edit/:id" element={<AdministratorForm />} />

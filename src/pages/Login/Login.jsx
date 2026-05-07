@@ -6,7 +6,7 @@ import './Login.scss';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [role, setRole] = useState('parent'); // 'parent', 'teacher', 'admin', or 'superadmin'
+  const [role, setRole] = useState('parent'); // 'parent', 'staff', 'admin', or 'superadmin'
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -42,9 +42,11 @@ const Login = () => {
       localStorage.setItem('institutionId', formData.institutionId);
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
-    } else if (userType === 'teacher') {
+    } else if (userType === 'staff') {
       localStorage.setItem('institutionId', data.institution_id);
       localStorage.setItem('username', data.username);
+      localStorage.setItem('assignedClass', data.assigned_class || '');
+      localStorage.setItem('assignedDivision', data.assigned_division || '');
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
     } else if (userType === 'parent') {
@@ -86,14 +88,14 @@ const Login = () => {
         if (response.data.status) {
           handleSuccess('admin', response.data, '/admin-dashboard');
         }
-      } else if (role === 'teacher') {
+      } else if (role === 'staff') {
         response = await teacherLogin({
           institution_id: formData.institutionId,
           username: formData.username,
           password: formData.password
         });
         if (response.data.status) {
-          handleSuccess('teacher', response.data, '/teacher-dashboard');
+          handleSuccess('staff', response.data, '/staff-dashboard');
         }
       } else if (role === 'parent') {
         response = await parentLogin({
@@ -118,31 +120,48 @@ const Login = () => {
 
   return (
     <div className="login-page-wrapper">
+
+      {isSuccess && (
+        <div className="login-success-overlay">
+          <div className="login-success-box">
+            <div className="login-success-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h3>Login Successful!</h3>
+            <p>Redirecting to your dashboard...</p>
+          </div>
+        </div>
+      )}
+
       <div className="login-container-inner">
         <div className="login-left-section">
           <div className="logo-container">
-            <div className="demo-logo">
-              <img src={logo} alt="School Logo" />
+            <div className="logo-ring">
+              <div className="logo-ring-inner">
+                <div className="demo-logo">
+                  <img src={logo} alt="School Logo" />
+                </div>
+              </div>
             </div>
-            <h1 className="brand-name">MAGNET SCHOOL</h1>
+            <h1 className="brand-name">
+              {'MAGNET SCHOOL'.split('').map((char, i) => (
+                <span key={i} className="flash-letter" style={{ '--i': i }}>
+                  {char === ' ' ? '\u00A0' : char}
+                </span>
+              ))}
+            </h1>
             <p className="brand-tagline">Welcome to the School Management Portal</p>
+            <div className="brand-dots">
+              <span /><span /><span />
+            </div>
           </div>
         </div>
         
         <div className="login-right-section">
           <div className={`login-card ${shake ? 'shake-animation' : ''} ${isSuccess ? 'success-state' : ''} ${role === 'superadmin' ? 'superadmin-mode' : ''}`}>
             {error && <div className="error-message">{error}</div>}
-            {isSuccess && (
-              <div className="success-overlay">
-                <div className="success-icon">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 6L9 17L4 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <h3>Login Successful!</h3>
-                <p>Redirecting to your dashboard...</p>
-              </div>
-            )}
 
 
 
@@ -167,10 +186,10 @@ const Login = () => {
                   PARENT
                 </button>
                 <button 
-                  className={role === 'teacher' ? 'active' : ''} 
-                  onClick={() => setRole('teacher')}
+                  className={role === 'staff' ? 'active' : ''} 
+                  onClick={() => setRole('staff')}
                 >
-                  TEACHER
+                  STAFF
                 </button>
                 <button 
                   className={role === 'admin' ? 'active' : ''} 
@@ -229,7 +248,7 @@ const Login = () => {
                 ) : isLoading ? (
                   <span className="loader"></span>
                 ) : (
-                  `${role === 'admin' ? 'ADMINISTRATOR' : (role === 'teacher' ? 'TEACHER' : (role === 'parent' ? 'PARENT' : role.toUpperCase())) } LOGIN`
+                  `${role === 'admin' ? 'ADMINISTRATOR' : (role === 'staff' ? 'STAFF' : (role === 'parent' ? 'PARENT' : role.toUpperCase())) } LOGIN`
                 )}
               </button>
             </form>
@@ -237,7 +256,7 @@ const Login = () => {
               <button 
                 type="button"
                 className={`superadmin-toggle ${role === 'superadmin' ? 'active' : ''}`}
-                onClick={() => setRole(role === 'superadmin' ? 'teacher' : 'superadmin')}
+                onClick={() => setRole(role === 'superadmin' ? 'staff' : 'superadmin')}
               >
                 {role === 'superadmin' ? (
                   <><svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Staff Login</>

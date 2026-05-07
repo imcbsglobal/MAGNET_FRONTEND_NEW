@@ -3,8 +3,8 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 
-const TeacherDashboard = () => {
-  const username = localStorage.getItem('username') || 'Teacher';
+const StaffDashboard = () => {
+  const username = localStorage.getItem('username') || 'Staff';
 
   return (
     <div className="dashboard-wrapper">
@@ -12,7 +12,6 @@ const TeacherDashboard = () => {
       
       <main className="dashboard-main">
         <Navbar placeholder="Search activities..." />
-
 
         <div className="dashboard-content">
           <section className="welcome-section">
@@ -58,4 +57,4 @@ const TeacherDashboard = () => {
   );
 };
 
-export default TeacherDashboard;
+export default StaffDashboard;

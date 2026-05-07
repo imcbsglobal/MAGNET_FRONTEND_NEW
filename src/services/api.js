@@ -1,27 +1,26 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://magnetpro.in/api/';
+const API_BASE_URL = 'http://magnetpro.in/api/';
+const STUDENT_BASE_URL = 'http://magnetpro.in/student_data/';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Add a request interceptor to inject the JWT tokenh
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+export const studentApi = axios.create({
+  baseURL: STUDENT_BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+const authInterceptor = (config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+};
+
+api.interceptors.request.use(authInterceptor, (error) => Promise.reject(error));
+studentApi.interceptors.request.use(authInterceptor, (error) => Promise.reject(error));
 
 export const superadminLogin = (credentials) => {
   return api.post('superadmin-login/', credentials);
@@ -74,5 +73,17 @@ export const fetchTeacherById = (id) => api.get(`teachers/${id}/`);
 export const createTeacher = (data) => api.post('teachers/', data);
 export const updateTeacher = (id, data) => api.put(`teachers/${id}/`, data);
 export const deleteTeacher = (id) => api.delete(`teachers/${id}/`);
+
+// Student Classes and Divisions
+export const fetchClassesDivisions = (institutionId) =>
+  studentApi.get(`classes-divisions/?institution_id=${encodeURIComponent(institutionId)}`);
+
+// Students by class and division
+export const fetchStudentsByClassDivision = (institutionId, studentClass, div) =>
+  studentApi.get(`students/?institution_id=${encodeURIComponent(institutionId)}&student_class=${encodeURIComponent(studentClass)}&div=${encodeURIComponent(div)}`);
+
+// All students by institution
+export const fetchAllStudents = (institutionId) =>
+  studentApi.get(`all-students/?institution_id=${encodeURIComponent(institutionId)}`);
 
 export default api;

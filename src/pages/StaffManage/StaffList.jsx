@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchJobCategories, deleteJobCategory } from '../../services/api';
+import { fetchTeachers, deleteTeacher } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import '../Administrators/Administrators.scss';
 
-const JobCategoriesList = () => {
-  const [categories, setCategories] = useState([]);
+const StaffList = () => {
+  const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -16,14 +16,14 @@ const JobCategoriesList = () => {
   const navigate = useNavigate();
   const institutionId = localStorage.getItem('institutionId');
 
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => { loadStaff(); }, []);
 
-  const loadCategories = async () => {
+  const loadStaff = async () => {
     try {
-      const response = await fetchJobCategories(institutionId);
-      setCategories(response.data);
+      const response = await fetchTeachers(institutionId);
+      setStaff(response.data);
     } catch (err) {
-      console.error('Failed to fetch categories:', err);
+      console.error('Failed to fetch staff:', err);
     } finally {
       setLoading(false);
     }
@@ -33,28 +33,28 @@ const JobCategoriesList = () => {
 
   const confirmDelete = async () => {
     try {
-      await deleteJobCategory(deleteId);
-      setCategories(categories.filter(c => c.id !== deleteId));
+      await deleteTeacher(deleteId);
+      setStaff(staff.filter(s => s.id !== deleteId));
       setShowDeleteConfirm(false);
     } catch (err) { alert('Failed to delete'); }
   };
 
-  const totalPages = Math.max(1, Math.ceil(categories.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(staff.length / pageSize));
   const firstIndex = (currentPage - 1) * pageSize;
-  const paginated = categories.slice(firstIndex, firstIndex + pageSize);
+  const paginated = staff.slice(firstIndex, firstIndex + pageSize);
 
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType="admin" />
       <main className="dashboard-main">
-        <Navbar placeholder="Search job categories..." />
+        <Navbar placeholder="Search users..." />
         <div className="admins-page-container">
           <header className="page-header">
             <div className="header-left">
-              <h1>Job Categories</h1>
-              <p>Manage categories for your school</p>
+              <h1>Staff</h1>
+              <p>Manage staff for your school</p>
             </div>
-            <button className="add-btn" onClick={() => navigate('/admin/job-categories/add')}>+ Add Category</button>
+            <button className="add-btn" onClick={() => navigate('/admin/staff/add')}>+ Add Staff</button>
           </header>
 
           <div className="table-card">
@@ -66,7 +66,7 @@ const JobCategoriesList = () => {
                 </select>
               </div>
               <div className="table-pagination">
-                <span>Showing {categories.length === 0 ? 0 : firstIndex + 1}–{Math.min(categories.length, firstIndex + pageSize)} of {categories.length}</span>
+                <span>Showing {staff.length === 0 ? 0 : firstIndex + 1}–{Math.min(staff.length, firstIndex + pageSize)} of {staff.length}</span>
                 <div className="pagination-buttons">
                   <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
                   <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
@@ -80,23 +80,41 @@ const JobCategoriesList = () => {
                   <thead>
                     <tr>
                       <th>No.</th>
-                      <th>Created Date</th>
-                      <th>Category Name</th>
+                      <th>Staff ID</th>
+                      <th>Username</th>
+                      <th>Job Category</th>
+                      <th>Class</th>
+                      <th>Division</th>
+                      <th>Reg Number</th>
+                      <th>School Reg No</th>
+                      <th>Address</th>
+                      <th>Pincode</th>
+                      <th>Nationality</th>
                       <th>Institution ID</th>
+                      <th>Created Date</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {paginated.map((cat, index) => (
-                      <tr key={cat.id}>
+                    {paginated.map((member, index) => (
+                      <tr key={member.id}>
                         <td>{firstIndex + index + 1}</td>
-                        <td>{new Date(cat.created_at).toLocaleDateString()}</td>
-                        <td style={{ fontWeight: 600 }}>{cat.name}</td>
-                        <td><span className="badge">{cat.institution_id}</span></td>
+                        <td><span className="badge">{member.staff_id || '-'}</span></td>
+                        <td style={{ fontWeight: 600 }}>{member.username}</td>
+                        <td><span className="badge secondary">{member.job_category || 'N/A'}</span></td>
+                        <td>{member.assigned_class || '-'}</td>
+                        <td>{member.assigned_division || '-'}</td>
+                        <td>{member.reg_number || '-'}</td>
+                        <td>{member.school_reg_number || '-'}</td>
+                        <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.address || '-'}</td>
+                        <td>{member.pincode || '-'}</td>
+                        <td>{member.nationality || '-'}</td>
+                        <td><span className="badge">{member.institution_id}</span></td>
+                        <td>{new Date(member.created_at).toLocaleDateString()}</td>
                         <td>
                           <div className="action-btns">
-                            <button className="edit-btn" onClick={() => navigate(`/admin/job-categories/edit/${cat.id}`)}>Edit</button>
-                            <button className="delete-btn" onClick={() => handleDeleteClick(cat.id)}>Delete</button>
+                            <button className="edit-btn" onClick={() => navigate(`/admin/staff/edit/${member.id}`)}>Edit</button>
+                            <button className="delete-btn" onClick={() => handleDeleteClick(member.id)}>Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -107,11 +125,11 @@ const JobCategoriesList = () => {
             )}
           </div>
 
-          <ConfirmModal isOpen={showDeleteConfirm} title="Delete Category" message="Are you sure you want to delete this job category?" onConfirm={confirmDelete} onCancel={() => setShowDeleteConfirm(false)} confirmText="Delete" type="danger" />
+          <ConfirmModal isOpen={showDeleteConfirm} title="Delete Staff" message="Are you sure you want to delete this staff account?" onConfirm={confirmDelete} onCancel={() => setShowDeleteConfirm(false)} confirmText="Delete" type="danger" />
         </div>
       </main>
     </div>
   );
 };
 
-export default JobCategoriesList;
+export default StaffList;

@@ -8,20 +8,36 @@ const Sidebar = ({ userType = 'superuser' }) => {
   const location = useLocation();
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const [ripple, setRipple] = React.useState({ id: null, x: 0, y: 0 });
 
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
+  const handleNavClick = (e, path, index) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setRipple({ id: index, x: e.clientX - rect.left, y: e.clientY - rect.top });
+    setTimeout(() => setRipple({ id: null, x: 0, y: 0 }), 500);
+    navigate(path);
+    if (isMobileOpen) setIsMobileOpen(false);
+  };
 
   const Icons = {
     Dashboard: () => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7"></rect>
-        <rect x="14" y="3" width="7" height="7"></rect>
-        <rect x="14" y="14" width="7" height="7"></rect>
-        <rect x="3" y="14" width="7" height="7"></rect>
+        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
       </svg>
     ),
     Teachers: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    ),
+    Students: () => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
         <circle cx="9" cy="7" r="4"></circle>
@@ -63,13 +79,15 @@ const Sidebar = ({ userType = 'superuser' }) => {
     ],
     admin: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/admin-dashboard' },
-      { icon: <Icons.Teachers />, label: 'Teachers', path: '/admin/teachers' },
+      { icon: <Icons.Teachers />, label: 'Staff', path: '/admin/staff' },
       { icon: <Icons.Folder />, label: 'Job Categories', path: '/admin/job-categories' },
+      { icon: <Icons.Students />, label: 'Student List', path: '/admin/students' },
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/admin/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/admin/paid-fee' },
     ],
     teacher: [
-      { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/teacher-dashboard' },
+      { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },
+      { icon: <Icons.Students />, label: 'Student List', path: '/staff/students' },
     ],
     parent: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/parent-dashboard' },
@@ -85,73 +103,66 @@ const Sidebar = ({ userType = 'superuser' }) => {
       <button className={`mobile-toggle ${isMobileOpen ? 'open' : ''}`} onClick={toggleMobile}>
         {isMobileOpen ? '✕' : '☰'}
       </button>
-      
-      {isMobileOpen && <div className="sidebar-overlay show" onClick={toggleMobile}></div>}
 
+      {isMobileOpen && <div className="sidebar-overlay show" onClick={toggleMobile}></div>}
 
       <aside className={`dashboard-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
 
-      <div className="sidebar-brand">
-        <div className="brand-logo-container">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" fillOpacity="0.8"/>
-            <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+        <div className="sidebar-brand">
+          <span className="brand-text">
+            {'MAGNET'.split('').map((char, i) => (
+              <span key={i} className="brand-letter" style={{ '--i': i }}>
+                {char}
+              </span>
+            ))}
+          </span>
         </div>
-        <span className="brand-text">MAGNET</span>
-      </div>
-      <nav className="sidebar-nav">
-        {menuItems.map((item, index) => {
-          const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
-          return (
-            <div 
-              key={index} 
-              className={`nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => {
-                navigate(item.path);
-                if (isMobileOpen) setIsMobileOpen(false);
-              }}
-            >
 
-              <span className="item-icon">{item.icon}</span>
-              <span className="item-label">{item.label}</span>
+<nav className="sidebar-nav">
+          {menuItems.map((item, index) => {
+            const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+            return (
+              <div
+                key={index}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={(e) => handleNavClick(e, item.path, index)}
+              >
+                {ripple.id === index && (
+                  <span className="nav-ripple" style={{ left: ripple.x, top: ripple.y }} />
+                )}
+                <span className="item-icon">{item.icon}</span>
+                <span className="item-label">{item.label}</span>
+                {isActive && <span className="active-dot" />}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="logout-card" onClick={() => setShowLogoutConfirm(true)}>
+            <div className="logout-icon-container">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 16L21 12M21 12L17 8M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
-          );
-        })}
-      </nav>
-      <div className="sidebar-footer">
-        <div className="logout-card" onClick={() => setShowLogoutConfirm(true)}>
-          <div className="logout-icon-container">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17 16L21 12M21 12L17 8M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <button type="button" className="logout-btn">Log Out</button>
           </div>
-          <button type="button" className="logout-btn">
-            Log Out
-          </button>
         </div>
-      </div>
 
-      <ConfirmModal 
-        isOpen={showLogoutConfirm}
-        title="Confirm Logout"
-        message="Are you sure you want to log out of the system?"
-        onConfirm={() => {
-          localStorage.clear();
-          window.location.href = '/';
-        }}
-        onCancel={() => setShowLogoutConfirm(false)}
-        confirmText="Yes, Logout"
-        type="danger"
-      />
+        <ConfirmModal
+          isOpen={showLogoutConfirm}
+          title="Confirm Logout"
+          message="Are you sure you want to log out of the system?"
+          onConfirm={() => { localStorage.clear(); window.location.href = '/'; }}
+          onCancel={() => setShowLogoutConfirm(false)}
+          confirmText="Yes, Logout"
+          type="danger"
+        />
 
-
-    </aside>
+      </aside>
     </>
   );
 };
-
 
 export default Sidebar;

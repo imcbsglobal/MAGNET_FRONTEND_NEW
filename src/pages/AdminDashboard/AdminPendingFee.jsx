@@ -153,7 +153,7 @@ const AdminPendingFee = () => {
                       <tr key={fee.id}>
                         <td>{firstIndex + index + 1}</td>
                         <td>{fee.admno}</td>
-                        <td>{fee.student_name || '-'}</td>
+                        <td style={{ fontWeight: 600 }}>{fee.student_name || '-'}</td>
                         <td>{fee.student_class || '-'}</td>
                         <td>{fee.div || '-'}</td>
                         <td>{fee.month}</td>
