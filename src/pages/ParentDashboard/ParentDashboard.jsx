@@ -1,37 +1,122 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchPaidFees } from '../../services/api';
+import { fetchPaidFees, fetchPendingFees, getAttendance } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './ParentDashboard.scss';
 
+const today = new Date();
+
+const toAmount = (value) => {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount : 0;
+};
+
+const formatCurrency = (value) => `Rs ${Number(value || 0).toLocaleString('en-IN', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})}`;
+
+const getErrorMessage = (result, fallback) => {
+  if (result.status !== 'rejected') return '';
+  return result.reason?.response?.data?.message || result.reason?.message || fallback;
+};
+
 const ParentDashboard = () => {
+  const navigate = useNavigate();
   const studentName = localStorage.getItem('studentName') || 'Student';
-  const admno = localStorage.getItem('admno') || 'N/A';
-  const institutionId = localStorage.getItem('institutionId') || 'N/A';
-  const [paidTotal, setPaidTotal] = useState(0);
-  const [paidLoading, setPaidLoading] = useState(true);
-  const [paidError, setPaidError] = useState('');
+  const admno = localStorage.getItem('admno') || '';
+  const institutionId = localStorage.getItem('institutionId') || '';
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const currentDay = today.getDate();
+  const monthName = today.toLocaleString('default', { month: 'long' });
+
+  const [pendingFees, setPendingFees] = useState([]);
+  const [paidFees, setPaidFees] = useState([]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!institutionId || !admno) {
-      setPaidLoading(false);
+      setError('Student details are missing. Please log in again.');
+      setLoading(false);
       return;
     }
 
-    fetchPaidFees(institutionId, admno)
-      .then((response) => {
-        if (response.data.status) {
-          setPaidTotal(response.data.total_paid || 0);
-        } else {
-          setPaidError(response.data.message || 'Unable to load paid fee total.');
-        }
-      })
-      .catch((err) => {
-        setPaidError(err.response?.data?.message || 'Unable to load paid fee total.');
-      })
-      .finally(() => setPaidLoading(false));
-  }, [institutionId, admno]);
+    const loadDashboard = async () => {
+      setLoading(true);
+      setError('');
+
+      const [pendingRes, paidRes, attendanceRes] = await Promise.allSettled([
+        fetchPendingFees(institutionId, admno),
+        fetchPaidFees(institutionId, admno),
+        getAttendance(institutionId, year, month),
+      ]);
+
+      setPendingFees(pendingRes.status === 'fulfilled' ? pendingRes.value.data?.fees || [] : []);
+      setPaidFees(paidRes.status === 'fulfilled' ? paidRes.value.data?.fees || [] : []);
+      setAttendanceRecords(attendanceRes.status === 'fulfilled' ? attendanceRes.value.data?.records || [] : []);
+
+      const loadErrors = [
+        getErrorMessage(pendingRes, 'pending fees'),
+        getErrorMessage(paidRes, 'paid fees'),
+        getErrorMessage(attendanceRes, 'attendance'),
+      ].filter(Boolean);
+
+      if (loadErrors.length) {
+        setError(`Some dashboard data could not load: ${loadErrors.join(', ')}.`);
+      }
+
+      setLoading(false);
+    };
+
+    loadDashboard();
+  }, [institutionId, admno, year, month]);
+
+  const dashboardData = useMemo(() => {
+    const totalPending = pendingFees.reduce((sum, fee) => sum + toAmount(fee.amount) + toAmount(fee.fine), 0);
+    const totalPaid = paidFees.reduce((sum, fee) => sum + toAmount(fee.amount), 0);
+    const totalFeeActivity = totalPending + totalPaid;
+    const paidRate = totalFeeActivity ? Math.round((totalPaid / totalFeeActivity) * 100) : 0;
+
+    const studentAttendance = attendanceRecords.filter((record) => String(record.admno) === String(admno));
+    const present = studentAttendance.filter((record) => record.status === 'P').length;
+    const absent = studentAttendance.filter((record) => record.status === 'A').length;
+    const holiday = studentAttendance.filter((record) => record.status === 'H').length;
+    const marked = present + absent;
+    const attendanceRate = marked ? Math.round((present / marked) * 100) : 0;
+
+    const dailyBars = Array.from({ length: currentDay }, (_, index) => {
+      const day = index + 1;
+      const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const status = studentAttendance.find((record) => record.date === dateKey)?.status || '';
+      return { day, status };
+    }).slice(-12);
+
+    const recentPending = [...pendingFees]
+      .sort((a, b) => toAmount(b.amount) + toAmount(b.fine) - (toAmount(a.amount) + toAmount(a.fine)))
+      .slice(0, 4);
+
+    const recentPaid = [...paidFees]
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+      .slice(0, 4);
+
+    return {
+      totalPending,
+      totalPaid,
+      paidRate,
+      present,
+      absent,
+      holiday,
+      attendanceRate,
+      dailyBars,
+      recentPending,
+      recentPaid,
+    };
+  }, [pendingFees, paidFees, attendanceRecords, admno, year, month, currentDay]);
 
   return (
     <div className="dashboard-wrapper">
@@ -40,101 +125,167 @@ const ParentDashboard = () => {
         <Navbar placeholder="Search school updates..." />
 
         <div className="dashboard-content parent-dashboard-content">
-          <section className="welcome-section parent-welcome-section">
+          <section className="parent-hero">
             <div className="welcome-copy">
               <span className="dashboard-label">Parent Dashboard</span>
-              <h2>Welcome, Parent of {studentName}</h2>
-              <p>Keep track of your child's school life with quick access to fees, attendance, updates, and important notices in one polished dashboard.</p>
+              <h2>{studentName}</h2>
+              <p>Track attendance, pending fees, paid fees, and important student account details from one clean parent dashboard.</p>
               <div className="welcome-actions">
-                <button type="button" className="primary-action" onClick={() => window.location.href = '/parent/pending-fee'}>
+                <button type="button" className="primary-action" onClick={() => navigate('/parent/pending-fee')}>
                   View Pending Fee
+                </button>
+                <button type="button" className="secondary-action" onClick={() => navigate('/parent/paid-fee')}>
+                  View Paid Fee
                 </button>
               </div>
             </div>
-            <div className="welcome-highlights">
-              <div className="highlight-card">
-                <span>Student</span>
-                <strong>{studentName}</strong>
-              </div>
-              <div className="highlight-card">
-                <span>Admission No.</span>
-                <strong>{admno}</strong>
-              </div>
-              <div className="highlight-card">
-                <span>Institution ID</span>
-                <strong>{institutionId}</strong>
-              </div>
-              <div className="highlight-card highlight-card-accent">
-                <span>Total Paid</span>
-                <strong>
-                  {paidLoading ? 'Loading...' : paidError ? 'N/A' : `₹${Number(paidTotal).toFixed(2)}`}
-                </strong>
-              </div>
+            <div className="parent-profile-card">
+              <span>Admission No.</span>
+              <strong>{admno || '-'}</strong>
+              <p>Institution ID {institutionId || '-'}</p>
             </div>
           </section>
 
-          <div className="dashboard-grid parent-dashboard-grid">
-            <div className="main-stats-card student-details-card">
-              <div className="card-header">
-                <div>
-                  <h3>Student Details</h3>
-                  <p>Quick overview of your student's account.</p>
-                </div>
-              </div>
-              <div className="student-details-list">
-                <div className="detail-item">
-                  <span>Student Name</span>
-                  <strong>{studentName}</strong>
-                </div>
-                <div className="detail-item">
-                  <span>Admission Number</span>
-                  <strong>{admno}</strong>
-                </div>
-                <div className="detail-item">
-                  <span>Institution ID</span>
-                  <strong>{institutionId}</strong>
-                </div>
-              </div>
-            </div>
+          {error && <div className="parent-alert">{error}</div>}
 
-            <div className="teacher-list-card quick-access-card">
-              <div className="card-header">
+          <div className="parent-stats-row">
+            <div className="parent-stat-card attendance">
+              <span>Attendance Rate</span>
+              <strong>{loading ? '...' : `${dashboardData.attendanceRate}%`}</strong>
+              <p>{monthName} present average</p>
+            </div>
+            <div className="parent-stat-card pending">
+              <span>Pending Fee</span>
+              <strong>{loading ? '...' : formatCurrency(dashboardData.totalPending)}</strong>
+              <p>{pendingFees.length} pending records</p>
+            </div>
+            <div className="parent-stat-card paid">
+              <span>Paid Fee</span>
+              <strong>{loading ? '...' : formatCurrency(dashboardData.totalPaid)}</strong>
+              <p>{paidFees.length} paid records</p>
+            </div>
+            <div className="parent-stat-card">
+              <span>Fee Cleared</span>
+              <strong>{loading ? '...' : `${dashboardData.paidRate}%`}</strong>
+              <p>Paid from total fee activity</p>
+            </div>
+          </div>
+
+          <div className="parent-dashboard-grid">
+            <section className="parent-panel parent-attendance-panel" id="parent-attendance">
+              <div className="parent-panel-header">
                 <div>
-                  <h3>Quick Access</h3>
-                  <p>Jump to the most important parent actions.</p>
+                  <h3>Attendance Graph</h3>
+                  <p>{monthName} attendance for {studentName}</p>
+                </div>
+                <span>{dashboardData.present} P / {dashboardData.absent} A</span>
+              </div>
+
+              <div className="parent-attendance-graph">
+                {loading ? (
+                  <div className="parent-empty">Loading attendance graph...</div>
+                ) : dashboardData.dailyBars.length === 0 ? (
+                  <div className="parent-empty">No attendance records found.</div>
+                ) : (
+                  dashboardData.dailyBars.map((item) => (
+                    <div className="parent-day-bar" key={item.day}>
+                      <div className={`parent-day-pill status-${item.status || 'blank'}`}>
+                        {item.status || '-'}
+                      </div>
+                      <small>{item.day}</small>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="parent-attendance-summary">
+                <div><span>Present</span><strong>{dashboardData.present}</strong></div>
+                <div><span>Absent</span><strong>{dashboardData.absent}</strong></div>
+                <div><span>Holiday</span><strong>{dashboardData.holiday}</strong></div>
+              </div>
+            </section>
+
+            <section className="parent-panel">
+              <div className="parent-panel-header">
+                <div>
+                  <h3>Fee Summary</h3>
+                  <p>Pending and paid balance overview</p>
                 </div>
               </div>
-              <div className="action-list">
-                <button className="action-item" type="button" onClick={() => window.location.href = '/parent/pending-fee'}>
-                  <div className="avatar">P</div>
-                  <div>
-                    <span className="action-title">Pending Fee</span>
-                    <p>View the current fee balance for your student.</p>
-                  </div>
-                </button>
-                <button className="action-item" type="button">
-                  <div className="avatar">A</div>
-                  <div>
-                    <span className="action-title">Attendance</span>
-                    <p>Track daily attendance and recap reports.</p>
-                  </div>
-                </button>
-                <button className="action-item" type="button" onClick={() => window.location.href = '/parent/paid-fee'}>
-                  <div className="avatar">F</div>
-                  <div>
-                    <span className="action-title">Paid Fee</span>
-                    <p>View recently paid fee records for your student.</p>
-                  </div>
-                </button>
-                <button className="action-item" type="button">
-                  <div className="avatar">G</div>
-                  <div>
-                    <span className="action-title">Grades</span>
-                    <p>Review academic progress and exam scores.</p>
-                  </div>
-                </button>
+
+              <div className="parent-fee-donut-wrap">
+                <div
+                  className="parent-fee-donut"
+                  style={{
+                    background: `conic-gradient(#16a34a 0 ${dashboardData.paidRate}%, #ef4444 ${dashboardData.paidRate}% 100%)`,
+                  }}
+                >
+                  <span>{dashboardData.paidRate}%</span>
+                </div>
+                <div className="parent-fee-list">
+                  <div><span>Paid</span><strong>{formatCurrency(dashboardData.totalPaid)}</strong></div>
+                  <div><span>Pending</span><strong>{formatCurrency(dashboardData.totalPending)}</strong></div>
+                </div>
               </div>
-            </div>
+            </section>
+          </div>
+
+          <div className="parent-dashboard-grid bottom">
+            <section className="parent-panel">
+              <div className="parent-panel-header">
+                <div>
+                  <h3>Pending Fee Section</h3>
+                  <p>Largest pending fee items</p>
+                </div>
+              </div>
+
+              <div className="parent-record-list">
+                {loading ? (
+                  <div className="parent-empty">Loading pending fees...</div>
+                ) : dashboardData.recentPending.length === 0 ? (
+                  <div className="parent-empty">No pending fees found.</div>
+                ) : (
+                  dashboardData.recentPending.map((fee) => (
+                    <button type="button" key={fee.id} onClick={() => navigate('/parent/pending-fee')}>
+                      <span>P</span>
+                      <div>
+                        <strong>{fee.month || fee.particulars || 'Pending fee'}</strong>
+                        <small>{fee.refno || 'No reference'}</small>
+                      </div>
+                      <em>{formatCurrency(toAmount(fee.amount) + toAmount(fee.fine))}</em>
+                    </button>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="parent-panel">
+              <div className="parent-panel-header">
+                <div>
+                  <h3>Paid Fee Section</h3>
+                  <p>Recent paid fee items</p>
+                </div>
+              </div>
+
+              <div className="parent-record-list">
+                {loading ? (
+                  <div className="parent-empty">Loading paid fees...</div>
+                ) : dashboardData.recentPaid.length === 0 ? (
+                  <div className="parent-empty">No paid fees found.</div>
+                ) : (
+                  dashboardData.recentPaid.map((fee) => (
+                    <button type="button" key={fee.id} onClick={() => navigate('/parent/paid-fee')}>
+                      <span>F</span>
+                      <div>
+                        <strong>{fee.particulars || 'Paid fee'}</strong>
+                        <small>{fee.refno || 'No reference'}</small>
+                      </div>
+                      <em>{formatCurrency(fee.amount)}</em>
+                    </button>
+                  ))
+                )}
+              </div>
+            </section>
           </div>
         </div>
       </main>
