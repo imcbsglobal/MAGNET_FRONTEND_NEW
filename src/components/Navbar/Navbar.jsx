@@ -9,20 +9,25 @@ const Navbar = () => {
     switch(userType) {
       case 'superuser': return 'Superadmin';
       case 'admin': return 'Administrator';
+      case 'parent': return 'Parent';
+      case 'staff': return 'Staff Member';
       default: return 'Staff Member';
     }
   };
 
   return (
-    <header className="main-header">
-      <div className="user-profile">
-        <div className="profile-info">
-          <span className="profile-name">{schoolName}</span>
-          <span className="profile-role">{getRoleLabel()}</span>
+    <>
+      <header className="main-header">
+        <div className="user-profile">
+          <div className="profile-info">
+            <span className="profile-name">{schoolName}</span>
+            <span className="profile-role">{getRoleLabel()}</span>
+          </div>
+          <div className="profile-avatar" />
         </div>
-        <div className="profile-avatar" />
-      </div>
-    </header>
+      </header>
+      <div className="main-header-spacer" aria-hidden="true" />
+    </>
   );
 };
 
