@@ -14,6 +14,8 @@ import StaffList from './pages/StaffManage/StaffList';
 import StaffForm from './pages/StaffManage/StaffForm';
 import StaffDashboard from './pages/StaffDashboard/StaffDashboard';
 import StaffStudentList from './pages/StaffDashboard/StaffStudentList';
+import Attendance from './pages/Attendance/Attendance';
+import StudentAttendance from './pages/Attendance/StudentAttendance';
 import ParentDashboard from './pages/ParentDashboard/ParentDashboard';
 import ParentPendingFee from './pages/ParentDashboard/ParentPendingFee';
 import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
@@ -33,6 +35,8 @@ function App() {
           <Route path="/admin/students" element={<AdminStudentList />} />
           <Route path="/staff-dashboard" element={<StaffDashboard />} />
           <Route path="/staff/students" element={<StaffStudentList />} />
+          <Route path="/staff/attendance" element={<Attendance />} />
+          <Route path="/staff/attendance/student/:admno" element={<StudentAttendance />} />
           <Route path="/parent-dashboard" element={<ParentDashboard />} />
           <Route path="/parent/pending-fee" element={<ParentPendingFee />} />
           <Route path="/parent/paid-fee" element={<ParentPaidFee />} />

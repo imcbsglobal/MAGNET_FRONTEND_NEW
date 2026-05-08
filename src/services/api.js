@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://magnetpro.in/api/';
-const STUDENT_BASE_URL = 'https://magnetpro.in/student_data/';
+const API_BASE_URL = 'http://127.0.0.1:8000/api/';
+const STUDENT_BASE_URL = 'http://127.0.0.1:8000/student_data/';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -85,5 +85,10 @@ export const fetchStudentsByClassDivision = (institutionId, studentClass, div) =
 // All students by institution
 export const fetchAllStudents = (institutionId) =>
   studentApi.get(`all-students/?institution_id=${encodeURIComponent(institutionId)}`);
+
+// Attendance
+export const saveAttendance = (data) => api.post('attendance/save/', data);
+export const getAttendance = (institutionId, year, month) =>
+  api.get(`attendance/get/?institution_id=${encodeURIComponent(institutionId)}&year=${year}&month=${month}`);
 
 export default api;

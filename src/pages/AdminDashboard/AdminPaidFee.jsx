@@ -93,59 +93,60 @@ const AdminPaidFee = () => {
           </div>
 
           <div className="fee-table-card">
-            <div className="table-controls">
-              <div className="table-filter">
-                <label htmlFor="pageSize">Rows per page</label>
-                <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
-                  {[20, 50, 100].map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="table-pagination">
-                <span>Showing {filtered.length === 0 ? 0 : firstIndex + 1} - {Math.min(filtered.length, firstIndex + pageSize)} of {filtered.length}</span>
-                <div className="pagination-buttons">
-                  <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>Previous</button>
-                  <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>Next</button>
-                </div>
-              </div>
-            </div>
-
             {loading ? <p>Loading...</p> : error ? <div className="error-message">{error}</div> : filtered.length === 0 ? (
               <div className="empty-state"><p>No paid fee records found.</p></div>
             ) : (
-              <div className="table-responsive">
-                <table className="fee-table">
-                  <thead>
-                    <tr>
-                      <th>No</th>
-                      <th>Adm No</th>
-                      <th>Student Name</th>
-                      <th>Class</th>
-                      <th>Div</th>
-                      <th>Particulars</th>
-                      <th>Date</th>
-                      <th>Ref No</th>
-                      <th>Amount</th>
-                      <th>Remark</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginated.map((fee, index) => (
-                      <tr key={fee.id}>
-                        <td>{firstIndex + index + 1}</td>
-                        <td>{fee.admno}</td>
-                        <td style={{ fontWeight: 600 }}>{fee.student_name || '-'}</td>
-                        <td>{fee.student_class || '-'}</td>
-                        <td>{fee.div || '-'}</td>
-                        <td>{fee.particulars || '-'}</td>
-                        <td>{formatDate(fee.date)}</td>
-                        <td>{fee.refno}</td>
-                        <td className="paid-amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                        <td>{fee.remark || '-'}</td>
+              <>
+                <div className="table-responsive">
+                  <table className="fee-table">
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Adm No</th>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Div</th>
+                        <th>Particulars</th>
+                        <th>Date</th>
+                        <th>Ref No</th>
+                        <th>Amount</th>
+                        <th>Remark</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginated.map((fee, index) => (
+                        <tr key={fee.id}>
+                          <td>{firstIndex + index + 1}</td>
+                          <td>{fee.admno}</td>
+                          <td style={{ fontWeight: 600 }}>{fee.student_name || '-'}</td>
+                          <td>{fee.student_class || '-'}</td>
+                          <td>{fee.div || '-'}</td>
+                          <td>{fee.particulars || '-'}</td>
+                          <td>{formatDate(fee.date)}</td>
+                          <td>{fee.refno}</td>
+                          <td className="paid-amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+                          <td>{fee.remark || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-controls">
+                  <div className="table-filter">
+                    <label htmlFor="pageSize">Rows per page</label>
+                    <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                      {[20, 50, 100].map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="table-pagination">
+                    <span>Showing {filtered.length === 0 ? 0 : firstIndex + 1}–{Math.min(filtered.length, firstIndex + pageSize)} of {filtered.length}</span>
+                    <div className="pagination-buttons">
+                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>Previous</button>
+                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>Next</button>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>

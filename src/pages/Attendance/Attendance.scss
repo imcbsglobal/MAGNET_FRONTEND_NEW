@@ -1,0 +1,487 @@
+/* =========================================================
+   Attendance – Professional UI  
+   ========================================================= */
+
+/* ---------- Month Navigation ---------- */
+.att-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50px;
+  padding: 6px 8px;
+  backdrop-filter: blur(8px);
+
+  span {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    min-width: 140px;
+    text-align: center;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  button {
+    background: rgba(255, 255, 255, 0.18);
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s, transform 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.32);
+      transform: scale(1.08);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+/* ---------- Summary Cards ---------- */
+.att-summary-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.att-box {
+  flex: 1;
+  min-width: 130px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 12px rgba(30, 45, 90, 0.07);
+  border: 1px solid #eef2ff;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s, box-shadow 0.18s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #c7d2fe;
+    border-radius: 16px 0 0 16px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(30, 45, 90, 0.13);
+  }
+
+  .att-box-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+  }
+
+  .att-box-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1b254b;
+    line-height: 1;
+  }
+
+  .att-box-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    opacity: 0.1;
+  }
+
+  &.present {
+    &::before { background: #059669; }
+    .att-box-value { color: #059669; }
+  }
+
+  &.absent {
+    &::before { background: #dc2626; }
+    .att-box-value { color: #dc2626; }
+  }
+
+  &.holiday {
+    &::before { background: #d97706; }
+    .att-box-value { color: #d97706; }
+  }
+}
+
+/* ---------- Table Wrapper ---------- */
+.att-table-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(30, 45, 90, 0.08);
+  border: 1px solid #eef2ff;
+}
+
+/* ---------- Main Table ---------- */
+.att-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  /* === THEAD === */
+  thead {
+
+    /* --- Bulk Action Row --- */
+    .bulk-row {
+      background: #f8f9ff;
+
+      th {
+        padding: 5px 2px;
+        border-bottom: 1px solid #e8ecff;
+      }
+
+      .bulk-label {
+        text-align: left;
+        padding-left: 14px;
+        font-size: 0.65rem;
+        color: #6366f1;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+    }
+
+    /* --- Column Header Row --- */
+    tr:last-child {
+      background: linear-gradient(90deg, #1a2550 0%, #1e3564 100%);
+
+      th {
+        padding: 12px 6px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.66rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        white-space: nowrap;
+        text-align: center;
+        border: none;
+
+        &:nth-child(1) { width: 42px; text-align: center; }
+        &:nth-child(2) { text-align: left; padding-left: 10px; }
+        &:nth-child(3) { text-align: left; min-width: 160px; padding-left: 10px; }
+      }
+    }
+  }
+
+  /* === TBODY === */
+  tbody tr {
+    border-bottom: 1px solid #eef2ff;
+    transition: background 0.12s;
+
+    &:nth-child(even) { background: #f9fafe; }
+    &:nth-child(odd)  { background: #fff; }
+
+    &:hover { background: #eef2ff !important; }
+
+    &:last-child { border-bottom: none; }
+
+    td {
+      padding: 7px 4px;
+      font-size: 0.8rem;
+      color: #1e2d5a;
+      text-align: center;
+      vertical-align: middle;
+
+      &:nth-child(1) {
+        color: #94a3b8;
+        font-size: 0.72rem;
+        font-weight: 600;
+      }
+
+      &:nth-child(2) {
+        text-align: left;
+        padding-left: 10px;
+        font-size: 0.75rem;
+        color: #64748b;
+        font-family: 'Courier New', monospace;
+      }
+
+      &:nth-child(3) {
+        text-align: left;
+        padding-left: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+        color: #1e2d5a;
+      }
+    }
+  }
+}
+
+/* ---------- Day header ---------- */
+.day-th {
+  min-width: 34px;
+}
+
+/* ---------- Bulk Buttons ---------- */
+.bulk-cell {
+  padding: 3px 2px !important;
+
+  .bulk-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+
+    button {
+      width: 24px;
+      height: 17px;
+      font-size: 0.58rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      line-height: 1;
+      transition: opacity 0.15s, transform 0.1s;
+
+      &.bp { background: #d1fae5; color: #065f46; }
+      &.ba { background: #fee2e2; color: #991b1b; }
+      &.bh { background: #fef3c7; color: #92400e; }
+      &.bc { background: #f1f5f9; color: #64748b; }
+
+      &:hover:not(:disabled) {
+        opacity: 0.82;
+        transform: scale(1.08);
+      }
+
+      &:disabled {
+        background: #f1f5f9 !important;
+        color: #cbd5e1 !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+  }
+}
+
+/* ---------- Attendance Cells ---------- */
+.att-cell {
+  padding: 4px 2px !important;
+  transition: background 0.15s;
+
+  select {
+    width: 36px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 6px;
+    padding: 3px 2px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:focus { border-color: #6366f1; }
+  }
+
+  &.cell-p {
+    background: #ecfdf5;
+    select {
+      background: #d1fae5;
+      color: #065f46;
+      border-color: #6ee7b7;
+    }
+  }
+
+  &.cell-a {
+    background: #fff5f5;
+    select {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+  }
+
+  &.cell-h {
+    background: #fffbeb;
+    select {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fcd34d;
+    }
+  }
+
+  &.cell-future {
+    background: #f8fafc;
+    select {
+      background: #f1f5f9;
+      color: #cbd5e1;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+    }
+  }
+
+  &.cell-weekend {
+    background: #fffbeb;
+    select {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fcd34d;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* ---------- Summary Columns ---------- */
+.sum-th {
+  min-width: 40px;
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+
+.att-view-cell {
+  text-align: center;
+  padding: 6px !important;
+}
+
+.student-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.student-view-btn:hover {
+  transform: scale(1.08);
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.student-view-btn:active {
+  transform: scale(0.95);
+}
+
+.present-th { color: #6ee7b7 !important; }
+.absent-th  { color: #fca5a5 !important; }
+.holiday-th { color: #fcd34d !important; }
+
+.sum-total {
+  font-weight: 800;
+  color: #1b254b !important;
+  background: #f0f4ff;
+}
+
+.sum-p {
+  font-weight: 800;
+  color: #059669 !important;
+  background: #ecfdf5;
+}
+
+.sum-a {
+  font-weight: 800;
+  color: #dc2626 !important;
+  background: #fff5f5;
+}
+
+.sum-h {
+  font-weight: 800;
+  color: #d97706 !important;
+  background: #fffbeb;
+}
+
+/* ---------- Legend strip ---------- */
+.att-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 18px;
+  background: #f8f9ff;
+  border-top: 1px solid #eef2ff;
+  flex-wrap: wrap;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.03em;
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+
+      &.l-p { background: #6ee7b7; }
+      &.l-a { background: #fca5a5; }
+      &.l-h { background: #fcd34d; }
+      &.l-w { background: #e2e8f0; }
+      &.l-f { background: #f1f5f9; border: 1px dashed #cbd5e1; }
+    }
+  }
+}
+
+/* ---------- Empty / Error States ---------- */
+.att-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #94a3b8;
+
+  .att-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    opacity: 0.45;
+  }
+
+  p {
+    font-size: 0.88rem;
+    font-weight: 500;
+  }
+}
+
+/* ---------- Table card override ---------- */
+.fee-table-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+  border: 1px solid #eef2ff;
+  box-shadow: 0 2px 16px rgba(30, 45, 90, 0.07) !important;
+}
+
+/* ---------- Scrollbar ---------- */
+.table-responsive {
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c7d2fe;
+    border-radius: 10px;
+  }
+}

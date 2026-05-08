@@ -58,70 +58,71 @@ const StaffList = () => {
           </header>
 
           <div className="table-card">
-            <div className="table-controls">
-              <div className="table-filter">
-                <label>Rows per page</label>
-                <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
-                  {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="table-pagination">
-                <span>Showing {staff.length === 0 ? 0 : firstIndex + 1}–{Math.min(staff.length, firstIndex + pageSize)} of {staff.length}</span>
-                <div className="pagination-buttons">
-                  <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
-                  <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
-                </div>
-              </div>
-            </div>
-
             {loading ? <div className="loader" style={{ padding: '20px' }}>Loading...</div> : (
-              <div className="table-responsive">
-                <table className="admins-table">
-                  <thead>
-                    <tr>
-                      <th>No.</th>
-                      <th>Staff ID</th>
-                      <th>Username</th>
-                      <th>Job Category</th>
-                      <th>Class</th>
-                      <th>Division</th>
-                      <th>Reg Number</th>
-                      <th>School Reg No</th>
-                      <th>Address</th>
-                      <th>Pincode</th>
-                      <th>Nationality</th>
-                      <th>Institution ID</th>
-                      <th>Created Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginated.map((member, index) => (
-                      <tr key={member.id}>
-                        <td>{firstIndex + index + 1}</td>
-                        <td><span className="badge">{member.staff_id || '-'}</span></td>
-                        <td style={{ fontWeight: 600 }}>{member.username}</td>
-                        <td><span className="badge secondary">{member.job_category || 'N/A'}</span></td>
-                        <td>{member.assigned_class || '-'}</td>
-                        <td>{member.assigned_division || '-'}</td>
-                        <td>{member.reg_number || '-'}</td>
-                        <td>{member.school_reg_number || '-'}</td>
-                        <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.address || '-'}</td>
-                        <td>{member.pincode || '-'}</td>
-                        <td>{member.nationality || '-'}</td>
-                        <td><span className="badge">{member.institution_id}</span></td>
-                        <td>{new Date(member.created_at).toLocaleDateString()}</td>
-                        <td>
-                          <div className="action-btns">
-                            <button className="edit-btn" onClick={() => navigate(`/admin/staff/edit/${member.id}`)}>Edit</button>
-                            <button className="delete-btn" onClick={() => handleDeleteClick(member.id)}>Delete</button>
-                          </div>
-                        </td>
+              <>
+                <div className="table-responsive">
+                  <table className="admins-table">
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Staff ID</th>
+                        <th>Username</th>
+                        <th>Job Category</th>
+                        <th>Class</th>
+                        <th>Division</th>
+                        <th>Reg Number</th>
+                        <th>School Reg No</th>
+                        <th>Address</th>
+                        <th>Pincode</th>
+                        <th>Nationality</th>
+                        <th>Institution ID</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginated.map((member, index) => (
+                        <tr key={member.id}>
+                          <td>{firstIndex + index + 1}</td>
+                          <td><span className="badge">{member.staff_id || '-'}</span></td>
+                          <td style={{ fontWeight: 600 }}>{member.username}</td>
+                          <td><span className="badge secondary">{member.job_category || 'N/A'}</span></td>
+                          <td>{member.assigned_class || '-'}</td>
+                          <td>{member.assigned_division || '-'}</td>
+                          <td>{member.reg_number || '-'}</td>
+                          <td>{member.school_reg_number || '-'}</td>
+                          <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.address || '-'}</td>
+                          <td>{member.pincode || '-'}</td>
+                          <td>{member.nationality || '-'}</td>
+                          <td><span className="badge">{member.institution_id}</span></td>
+                          <td>{new Date(member.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <div className="action-btns">
+                              <button className="edit-btn" onClick={() => navigate(`/admin/staff/edit/${member.id}`)}>Edit</button>
+                              <button className="delete-btn" onClick={() => handleDeleteClick(member.id)}>Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-controls">
+                  <div className="table-filter">
+                    <label>Rows per page</label>
+                    <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                      {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="table-pagination">
+                    <span>Showing {staff.length === 0 ? 0 : firstIndex + 1}–{Math.min(staff.length, firstIndex + pageSize)} of {staff.length}</span>
+                    <div className="pagination-buttons">
+                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 

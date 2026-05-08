@@ -23,9 +23,7 @@ const ParentPendingFee = () => {
   const formatDate = (value) => {
     if (!value) return '-';
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
+    if (Number.isNaN(date.getTime())) return value;
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -55,9 +53,7 @@ const ParentPendingFee = () => {
   const totalDue = filteredFees.reduce((sum, f) => sum + parseFloat(f.amount) + parseFloat(f.fine), 0);
 
   React.useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
+    if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
 
   useEffect(() => {
@@ -66,7 +62,6 @@ const ParentPendingFee = () => {
       setLoading(false);
       return;
     }
-
     fetchPendingFees(institutionId, admno)
       .then((response) => {
         if (response.data.status) {
@@ -101,14 +96,7 @@ const ParentPendingFee = () => {
           <div className="top-filter-bar">
             <div className="table-filter">
               <label htmlFor="feeFilter">Filter</label>
-              <select
-                id="feeFilter"
-                value={filterType}
-                onChange={(e) => {
-                  setFilterType(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
+              <select id="feeFilter" value={filterType} onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}>
                 <option value="all">All</option>
                 <option value="vehicle">Vehicle</option>
                 <option value="feeItem">Fee item</option>
@@ -130,44 +118,6 @@ const ParentPendingFee = () => {
           </div>
 
           <div className="fee-table-card">
-            <div className="table-controls">
-              <div className="table-filter">
-                <label htmlFor="pageSize">Rows per page</label>
-                <select
-                  id="pageSize"
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  {[10, 20, 50, 100].map((size) => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="table-pagination">
-                <span>
-                  Showing {filteredFees.length === 0 ? 0 : firstIndex + 1} - {lastIndex} of {filteredFees.length}
-                </span>
-                <div className="pagination-buttons">
-                  <button
-                    type="button"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            </div>
             {loading ? (
               <p>Loading pending fees...</p>
             ) : error ? (
@@ -177,34 +127,53 @@ const ParentPendingFee = () => {
                 <p>No pending fee records found for this filter.</p>
               </div>
             ) : (
-              <div className="table-responsive">
-                <table className="fee-table">
-                  <thead>
-                    <tr>
-                      <th>No</th>
-                      <th>Month/Term</th>
-                      <th>Date</th>
-                      <th>Ref No</th>
-                      <th>Fine</th>
-                      <th>Amount</th>
-                      <th>Remark</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedFees.map((fee, index) => (
-                      <tr key={fee.id}>
-                        <td>{firstIndex + index + 1}</td>
-                        <td>{fee.month}</td>
-                        <td>{formatDate(fee.date)}</td>
-                        <td>{fee.refno}</td>
-                        <td className="amount-cell">₹{Number(fee.fine).toFixed(2)}</td>
-                        <td className="amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                        <td>{fee.remark || '-'}</td>
+              <>
+                <div className="table-responsive">
+                  <table className="fee-table">
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Month/Term</th>
+                        <th>Date</th>
+                        <th>Ref No</th>
+                        <th>Fine</th>
+                        <th>Amount</th>
+                        <th>Remark</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginatedFees.map((fee, index) => (
+                        <tr key={fee.id}>
+                          <td>{firstIndex + index + 1}</td>
+                          <td>{fee.month}</td>
+                          <td>{formatDate(fee.date)}</td>
+                          <td>{fee.refno}</td>
+                          <td className="amount-cell">₹{Number(fee.fine).toFixed(2)}</td>
+                          <td className="amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+                          <td>{fee.remark || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-controls">
+                  <div className="table-filter">
+                    <label htmlFor="pageSize">Rows per page</label>
+                    <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                      {[10, 20, 50, 100].map((size) => (
+                        <option key={size} value={size}>{size}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="table-pagination">
+                    <span>Showing {filteredFees.length === 0 ? 0 : firstIndex + 1}–{lastIndex} of {filteredFees.length}</span>
+                    <div className="pagination-buttons">
+                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Previous</button>
+                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 

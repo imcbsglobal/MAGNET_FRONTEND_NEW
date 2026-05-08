@@ -58,52 +58,53 @@ const JobCategoriesList = () => {
           </header>
 
           <div className="table-card">
-            <div className="table-controls">
-              <div className="table-filter">
-                <label>Rows per page</label>
-                <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
-                  {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="table-pagination">
-                <span>Showing {categories.length === 0 ? 0 : firstIndex + 1}–{Math.min(categories.length, firstIndex + pageSize)} of {categories.length}</span>
-                <div className="pagination-buttons">
-                  <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
-                  <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
-                </div>
-              </div>
-            </div>
-
             {loading ? <div className="loader" style={{ padding: '20px' }}>Loading...</div> : (
-              <div className="table-responsive">
-                <table className="admins-table">
-                  <thead>
-                    <tr>
-                      <th>No.</th>
-                      <th>Created Date</th>
-                      <th>Category Name</th>
-                      <th>Institution ID</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginated.map((cat, index) => (
-                      <tr key={cat.id}>
-                        <td>{firstIndex + index + 1}</td>
-                        <td>{new Date(cat.created_at).toLocaleDateString()}</td>
-                        <td style={{ fontWeight: 600 }}>{cat.name}</td>
-                        <td><span className="badge">{cat.institution_id}</span></td>
-                        <td>
-                          <div className="action-btns">
-                            <button className="edit-btn" onClick={() => navigate(`/admin/job-categories/edit/${cat.id}`)}>Edit</button>
-                            <button className="delete-btn" onClick={() => handleDeleteClick(cat.id)}>Delete</button>
-                          </div>
-                        </td>
+              <>
+                <div className="table-responsive">
+                  <table className="admins-table">
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Created Date</th>
+                        <th>Category Name</th>
+                        <th>Institution ID</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginated.map((cat, index) => (
+                        <tr key={cat.id}>
+                          <td>{firstIndex + index + 1}</td>
+                          <td>{new Date(cat.created_at).toLocaleDateString()}</td>
+                          <td style={{ fontWeight: 600 }}>{cat.name}</td>
+                          <td><span className="badge">{cat.institution_id}</span></td>
+                          <td>
+                            <div className="action-btns">
+                              <button className="edit-btn" onClick={() => navigate(`/admin/job-categories/edit/${cat.id}`)}>Edit</button>
+                              <button className="delete-btn" onClick={() => handleDeleteClick(cat.id)}>Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-controls">
+                  <div className="table-filter">
+                    <label>Rows per page</label>
+                    <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                      {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="table-pagination">
+                    <span>Showing {categories.length === 0 ? 0 : firstIndex + 1}–{Math.min(categories.length, firstIndex + pageSize)} of {categories.length}</span>
+                    <div className="pagination-buttons">
+                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
