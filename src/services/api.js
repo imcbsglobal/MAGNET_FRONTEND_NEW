@@ -14,6 +14,10 @@ export const studentApi = axios.create({
 });
 
 const authInterceptor = (config) => {
+  if (config.skipAuth) {
+    delete config.headers.Authorization;
+    return config;
+  }
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
@@ -87,8 +91,8 @@ export const fetchAllStudents = (institutionId) =>
   studentApi.get(`all-students/?institution_id=${encodeURIComponent(institutionId)}`);
 
 // Attendance
-export const saveAttendance = (data) => api.post('attendance/save/', data);
+export const saveAttendance = (data) => api.post('attendance/save/', data, { skipAuth: true });
 export const getAttendance = (institutionId, year, month) =>
-  api.get(`attendance/get/?institution_id=${encodeURIComponent(institutionId)}&year=${year}&month=${month}`);
+  api.get(`attendance/get/?institution_id=${encodeURIComponent(institutionId)}&year=${year}&month=${month}`, { skipAuth: true });
 
 export default api;
