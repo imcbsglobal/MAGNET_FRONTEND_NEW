@@ -23,6 +23,7 @@ const Attendance = () => {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [attendance, setAttendance] = useState({});
+  const [highlightedCell, setHighlightedCell] = useState(null);
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => i + 1), [daysInMonth]);
@@ -67,6 +68,12 @@ const Attendance = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  useEffect(() => {
+    if (!highlightedCell) return;
+    const timer = setTimeout(() => setHighlightedCell(null), 350);
+    return () => clearTimeout(timer);
+  }, [highlightedCell]);
+
   const enqueueRecords = useCallback((records) => {
     pendingRecordsRef.current = [...pendingRecordsRef.current, ...records];
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -97,6 +104,7 @@ const Attendance = () => {
       enqueueRecords([{ admno, date: dateStr, status }]);
       return next;
     });
+    setHighlightedCell({ admno, day });
   };
 
   const bulkDay = (day, status) => {
@@ -262,11 +270,13 @@ const Attendance = () => {
                             {dayStates.map(({ d, future, weekend, allHoliday }) => {
                               const val = attendance[d]?.[s.admno] || '';
                               const isHolidayWeekend = weekend && val === 'H';
+                              const isHighlighted = highlightedCell?.admno === s.admno && highlightedCell?.day === d;
                               const cellClass = [
                                 'att-cell',
                                 val === 'P' ? 'cell-p' : val === 'A' ? 'cell-a' : val === 'H' ? 'cell-h' : '',
                                 future ? 'cell-future' : '',
                                 isHolidayWeekend ? 'cell-weekend' : '',
+                                isHighlighted ? 'cell-flash' : '',
                               ].filter(Boolean).join(' ');
                               return (
                                 <td key={d} className={cellClass}>
