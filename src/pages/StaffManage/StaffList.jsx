@@ -6,15 +6,35 @@ import Navbar from '../../components/Navbar/Navbar';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import '../Administrators/Administrators.scss';
 
+const EyeIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const EyeOffIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94C16.04 19.26 14.06 20 12 20c-7 0-11-8-11-8 1.79-3.48 4.59-5.96 7.96-7.01" />
+    <path d="M9.53 9.53a3 3 0 0 1 4.24 4.24" />
+    <path d="M1 1l22 22" />
+  </svg>
+);
+
 const StaffList = () => {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [visiblePasswords, setVisiblePasswords] = useState({});
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const institutionId = localStorage.getItem('institutionId');
+
+  const togglePasswordVisibility = (id) => {
+    setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => { loadStaff(); }, []);
 
@@ -67,6 +87,7 @@ const StaffList = () => {
                         <th>No.</th>
                         <th>Staff ID</th>
                         <th>Username</th>
+                        <th>Password</th>
                         <th>Job Category</th>
                         <th>Class</th>
                         <th>Division</th>
@@ -86,6 +107,23 @@ const StaffList = () => {
                           <td>{firstIndex + index + 1}</td>
                           <td><span className="badge">{member.staff_id || '-'}</span></td>
                           <td style={{ fontWeight: 600 }}>{member.username}</td>
+                          <td className="password-column">
+                            {member.password ? (
+                              <div className="password-cell">
+                                <button
+                                  type="button"
+                                  className="password-toggle-btn"
+                                  onClick={() => togglePasswordVisibility(member.id)}
+                                  aria-label={visiblePasswords[member.id] ? 'Hide password' : 'Show password'}
+                                >
+                                  {visiblePasswords[member.id] ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                                {visiblePasswords[member.id] && (
+                                  <span className="password-text">{member.password}</span>
+                                )}
+                              </div>
+                            ) : '-'}
+                          </td>
                           <td><span className="badge secondary">{member.job_category || 'N/A'}</span></td>
                           <td>{member.assigned_class || '-'}</td>
                           <td>{member.assigned_division || '-'}</td>

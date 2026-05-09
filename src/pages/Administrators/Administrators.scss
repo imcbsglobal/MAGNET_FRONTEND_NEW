@@ -191,6 +191,55 @@ $text-muted: #a3aed0;
       color: #059669;
     }
   }
+
+  .password-column {
+    text-align: center;
+    vertical-align: middle;
+    width: 120px;
+  }
+
+  .password-cell {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: $dark-blue;
+  }
+
+  .password-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 12px;
+    background: #eef2ff;
+    color: $primary-blue;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: #dbe4ff;
+      transform: translateY(-1px);
+    }
+  }
+
+  .password-text {
+    max-width: 140px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* ── Table filter / pagination (inside .table-card) */

@@ -1,66 +1,66 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchAdministrators } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './SuperUserDashboard.scss';
 
 const SuperUserDashboard = () => {
+  const navigate = useNavigate();
+  const [administrators, setAdministrators] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadAdministrators = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const response = await fetchAdministrators();
+        setAdministrators(Array.isArray(response.data) ? response.data : []);
+      } catch (err) {
+        console.error('Failed to load administrators:', err);
+        setError('Unable to load administrator activity.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAdministrators();
+  }, []);
+
+  const totalClients = new Set(administrators.map((admin) => admin.institution_id).filter(Boolean)).size;
+  const totalAdmins = administrators.length;
+
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType="superuser" />
 
       <main className="dashboard-main">
-        <Navbar placeholder="Search system data..." />
+        <Navbar placeholder="Search administrator activity..." />
 
-
-        <section className="dashboard-content">
-          <div className="welcome-section">
-            <h2>Hello Superadmin!</h2>
-            <p>You have full administrative access. Monitor and manage your system here.</p>
-            <a href="#learn" className="learn-more">Learn more</a>
-          </div>
-
-          <div className="dashboard-grid">
-            <div className="main-stats-card">
-              <div className="card-header">
-                <h3>Performance</h3>
-              </div>
-              <div className="performance-content">
-                <div className="perf-value">
-                  <span className="big-number">95.4</span>
-                  <span className="sub-text">Average Performance Score</span>
-                </div>
-                <div className="chart-placeholder">
-                  {/* Mock Chart */}
-                  <div className="bar" style={{ height: '70%', background: '#4c6ef5' }}></div>
-                  <div className="bar" style={{ height: '85%', background: '#4c6ef5' }}></div>
-                  <div className="bar" style={{ height: '60%', background: '#4c6ef5' }}></div>
-                  <div className="bar" style={{ height: '95%', background: '#4c6ef5' }}></div>
-                </div>
+        <div className="dashboard-content superuser-dashboard-content">
+          <section className="superuser-hero">
+            <div>
+              <span className="superuser-kicker">Superuser Dashboard</span>
+              <h2>Staff Activity by Client</h2>
+              <p>See which client IDs have active staff/admin accounts, mapped in a colorful client activity graph.</p>
+              <div className="superuser-hero-actions">
+                <button type="button" className="superuser-primary-btn" onClick={() => navigate('/administrators')}>
+                  Manage Administrators
+                </button>
+                <button type="button" className="superuser-secondary-btn" onClick={() => navigate('/administrators')}>
+                  View Full List
+                </button>
               </div>
             </div>
-
-            <div className="secondary-stats">
-              <div className="teacher-list-card">
-                <h3>Linked Teachers</h3>
-                <div className="teacher-item">
-                  <div className="avatar">MJ</div>
-                  <div className="info">
-                    <span className="name">Mary Johnson</span>
-                    <span className="subject">Science</span>
-                  </div>
-                </div>
-                <div className="teacher-item">
-                  <div className="avatar">JB</div>
-                  <div className="info">
-                    <span className="name">James Brown</span>
-                    <span className="subject">Mathematics</span>
-                  </div>
-                </div>
-              </div>
+            <div className="superuser-status-card">
+              <span>Activity summary</span>
+              <strong>{loading ? '...' : totalAdmins}</strong>
+              <p>{loading ? '...' : `${totalAdmins} administrators across ${totalClients} clients.`}</p>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
     </div>
   );

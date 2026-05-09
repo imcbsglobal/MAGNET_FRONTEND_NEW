@@ -226,6 +226,25 @@
 /* ---------- Day header ---------- */
 .day-th {
   min-width: 34px;
+  text-align: center;
+}
+
+.day-label-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.day-number {
+  font-weight: 700;
+}
+
+.day-name {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: lowercase;
+  line-height: 1.1;
 }
 
 /* ---------- Bulk Buttons ---------- */

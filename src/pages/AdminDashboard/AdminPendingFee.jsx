@@ -12,6 +12,8 @@ const AdminPendingFee = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterClass, setFilterClass] = useState('');
+  const [filterDiv, setFilterDiv] = useState('');
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -54,13 +56,17 @@ const AdminPendingFee = () => {
     return fees;
   }, [filterType, fees]);
 
-  const filtered = typeFiltered.filter((f) =>
-    f.admno.toLowerCase().includes(search.toLowerCase()) ||
-    (f.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (f.month || '').toLowerCase().includes(search.toLowerCase()) ||
-    (f.refno || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = typeFiltered
+    .filter((f) => (filterClass ? f.student_class === filterClass : true) && (filterDiv ? f.div === filterDiv : true))
+    .filter((f) =>
+      f.admno.toLowerCase().includes(search.toLowerCase()) ||
+      (f.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (f.month || '').toLowerCase().includes(search.toLowerCase()) ||
+      (f.refno || '').toLowerCase().includes(search.toLowerCase())
+    );
 
+  const classes = React.useMemo(() => [...new Set(fees.map((f) => f.student_class || '').filter(Boolean))].sort(), [fees]);
+  const divisions = React.useMemo(() => [...new Set(fees.map((f) => f.div || '').filter(Boolean))].sort(), [fees]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const firstIndex = (currentPage - 1) * pageSize;
   const paginated = filtered.slice(firstIndex, firstIndex + pageSize);
@@ -90,6 +96,20 @@ const AdminPendingFee = () => {
                 <option value="all">All</option>
                 <option value="vehicle">Vehicle</option>
                 <option value="feeItem">Fee Item</option>
+              </select>
+            </div>
+            <div className="table-filter">
+              <label htmlFor="classFilter">Class</label>
+              <select id="classFilter" value={filterClass} onChange={(e) => { setFilterClass(e.target.value); setCurrentPage(1); }}>
+                <option value="">All Classes</option>
+                {classes.map((cls, i) => <option key={i} value={cls}>{cls}</option>)}
+              </select>
+            </div>
+            <div className="table-filter">
+              <label htmlFor="divFilter">Division</label>
+              <select id="divFilter" value={filterDiv} onChange={(e) => { setFilterDiv(e.target.value); setCurrentPage(1); }}>
+                <option value="">All Divisions</option>
+                {divisions.map((div, i) => <option key={i} value={div}>{div}</option>)}
               </select>
             </div>
             <div className="table-filter">

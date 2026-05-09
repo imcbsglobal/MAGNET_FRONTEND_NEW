@@ -1,59 +1,60 @@
 $primary-blue: #3d5af1;
-$dark-blue: #1b254b;
+$dark-blue: #111827;
 $white: #ffffff;
 $border: #e2e8f0;
-$text-muted: #718096;
-$danger: #f56565;
-$warning: #ed8936;
+$text-muted: #64748b;
+$danger: #ef4444;
+$warning: #f97316;
+$surface: rgba(255,255,255,0.95);
 
 .confirm-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.25s ease-out;
 
   .confirm-modal-container {
-    background: $white;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 24px;
-    padding: 35px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    background: $surface;
+    width: min(440px, calc(100% - 40px));
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 30px;
+    padding: 34px 30px;
+    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.18);
     text-align: center;
     transform-origin: center;
-    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: modalPop 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 
     .modal-icon {
-      width: 65px;
-      height: 65px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 25px;
+      width: 84px;
+      height: 84px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 22px;
+      box-shadow: 0 16px 40px rgba(61, 90, 241, 0.12);
       
       svg {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
       }
 
       &.info {
-        background: rgba(61, 90, 241, 0.1);
+        background: rgba(61, 90, 241, 0.12);
         color: $primary-blue;
       }
 
       &.danger {
-        background: rgba(245, 101, 101, 0.1);
+        background: rgba(239, 68, 68, 0.12);
         color: $danger;
       }
 
       &.warning {
-        background: rgba(237, 137, 54, 0.1);
+        background: rgba(249, 115, 22, 0.12);
         color: $warning;
       }
     }
@@ -61,68 +62,70 @@ $warning: #ed8936;
     .modal-content {
       h3 {
         color: $dark-blue;
-        font-size: 1.4rem;
-        font-weight: 700;
+        font-size: 1.6rem;
+        font-weight: 800;
         margin-bottom: 12px;
+        letter-spacing: -0.03em;
         font-family: 'Poppins', sans-serif;
       }
 
       p {
         color: $text-muted;
         font-size: 1rem;
-        line-height: 1.6;
-        margin-bottom: 30px;
+        line-height: 1.8;
+        margin: 0 auto 28px;
+        max-width: 320px;
       }
     }
 
     .modal-actions {
       display: flex;
-      gap: 15px;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
 
       button {
-        flex: 1;
-        padding: 14px;
-        border-radius: 14px;
+        flex: 1 1 140px;
+        min-width: 140px;
+        padding: 14px 20px;
+        border-radius: 16px;
         font-size: 0.95rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
         font-family: 'Poppins', sans-serif;
+        border: 1px solid transparent;
+        white-space: nowrap;
 
         &.cancel-btn {
-          background: #f8fafc;
-          border: 1px solid $border;
-          color: #64748b;
+          background: rgba(241, 245, 249, 0.95);
+          border-color: rgba(148, 163, 184, 0.3);
+          color: $dark-blue;
 
           &:hover {
-            background: #f1f5f9;
-            color: $dark-blue;
+            background: rgba(226, 232, 240, 0.95);
           }
         }
 
         &.confirm-btn {
-          border: none;
-          color: white;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          color: $white;
+          box-shadow: 0 14px 30px rgba(61, 90, 241, 0.18);
 
           &.info {
-            background: $primary-blue;
-            &:hover { background: darken($primary-blue, 5%); }
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
           }
 
           &.danger {
-            background: $danger;
-            &:hover { background: darken($danger, 5%); }
+            background: linear-gradient(135deg, #ef4444, #f97316);
           }
 
           &.warning {
-            background: $warning;
-            &:hover { background: darken($warning, 5%); }
+            background: linear-gradient(135deg, #f59e0b, #f97316);
           }
 
           &:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 18px 35px rgba(61, 90, 241, 0.22);
           }
         }
       }
@@ -136,6 +139,6 @@ $warning: #ed8936;
 }
 
 @keyframes modalPop {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

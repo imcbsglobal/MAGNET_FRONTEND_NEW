@@ -34,8 +34,9 @@ const Attendance = () => {
       const cellDate = new Date(year, month - 1, d);
       const future = cellDate > todayDate;
       const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+      const dayName = cellDate.toLocaleString('default', { weekday: 'short' }).toLowerCase();
       const allHoliday = weekend && students.length > 0 && students.every(s => attendance[d]?.[s.admno] === 'H');
-      return { d, future, weekend, allHoliday };
+      return { d, dayName, future, weekend, allHoliday };
     });
   }, [days, year, month, students, attendance]);
 
@@ -239,7 +240,14 @@ const Attendance = () => {
                         <th>Adm No</th>
                         <th>Student Name</th>
                         <th>View</th>
-                        {dayStates.map(({ d }) => <th key={d} className="day-th">{d}</th>)}
+                        {dayStates.map(({ d, dayName }) => (
+                          <th key={d} className="day-th">
+                            <div className="day-label-wrap">
+                              <span className="day-number">{d}</span>
+                              <span className="day-name">{dayName}</span>
+                            </div>
+                          </th>
+                        ))}
                         <th className="sum-th">Days</th>
                         <th className="sum-th present-th">P</th>
                         <th className="sum-th absent-th">A</th>
