@@ -211,7 +211,7 @@ const Attendance = () => {
                     <thead>
                       {/* Bulk action row */}
                       <tr className="bulk-row">
-                        <th colSpan={3} className="bulk-label">Bulk Mark</th>
+                        <th colSpan={4} className="bulk-label">Bulk Mark</th>
                         {dayStates.map(({ d, future, weekend, allHoliday }) => (
                           <th key={d} className="bulk-cell">
                             <div className="bulk-btns">
@@ -222,7 +222,7 @@ const Attendance = () => {
                             </div>
                           </th>
                         ))}
-                        <th colSpan={5}></th>
+                        <th colSpan={4}></th>
                       </tr>
 
                       {/* Column headers */}
