@@ -677,6 +677,46 @@ $error-border: #f5c6c6;
     letter-spacing: 0.02em;
   }
 
+  .password-field {
+    position: relative;
+    width: 100%;
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding-right: 56px;
+    }
+  }
+
+  .password-toggle-button {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    z-index: 2;
+    border: none;
+    background: rgba(79, 110, 247, 0.06);
+    color: $muted;
+    cursor: pointer;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background: rgba(79, 110, 247, 0.15);
+      color: $accent-dark;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
   input {
     background: $off-white;
     border: 1.5px solid $border;

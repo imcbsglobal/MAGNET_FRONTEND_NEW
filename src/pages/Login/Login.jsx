@@ -17,6 +17,11 @@ const Login = () => {
     username: '',
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -228,15 +233,36 @@ const Login = () => {
               </div>
               <div className="input-group">
                 <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  required
-                />
+                <div className="password-field">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-button"
+                    onClick={togglePasswordVisibility}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 1l22 22" />
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a19.95 19.95 0 0 1 5.06-5.94" />
+                        <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               <button 
                 type="submit" 
