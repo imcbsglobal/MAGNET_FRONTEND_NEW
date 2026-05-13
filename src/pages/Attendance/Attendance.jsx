@@ -35,7 +35,7 @@ const Attendance = () => {
       const future = cellDate > todayDate;
       const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
       const dayName = cellDate.toLocaleString('default', { weekday: 'short' }).toLowerCase();
-      const allHoliday = weekend && students.length > 0 && students.every(s => attendance[d]?.[s.admno] === 'H');
+      const allHoliday = students.length > 0 && students.every(s => attendance[d]?.[s.admno] === 'H');
       return { d, dayName, future, weekend, allHoliday };
     });
   }, [days, year, month, students, attendance]);
@@ -58,6 +58,16 @@ const Attendance = () => {
         const d = new Date(r.date).getDate();
         if (!map[d]) map[d] = {};
         map[d][r.admno] = r.status;
+      });
+      studRes.data.forEach(s => {
+        days.forEach(d => {
+          const cellDate = new Date(year, month - 1, d);
+          const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+          if (weekend) {
+            if (!map[d]) map[d] = {};
+            map[d][s.admno] = 'H';
+          }
+        });
       });
       setAttendance(map);
     } catch {
@@ -97,7 +107,8 @@ const Attendance = () => {
   }, []);
 
   const setCell = (admno, day, status) => {
-    if (dayStates.find(d => d.d === day)?.future) return;
+    const dayMeta = dayStates.find(d => d.d === day);
+    if (!dayMeta || dayMeta.future) return;
     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     setAttendance(prev => {
       const dayMap = prev[day] || {};
@@ -124,7 +135,14 @@ const Attendance = () => {
   const getSummary = (admno) => {
     let present = 0, absent = 0, holiday = 0;
     days.forEach(d => {
-      const value = attendance[d]?.[admno];
+      const cellDate = new Date(year, month - 1, d);
+      const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+      const recordedStatus = attendance[d] && Object.prototype.hasOwnProperty.call(attendance[d], admno)
+        ? attendance[d][admno]
+        : undefined;
+      const value = recordedStatus !== undefined
+        ? recordedStatus
+        : (weekend ? 'H' : '');
       if (value === 'P') present += 1;
       if (value === 'A') absent += 1;
       if (value === 'H') holiday += 1;
@@ -143,7 +161,11 @@ const Attendance = () => {
       });
     }
     days.forEach(d => {
-      if (students.length > 0 && students.every(s => attendance[d]?.[s.admno] === 'H')) {
+      const cellDate = new Date(year, month - 1, d);
+      const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+      const allMarkedHoliday = students.length > 0 && students.every(s => attendance[d]?.[s.admno] === 'H');
+      const hasClearOverride = students.some(s => attendance[d] && Object.prototype.hasOwnProperty.call(attendance[d], s.admno) && attendance[d][s.admno] === '');
+      if ((weekend && !hasClearOverride) || allMarkedHoliday) {
         totalHoliday += 1;
       }
     });
@@ -224,10 +246,10 @@ const Attendance = () => {
                         {dayStates.map(({ d, future, weekend, allHoliday }) => (
                           <th key={d} className="bulk-cell">
                             <div className="bulk-btns">
-                              <button title="Mark All Present"  className="bp" disabled={future || allHoliday} onClick={() => bulkDay(d, 'P')}>P</button>
-                              <button title="Mark All Absent"   className="ba" disabled={future || allHoliday} onClick={() => bulkDay(d, 'A')}>A</button>
-                              <button title="Mark All Holiday"  className="bh" disabled={future}            onClick={() => bulkDay(d, 'H')}>H</button>
-                              <button title="Clear All"         className="bc" disabled={future}            onClick={() => bulkDay(d, '')}>—</button>
+                              <button title="Mark All Present"  className="bp" disabled={future} onClick={() => bulkDay(d, 'P')}>P</button>
+                              <button title="Mark All Absent"   className="ba" disabled={future} onClick={() => bulkDay(d, 'A')}>A</button>
+                              <button title="Mark All Holiday"  className="bh" disabled={future} onClick={() => bulkDay(d, 'H')}>H</button>
+                              <button title="Clear All"         className="bc" disabled={future} onClick={() => bulkDay(d, '')}>—</button>
                             </div>
                           </th>
                         ))}
@@ -276,7 +298,12 @@ const Attendance = () => {
                               </button>
                             </td>
                             {dayStates.map(({ d, future, weekend, allHoliday }) => {
-                              const val = attendance[d]?.[s.admno] || '';
+                              const recordedStatus = attendance[d] && Object.prototype.hasOwnProperty.call(attendance[d], s.admno)
+                                ? attendance[d][s.admno]
+                                : undefined;
+                              const val = recordedStatus !== undefined
+                                ? recordedStatus
+                                : (weekend ? 'H' : '');
                               const isHolidayWeekend = weekend && val === 'H';
                               const isHighlighted = highlightedCell?.admno === s.admno && highlightedCell?.day === d;
                               const cellClass = [
@@ -288,7 +315,7 @@ const Attendance = () => {
                               ].filter(Boolean).join(' ');
                               return (
                                 <td key={d} className={cellClass}>
-                                  <select value={val} disabled={future || allHoliday} onChange={e => setCell(s.admno, d, e.target.value)}>
+                                  <select value={val} disabled={future} onChange={e => setCell(s.admno, d, e.target.value)}>
                                     <option value="">–</option>
                                     <option value="P">P</option>
                                     <option value="A">A</option>
