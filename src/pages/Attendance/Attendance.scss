@@ -120,6 +120,11 @@
     .att-box-value { color: #dc2626; }
   }
 
+  &.halfday {
+    &::before { background: #84cc16; }
+    .att-box-value { color: #84cc16; }
+  }
+
   &.holiday {
     &::before { background: #d97706; }
     .att-box-value { color: #d97706; }
@@ -277,6 +282,7 @@
 
       &.bp { background: #d1fae5; color: #065f46; }
       &.ba { background: #fee2e2; color: #991b1b; }
+      &.bd { background: #ecfdf5; color: #365314; }
       &.bh { background: #fef3c7; color: #92400e; }
       &.bc { background: #f1f5f9; color: #64748b; }
 
@@ -337,11 +343,20 @@
   }
 
   &.cell-h {
-    background: #fffbeb;
+    background: #fef3c7;
     select {
-      background: #fef3c7;
+      background: #fde68a;
       color: #92400e;
-      border-color: #fcd34d;
+      border-color: #fbbf24;
+    }
+  }
+
+  &.cell-d {
+    background: #ecfdf5;
+    select {
+      background: #d9f99d;
+      color: #365314;
+      border-color: #bef264;
     }
   }
 
@@ -355,13 +370,23 @@
     }
   }
 
-  &.cell-weekend {
-    background: #fffbeb;
+  &.cell-weekend,
+  &.cell-h,
+  &.cell-h.cell-weekend {
+    background: #fef3c7;
     select {
-      background: #fef3c7;
+      background: #fde68a;
       color: #92400e;
-      border-color: #fcd34d;
-      cursor: not-allowed;
+      border-color: #fbbf24;
+    }
+  }
+
+  &.cell-d.cell-weekend {
+    background: #ecfdf5;
+    select {
+      background: #d9f99d;
+      color: #365314;
+      border-color: #bef264;
     }
   }
 
@@ -422,6 +447,7 @@
 
 .present-th { color: #6ee7b7 !important; }
 .absent-th  { color: #fca5a5 !important; }
+.halfday-th { color: #84cc16 !important; }
 .holiday-th { color: #fcd34d !important; }
 
 .sum-total {
@@ -440,6 +466,12 @@
   font-weight: 800;
   color: #dc2626 !important;
   background: #fff5f5;
+}
+
+.sum-d {
+  font-weight: 800;
+  color: #365314 !important;
+  background: #ecfdf5;
 }
 
 .sum-h {
@@ -475,6 +507,7 @@
 
       &.l-p { background: #6ee7b7; }
       &.l-a { background: #fca5a5; }
+      &.l-d { background: #bef264; }
       &.l-h { background: #fcd34d; }
       &.l-w { background: #e2e8f0; }
       &.l-f { background: #f1f5f9; border: 1px dashed #cbd5e1; }

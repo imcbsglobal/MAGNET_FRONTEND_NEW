@@ -65,7 +65,9 @@ const Attendance = () => {
           const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
           if (weekend) {
             if (!map[d]) map[d] = {};
-            map[d][s.admno] = 'H';
+            if (!Object.prototype.hasOwnProperty.call(map[d], s.admno)) {
+              map[d][s.admno] = 'H';
+            }
           }
         });
       });
@@ -133,7 +135,7 @@ const Attendance = () => {
   };
 
   const getSummary = (admno) => {
-    let present = 0, absent = 0, holiday = 0;
+    let present = 0, absent = 0, holiday = 0, halfDay = 0;
     days.forEach(d => {
       const cellDate = new Date(year, month - 1, d);
       const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
@@ -146,33 +148,36 @@ const Attendance = () => {
       if (value === 'P') present += 1;
       if (value === 'A') absent += 1;
       if (value === 'H') holiday += 1;
+      if (value === 'HD') halfDay += 1;
     });
-    return { total: days.length, present, absent, holiday };
+    return { total: days.length, present, absent, holiday, halfDay };
   };
 
   const totals = useMemo(() => {
-    let totalPresent = 0, totalAbsent = 0, totalHoliday = 0;
+    let totalPresent = 0, totalAbsent = 0, totalHoliday = 0, totalHalfDay = 0;
     const isCurrent = month === today.getMonth() + 1 && year === today.getFullYear();
     if (isCurrent) {
       students.forEach(s => {
         const value = attendance[today.getDate()]?.[s.admno];
         if (value === 'P') totalPresent += 1;
         if (value === 'A') totalAbsent += 1;
+        if (value === 'HD') totalHalfDay += 1;
       });
     }
     days.forEach(d => {
       const cellDate = new Date(year, month - 1, d);
       const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
+      const dayHasHoliday = students.some(s => attendance[d]?.[s.admno] === 'H');
       const allMarkedHoliday = students.length > 0 && students.every(s => attendance[d]?.[s.admno] === 'H');
       const hasClearOverride = students.some(s => attendance[d] && Object.prototype.hasOwnProperty.call(attendance[d], s.admno) && attendance[d][s.admno] === '');
-      if ((weekend && !hasClearOverride) || allMarkedHoliday) {
+      if (dayHasHoliday || ((weekend && !hasClearOverride) || allMarkedHoliday)) {
         totalHoliday += 1;
       }
     });
-    return { totalPresent, totalAbsent, totalHoliday };
+    return { totalPresent, totalAbsent, totalHoliday, totalHalfDay };
   }, [attendance, students, days, month, year]);
 
-  const { totalPresent, totalAbsent, totalHoliday } = totals;
+  const { totalPresent, totalAbsent, totalHoliday, totalHalfDay } = totals;
   const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
   const prevMonth = () => { const d = new Date(year, month - 2); setYear(d.getFullYear()); setMonth(d.getMonth() + 1); };
   const nextMonth = () => { const d = new Date(year, month); setYear(d.getFullYear()); setMonth(d.getMonth() + 1); };
@@ -211,6 +216,10 @@ const Attendance = () => {
               <span className="att-box-label">Today Absent</span>
               <span className="att-box-value">{totalAbsent}</span>
             </div>
+            <div className="att-box halfday">
+              <span className="att-box-label">Today Half Day</span>
+              <span className="att-box-value">{totalHalfDay}</span>
+            </div>
             <div className="att-box holiday">
               <span className="att-box-label">Holiday Days</span>
               <span className="att-box-value">{totalHoliday}</span>
@@ -234,6 +243,7 @@ const Attendance = () => {
                 <div className="att-legend">
                   <span className="legend-item"><span className="legend-dot l-p"></span>Present</span>
                   <span className="legend-item"><span className="legend-dot l-a"></span>Absent</span>
+                  <span className="legend-item"><span className="legend-dot l-d"></span>Half Day</span>
                   <span className="legend-item"><span className="legend-dot l-h"></span>Holiday / Weekend</span>
                   <span className="legend-item"><span className="legend-dot l-f"></span>Future (locked)</span>
                 </div>
@@ -246,8 +256,9 @@ const Attendance = () => {
                         {dayStates.map(({ d, future, weekend, allHoliday }) => (
                           <th key={d} className="bulk-cell">
                             <div className="bulk-btns">
-                              <button title="Mark All Present"  className="bp" disabled={future} onClick={() => bulkDay(d, 'P')}>P</button>
-                              <button title="Mark All Absent"   className="ba" disabled={future} onClick={() => bulkDay(d, 'A')}>A</button>
+                              <button title="Mark All Present"   className="bp" disabled={future} onClick={() => bulkDay(d, 'P')}>P</button>
+                              <button title="Mark All Absent"    className="ba" disabled={future} onClick={() => bulkDay(d, 'A')}>A</button>
+                              <button title="Mark All Half Day" className="bd" disabled={future} onClick={() => bulkDay(d, 'HD')}>HD</button>
                               <button title="Mark All Holiday"  className="bh" disabled={future} onClick={() => bulkDay(d, 'H')}>H</button>
                               <button title="Clear All"         className="bc" disabled={future} onClick={() => bulkDay(d, '')}>—</button>
                             </div>
@@ -273,6 +284,7 @@ const Attendance = () => {
                         <th className="sum-th">Days</th>
                         <th className="sum-th present-th">P</th>
                         <th className="sum-th absent-th">A</th>
+                        <th className="sum-th halfday-th">D</th>
                         <th className="sum-th holiday-th">H</th>
                       </tr>
                     </thead>
@@ -308,7 +320,7 @@ const Attendance = () => {
                               const isHighlighted = highlightedCell?.admno === s.admno && highlightedCell?.day === d;
                               const cellClass = [
                                 'att-cell',
-                                val === 'P' ? 'cell-p' : val === 'A' ? 'cell-a' : val === 'H' ? 'cell-h' : '',
+                                val === 'P' ? 'cell-p' : val === 'A' ? 'cell-a' : val === 'HD' ? 'cell-d' : val === 'H' ? 'cell-h' : '',
                                 future ? 'cell-future' : '',
                                 isHolidayWeekend ? 'cell-weekend' : '',
                                 isHighlighted ? 'cell-flash' : '',
@@ -319,6 +331,7 @@ const Attendance = () => {
                                     <option value="">–</option>
                                     <option value="P">P</option>
                                     <option value="A">A</option>
+                                    <option value="HD">HD</option>
                                     <option value="H">H</option>
                                   </select>
                                 </td>
@@ -327,6 +340,7 @@ const Attendance = () => {
                             <td className="sum-total">{sum.total}</td>
                             <td className="sum-p">{sum.present}</td>
                             <td className="sum-a">{sum.absent}</td>
+                            <td className="sum-d">{sum.halfDay}</td>
                             <td className="sum-h">{sum.holiday}</td>
                           </tr>
                         );

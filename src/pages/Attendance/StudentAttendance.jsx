@@ -118,6 +118,7 @@ const StatusBadge = ({ status }) => {
     P: { cls: 'badge-p', label: 'Present' },
     A: { cls: 'badge-a', label: 'Absent' },
     H: { cls: 'badge-h', label: 'Holiday' },
+    HD: { cls: 'badge-hd', label: 'Half Day' },
     '': { cls: 'badge-', label: 'Unmarked' },
   };
   const { cls, label } = map[status] || map[''];
@@ -182,8 +183,9 @@ const StudentAttendance = () => {
     const present  = days.filter(d => attendance[d] === 'P').length;
     const absent   = days.filter(d => attendance[d] === 'A').length;
     const holiday  = days.filter(d => attendance[d] === 'H').length;
+    const halfDay  = days.filter(d => attendance[d] === 'HD').length;
     const blank    = days.filter(d => !attendance[d]).length;
-    return { present, absent, holiday, blank };
+    return { present, absent, holiday, halfDay, blank };
   }, [attendance, days]);
 
   const statusRows = useMemo(() => days.map(d => {
@@ -195,6 +197,7 @@ const StudentAttendance = () => {
   const chartData = [
     { label: 'Present',  value: summary.present,  color: '#10b981' },
     { label: 'Absent',   value: summary.absent,   color: '#ef4444' },
+    { label: 'Half Day', value: summary.halfDay,  color: '#a3e635' },
     { label: 'Holiday',  value: summary.holiday,  color: '#f59e0b' },
     { label: 'Unmarked', value: summary.blank,    color: '#94a3b8' },
   ];

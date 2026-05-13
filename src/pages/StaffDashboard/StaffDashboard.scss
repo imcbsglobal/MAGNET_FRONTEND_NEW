@@ -113,7 +113,7 @@
 
 .staff-stats-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -160,6 +160,14 @@
 
 .staff-stat-card.absent strong {
   color: #dc2626;
+}
+
+.staff-stat-card.halfday {
+  border-color: rgba(132, 204, 22, 0.22);
+}
+
+.staff-stat-card.halfday strong {
+  color: #65a30d;
 }
 
 .staff-stat-card.month {

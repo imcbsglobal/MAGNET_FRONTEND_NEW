@@ -87,7 +87,8 @@ const StaffDashboard = () => {
     const todayRecords = classRecords.filter((record) => record.date === todayKey);
     const presentToday = todayRecords.filter((record) => record.status === 'P').length;
     const absentToday = todayRecords.filter((record) => record.status === 'A').length;
-    const markedToday = presentToday + absentToday + todayRecords.filter((record) => record.status === 'H').length;
+    const halfDayToday = todayRecords.filter((record) => record.status === 'HD').length;
+    const markedToday = presentToday + absentToday + halfDayToday + todayRecords.filter((record) => record.status === 'H').length;
     const pendingToday = Math.max(students.length - markedToday, 0);
     const attendanceRate = students.length ? Math.round((presentToday / students.length) * 100) : 0;
 
@@ -133,6 +134,7 @@ const StaffDashboard = () => {
       attendanceRate,
       presentToday,
       absentToday,
+      halfDayToday,
       pendingToday,
       presentMonth,
       absentMonth,
@@ -190,6 +192,11 @@ const StaffDashboard = () => {
               <span>Today Absent</span>
               <strong>{loading ? '...' : dashboardData.absentToday}</strong>
               <p>{dashboardData.pendingToday} pending marks</p>
+            </div>
+            <div className="staff-stat-card halfday">
+              <span>Today Half Day</span>
+              <strong>{loading ? '...' : dashboardData.halfDayToday}</strong>
+              <p>Half-day students</p>
             </div>
             <div className="staff-stat-card month">
               <span>Monthly Rate</span>
