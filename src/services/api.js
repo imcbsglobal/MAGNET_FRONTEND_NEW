@@ -1,7 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://magnetpro.in/api/';
-const STUDENT_BASE_URL = 'https://magnetpro.in/student_data/';
+const DEFAULT_API_BASE_URL =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8000/api/'
+    : 'https://magnetpro.in/api/';
+
+const DEFAULT_STUDENT_BASE_URL =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8000/student_data/'
+    : 'https://magnetpro.in/student_data/';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL;
+const STUDENT_BASE_URL = import.meta.env.VITE_STUDENT_BASE_URL || DEFAULT_STUDENT_BASE_URL;
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -94,5 +106,16 @@ export const fetchAllStudents = (institutionId) =>
 export const saveAttendance = (data) => api.post('attendance/save/', data, { skipAuth: true });
 export const getAttendance = (institutionId, year, month) =>
   api.get(`attendance/get/?institution_id=${encodeURIComponent(institutionId)}&year=${year}&month=${month}`, { skipAuth: true });
+
+// Calendar Setup
+export const fetchCalendarEvents = (institutionId, year, month) =>
+  api.get(`calendar/events/by_month/?institution_id=${encodeURIComponent(institutionId)}&year=${year}&month=${month}`, { skipAuth: true });
+
+export const fetchYearCalendarEvents = (institutionId, year) =>
+  api.get(`calendar/events/by_year/?institution_id=${encodeURIComponent(institutionId)}&year=${year}`, { skipAuth: true });
+
+export const createCalendarEvent = (data) => api.post('calendar/events/', data, { skipAuth: true });
+export const updateCalendarEvent = (id, data) => api.put(`calendar/events/${id}/`, data, { skipAuth: true });
+export const deleteCalendarEvent = (id) => api.delete(`calendar/events/${id}/`, { skipAuth: true });
 
 export default api;

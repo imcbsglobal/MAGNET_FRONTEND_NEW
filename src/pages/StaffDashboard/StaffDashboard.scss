@@ -185,7 +185,8 @@
 }
 
 .staff-dashboard-grid.bottom {
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
 }
 
 .staff-panel {
@@ -424,6 +425,153 @@
   text-align: center;
 }
 
+// ── Leaves Section Styles
+.staff-leaves-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.staff-leaves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 6px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.4);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.4);
+    border-radius: 10px;
+
+    &:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+  }
+}
+
+.staff-leave-item {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: rgba(226, 232, 240, 1);
+    box-shadow: 0 4px 12px rgba(19, 35, 79, 0.06);
+  }
+}
+
+.staff-leave-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3d5af1, #6366f1);
+  color: #ffffff;
+  min-height: 54px;
+}
+
+.staff-leave-day {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.staff-leave-dayname {
+  display: block;
+  font-size: 0.7rem;
+  margin-top: 4px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.staff-leave-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  gap: 4px;
+}
+
+.staff-leave-type {
+  display: flex;
+  gap: 6px;
+}
+
+.staff-leave-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.staff-leave-badge.badge-holiday {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.staff-leave-badge.badge-leave {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+.staff-leave-info strong {
+  display: block;
+  color: #111827;
+  font-size: 0.93rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0px;
+}
+
+.staff-leave-info small {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-panel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 @media (max-width: 1180px) {
   .staff-stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -431,6 +579,11 @@
 
   .staff-dashboard-grid,
   .staff-dashboard-grid.bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-panel-col {
+    display: grid;
     grid-template-columns: 1fr;
   }
 }

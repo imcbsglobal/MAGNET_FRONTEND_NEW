@@ -65,6 +65,14 @@ const Sidebar = ({ userType = 'superuser' }) => {
         <circle cx="12" cy="12" r="3"></circle>
       </svg>
     ),
+    Calendar: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+        <path d="M16 2v4"></path>
+        <path d="M8 2v4"></path>
+        <path d="M3 10h18"></path>
+      </svg>
+    ),
     Folder: () => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -91,6 +99,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
       { icon: <Icons.Students />, label: 'Student List', path: '/admin/students' },
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/admin/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/admin/paid-fee' },
+      { icon: <Icons.Calendar />, label: 'Academic Calendar', path: '/admin/calendar' },
     ],
     teacher: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },

@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchStudentsByClassDivision, saveAttendance, getAttendance } from '../../services/api';
+import { fetchStudentsByClassDivision, saveAttendance, getAttendance, fetchCalendarEvents } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import '../ParentDashboard/ParentPendingFee.scss';
 import './Attendance.scss';
@@ -24,6 +24,7 @@ const Attendance = () => {
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [attendance, setAttendance] = useState({});
   const [highlightedCell, setHighlightedCell] = useState(null);
+  const [eventDayMap, setEventDayMap] = useState({});
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => i + 1), [daysInMonth]);
@@ -48,23 +49,41 @@ const Attendance = () => {
     }
     setLoading(true);
     try {
-      const [studRes, attRes] = await Promise.all([
+      const [studRes, attRes, eventsRes] = await Promise.all([
         fetchStudentsByClassDivision(institutionId, assignedClass, assignedDivision),
         getAttendance(institutionId, year, month),
+        fetchCalendarEvents(institutionId, year, month),
       ]);
-      setStudents(studRes.data);
+      const studentsData = studRes.data || [];
+      setStudents(studentsData);
+
+      const eventMap = {};
+      (eventsRes.data || []).forEach(ev => {
+        const d = new Date(ev.date).getDate();
+        if (!eventMap[d]) eventMap[d] = [];
+        eventMap[d].push(ev);
+      });
+      setEventDayMap(eventMap);
+
       const map = {};
       (attRes.data.records || []).forEach(r => {
         const d = new Date(r.date).getDate();
         if (!map[d]) map[d] = {};
         map[d][r.admno] = r.status;
       });
-      studRes.data.forEach(s => {
+
+      studentsData.forEach(s => {
         days.forEach(d => {
           const cellDate = new Date(year, month - 1, d);
           const weekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
-          if (weekend) {
-            if (!map[d]) map[d] = {};
+          if (!map[d]) map[d] = {};
+
+          const eventForDay = eventMap[d]?.find(ev => ev.event_type === 'H' || ev.event_type === 'L');
+          if (eventForDay) {
+            if (!Object.prototype.hasOwnProperty.call(map[d], s.admno) || map[d][s.admno] === '') {
+              map[d][s.admno] = 'H';
+            }
+          } else if (weekend) {
             if (!Object.prototype.hasOwnProperty.call(map[d], s.admno)) {
               map[d][s.admno] = 'H';
             }
@@ -77,9 +96,12 @@ const Attendance = () => {
     } finally {
       setLoading(false);
     }
-  }, [institutionId, assignedClass, assignedDivision, year, month, daysInMonth]);
+  }, [institutionId, assignedClass, assignedDivision, year, month, days]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    const load = async () => { await loadData(); };
+    load();
+  }, [loadData]);
 
   useEffect(() => {
     if (!highlightedCell) return;
@@ -182,6 +204,21 @@ const Attendance = () => {
   const prevMonth = () => { const d = new Date(year, month - 2); setYear(d.getFullYear()); setMonth(d.getMonth() + 1); };
   const nextMonth = () => { const d = new Date(year, month); setYear(d.getFullYear()); setMonth(d.getMonth() + 1); };
 
+  const getEventLabel = (day) => {
+    const events = eventDayMap[day] || [];
+    return events.map((ev) => ev.title).filter(Boolean).join(', ');
+  };
+
+  const getDayTitle = (day, dayName) => {
+    const eventLabel = getEventLabel(day);
+    const weekendLabel = dayName.toLowerCase() === 'sat' || dayName.toLowerCase() === 'sun' ? 'Weekend' : '';
+    const baseTitle = `${dayName.toUpperCase()} ${day}`;
+    if (eventLabel && weekendLabel) return `${weekendLabel}: ${eventLabel}`;
+    if (eventLabel) return eventLabel;
+    if (weekendLabel) return `${baseTitle} (${weekendLabel})`;
+    return baseTitle;
+  };
+
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType="teacher" />
@@ -273,14 +310,16 @@ const Attendance = () => {
                         <th>Adm No</th>
                         <th>Student Name</th>
                         <th>View</th>
-                        {dayStates.map(({ d, dayName }) => (
-                          <th key={d} className="day-th">
-                            <div className="day-label-wrap">
-                              <span className="day-number">{d}</span>
-                              <span className="day-name">{dayName}</span>
-                            </div>
-                          </th>
-                        ))}
+                        {dayStates.map(({ d, dayName }) => {
+                          return (
+                            <th key={d} className="day-th" title={getDayTitle(d, dayName)}>
+                              <div className="day-label-wrap">
+                                <span className="day-number">{d}</span>
+                                <span className="day-name">{dayName}</span>
+                              </div>
+                            </th>
+                          );
+                        })}
                         <th className="sum-th">Days</th>
                         <th className="sum-th present-th">P</th>
                         <th className="sum-th absent-th">A</th>
@@ -309,7 +348,7 @@ const Attendance = () => {
                                 👁️
                               </button>
                             </td>
-                            {dayStates.map(({ d, future, weekend, allHoliday }) => {
+                            {dayStates.map(({ d, dayName, future, weekend, allHoliday }) => {
                               const recordedStatus = attendance[d] && Object.prototype.hasOwnProperty.call(attendance[d], s.admno)
                                 ? attendance[d][s.admno]
                                 : undefined;
@@ -318,6 +357,8 @@ const Attendance = () => {
                                 : (weekend ? 'H' : '');
                               const isHolidayWeekend = weekend && val === 'H';
                               const isHighlighted = highlightedCell?.admno === s.admno && highlightedCell?.day === d;
+                              const eventLabel = getEventLabel(d);
+                              const cellTitle = eventLabel || (weekend ? `${dayName.toUpperCase()} ${d} (Weekend)` : undefined);
                               const cellClass = [
                                 'att-cell',
                                 val === 'P' ? 'cell-p' : val === 'A' ? 'cell-a' : val === 'HD' ? 'cell-d' : val === 'H' ? 'cell-h' : '',
@@ -326,7 +367,7 @@ const Attendance = () => {
                                 isHighlighted ? 'cell-flash' : '',
                               ].filter(Boolean).join(' ');
                               return (
-                                <td key={d} className={cellClass}>
+                                <td key={d} className={cellClass} title={cellTitle}>
                                   <select value={val} disabled={future} onChange={e => setCell(s.admno, d, e.target.value)}>
                                     <option value="">–</option>
                                     <option value="P">P</option>

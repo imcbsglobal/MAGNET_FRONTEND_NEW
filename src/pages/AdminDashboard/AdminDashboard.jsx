@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchAllPaidFees, fetchAllPendingFees, fetchAllStudents, getAttendance } from '../../services/api';
+import { fetchAllPaidFees, fetchAllPendingFees, fetchAllStudents, getAttendance, fetchCalendarEvents } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './AdminDashboard.scss';
 
@@ -32,6 +32,7 @@ const AdminDashboard = () => {
   const [pendingFees, setPendingFees] = useState([]);
   const [paidFees, setPaidFees] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const year = today.getFullYear();
@@ -49,11 +50,12 @@ const AdminDashboard = () => {
       setLoading(true);
       setError('');
 
-      const [studentsRes, pendingRes, paidRes, attendanceRes] = await Promise.allSettled([
+      const [studentsRes, pendingRes, paidRes, attendanceRes, eventsRes] = await Promise.allSettled([
         fetchAllStudents(institutionId),
         fetchAllPendingFees(institutionId),
         fetchAllPaidFees(institutionId),
         getAttendance(institutionId, year, month),
+        fetchCalendarEvents(institutionId, year, month),
       ]);
 
       if (studentsRes.status === 'fulfilled') {
@@ -78,6 +80,12 @@ const AdminDashboard = () => {
         setAttendanceRecords(attendanceRes.value.data?.records || []);
       } else {
         setAttendanceRecords([]);
+      }
+
+      if (eventsRes.status === 'fulfilled') {
+        setCalendarEvents(Array.isArray(eventsRes.value.data) ? eventsRes.value.data : []);
+      } else {
+        setCalendarEvents([]);
       }
 
       const loadErrors = [
@@ -168,6 +176,24 @@ const AdminDashboard = () => {
       return acc;
     }, {})).sort((a, b) => b.amount - a.amount).slice(0, 5);
 
+    // Calculate leaves and holidays for current month (excluding weekends)
+    const monthLeaves = calendarEvents
+      .filter((event) => event.event_type === 'L' || event.event_type === 'H')
+      .map((event) => {
+        const eventDate = new Date(event.date);
+        const typeLabel = event.event_type === 'L' ? 'Leave' : 'Holiday';
+        return {
+          ...event,
+          date: event.date,
+          dayOfWeek: eventDate.getDay(),
+          dateNum: eventDate.getDate(),
+          dayName: eventDate.toLocaleString('default', { weekday: 'short' }),
+          typeLabel,
+        };
+      })
+      .filter((event) => event.dayOfWeek !== 0 && event.dayOfWeek !== 6)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
     return {
       totalPending,
       totalPaid,
@@ -184,8 +210,9 @@ const AdminDashboard = () => {
       totalPresent,
       totalAbsent,
       pendingByStudent,
+      monthLeaves,
     };
-  }, [students, pendingFees, paidFees, attendanceRecords]);
+  }, [students, pendingFees, paidFees, attendanceRecords, calendarEvents]);
 
   return (
     <div className="dashboard-wrapper">
@@ -353,6 +380,42 @@ const AdminDashboard = () => {
                       </div>
                       <em>{formatCurrency(student.amount)}</em>
                     </button>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h3>Current Month Leaves & Holidays</h3>
+                  <p>Working days only (no weekends)</p>
+                </div>
+                <span className="admin-leaves-count">{loading ? '...' : dashboardData.monthLeaves.length}</span>
+              </div>
+
+              <div className="admin-leaves-list">
+                {loading ? (
+                  <div className="admin-empty">Loading calendar...</div>
+                ) : dashboardData.monthLeaves.length === 0 ? (
+                  <div className="admin-empty">No leaves or holidays scheduled this month.</div>
+                ) : (
+                  dashboardData.monthLeaves.map((leave) => (
+                    <div className="admin-leave-item" key={leave.id || leave.date}>
+                      <div className="admin-leave-date">
+                        <span className="admin-leave-day">{leave.dateNum}</span>
+                        <span className="admin-leave-dayname">{leave.dayName}</span>
+                      </div>
+                      <div className="admin-leave-info">
+                        <div className="admin-leave-type">
+                          <span className={`admin-leave-badge ${leave.event_type === 'H' ? 'badge-holiday' : 'badge-leave'}`}>
+                            {leave.typeLabel}
+                          </span>
+                        </div>
+                        <strong>{leave.title}</strong>
+                        <small>{leave.description || leave.typeLabel}</small>
+                      </div>
+                    </div>
                   ))
                 )}
               </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchStudentsByClassDivision, getAttendance } from '../../services/api';
+import { fetchStudentsByClassDivision, getAttendance, fetchCalendarEvents } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './StaffDashboard.scss';
 
@@ -28,6 +28,7 @@ const StaffDashboard = () => {
 
   const [students, setStudents] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -47,9 +48,10 @@ const StaffDashboard = () => {
       setLoading(true);
       setError('');
 
-      const [studentRes, attendanceRes] = await Promise.allSettled([
+      const [studentRes, attendanceRes, eventsRes] = await Promise.allSettled([
         fetchStudentsByClassDivision(institutionId, assignedClass, assignedDivision),
         getAttendance(institutionId, year, month),
+        fetchCalendarEvents(institutionId, year, month),
       ]);
 
       if (studentRes.status === 'fulfilled') {
@@ -62,6 +64,12 @@ const StaffDashboard = () => {
         setAttendanceRecords(attendanceRes.value.data?.records || []);
       } else {
         setAttendanceRecords([]);
+      }
+
+      if (eventsRes.status === 'fulfilled') {
+        setCalendarEvents(Array.isArray(eventsRes.value.data) ? eventsRes.value.data : []);
+      } else {
+        setCalendarEvents([]);
       }
 
       const loadErrors = [
@@ -130,6 +138,24 @@ const StaffDashboard = () => {
       .sort((a, b) => b.absent - a.absent || a.rate - b.rate)
       .slice(0, 5);
 
+    // Calculate leaves and holidays for current month (excluding weekends)
+    const monthLeaves = calendarEvents
+      .filter((event) => event.event_type === 'L' || event.event_type === 'H')
+      .map((event) => {
+        const eventDate = new Date(event.date);
+        const typeLabel = event.event_type === 'L' ? 'Leave' : 'Holiday';
+        return {
+          ...event,
+          date: event.date,
+          dayOfWeek: eventDate.getDay(),
+          dateNum: eventDate.getDate(),
+          dayName: eventDate.toLocaleString('default', { weekday: 'short' }),
+          typeLabel,
+        };
+      })
+      .filter((event) => event.dayOfWeek !== 0 && event.dayOfWeek !== 6) // Exclude Sunday (0) and Saturday (6)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
     return {
       attendanceRate,
       presentToday,
@@ -143,8 +169,9 @@ const StaffDashboard = () => {
       monthlyRate,
       dailyBars,
       attentionStudents,
+      monthLeaves,
     };
-  }, [students, attendanceRecords, year, month, currentDay]);
+  }, [students, attendanceRecords, calendarEvents, year, month, currentDay]);
 
   return (
     <div className="dashboard-wrapper">
@@ -268,64 +295,102 @@ const StaffDashboard = () => {
             <section className="staff-panel">
               <div className="staff-panel-header">
                 <div>
-                  <h3>Students To Review</h3>
-                  <p>Attendance follow-up list</p>
+                  <h3>Current Month Leaves & Holidays</h3>
+                  <p>Working days only (no weekends)</p>
                 </div>
+                <span className="staff-leaves-count">{loading ? '...' : dashboardData.monthLeaves.length}</span>
               </div>
 
-              <div className="staff-student-list">
+              <div className="staff-leaves-list">
                 {loading ? (
-                  <div className="staff-empty">Loading students...</div>
-                ) : dashboardData.attentionStudents.length === 0 ? (
-                  <div className="staff-empty">No attendance concerns found.</div>
+                  <div className="staff-empty">Loading calendar...</div>
+                ) : dashboardData.monthLeaves.length === 0 ? (
+                  <div className="staff-empty">No leaves or holidays scheduled this month.</div>
                 ) : (
-                  dashboardData.attentionStudents.map((student) => (
-                    <button
-                      type="button"
-                      className="staff-student-item"
-                      key={student.admno}
-                      onClick={() => navigate(`/staff/attendance/student/${encodeURIComponent(student.admno)}`, {
-                        state: { studentName: student.student_name },
-                      })}
-                    >
-                      <span className="staff-avatar">{getInitials(student.student_name)}</span>
-                      <span>
-                        <strong>{student.student_name}</strong>
-                        <small>Adm No: {student.admno}</small>
-                      </span>
-                      <em>{student.rate || 0}%</em>
-                    </button>
+                  dashboardData.monthLeaves.map((leave) => (
+                    <div className="staff-leave-item" key={leave.id || leave.date}>
+                      <div className="staff-leave-date">
+                        <span className="staff-leave-day">{leave.dateNum}</span>
+                        <span className="staff-leave-dayname">{leave.dayName}</span>
+                      </div>
+                      <div className="staff-leave-info">
+                        <div className="staff-leave-type">
+                          <span className={`staff-leave-badge ${leave.event_type === 'H' ? 'badge-holiday' : 'badge-leave'}`}>
+                            {leave.typeLabel}
+                          </span>
+                        </div>
+                        <strong>{leave.title}</strong>
+                        <small>{leave.description || leave.typeLabel}</small>
+                      </div>
+                    </div>
                   ))
                 )}
               </div>
             </section>
 
-            <section className="staff-panel">
-              <div className="staff-panel-header">
-                <div>
-                  <h3>Quick Actions</h3>
-                  <p>Daily staff tools</p>
+            <div className="staff-panel-col">
+              <section className="staff-panel">
+                <div className="staff-panel-header">
+                  <div>
+                    <h3>Students To Review</h3>
+                    <p>Attendance follow-up list</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="staff-action-list">
-                <button type="button" onClick={() => navigate('/staff/attendance')}>
-                  <span>A</span>
-                  <strong>Open Attendance</strong>
-                  <small>Mark or review monthly attendance</small>
-                </button>
-                <button type="button" onClick={() => navigate('/staff/students')}>
-                  <span>S</span>
-                  <strong>Student Directory</strong>
-                  <small>Search class student details</small>
-                </button>
-                <button type="button" onClick={() => navigate('/staff/attendance')}>
-                  <span>R</span>
-                  <strong>Attendance Reports</strong>
-                  <small>View student-wise attendance records</small>
-                </button>
-              </div>
-            </section>
+                <div className="staff-student-list">
+                  {loading ? (
+                    <div className="staff-empty">Loading students...</div>
+                  ) : dashboardData.attentionStudents.length === 0 ? (
+                    <div className="staff-empty">No attendance concerns found.</div>
+                  ) : (
+                    dashboardData.attentionStudents.map((student) => (
+                      <button
+                        type="button"
+                        className="staff-student-item"
+                        key={student.admno}
+                        onClick={() => navigate(`/staff/attendance/student/${encodeURIComponent(student.admno)}`, {
+                          state: { studentName: student.student_name },
+                        })}
+                      >
+                        <span className="staff-avatar">{getInitials(student.student_name)}</span>
+                        <span>
+                          <strong>{student.student_name}</strong>
+                          <small>Adm No: {student.admno}</small>
+                        </span>
+                        <em>{student.rate || 0}%</em>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </section>
+
+              <section className="staff-panel">
+                <div className="staff-panel-header">
+                  <div>
+                    <h3>Quick Actions</h3>
+                    <p>Daily staff tools</p>
+                  </div>
+                </div>
+
+                <div className="staff-action-list">
+                  <button type="button" onClick={() => navigate('/staff/attendance')}>
+                    <span>A</span>
+                    <strong>Open Attendance</strong>
+                    <small>Mark or review monthly attendance</small>
+                  </button>
+                  <button type="button" onClick={() => navigate('/staff/students')}>
+                    <span>S</span>
+                    <strong>Student Directory</strong>
+                    <small>Search class student details</small>
+                  </button>
+                  <button type="button" onClick={() => navigate('/staff/attendance')}>
+                    <span>R</span>
+                    <strong>Attendance Reports</strong>
+                    <small>View student-wise attendance records</small>
+                  </button>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </main>
