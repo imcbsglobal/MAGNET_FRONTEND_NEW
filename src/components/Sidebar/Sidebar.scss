@@ -265,6 +265,71 @@ $sidebar-width: 220px;
       }
     }
   }
+
+  .nav-item-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &.open {
+      .nav-submenu {
+        max-height: 400px;
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+  }
+
+  .nav-submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+    margin-left: 10px;
+  }
+
+  .sub-item {
+    align-items: center;
+
+    .item-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      opacity: 0.75;
+      transform: translateX(-2px);
+
+      svg {
+        stroke-width: 2.2px;
+      }
+    }
+  }
+
+  .submenu-arrow {
+    margin-left: auto;
+    font-size: 0.85rem;
+    transition: transform 0.25s ease;
+    color: $text-mid;
+  }
+
+  .submenu-arrow.open {
+    transform: rotate(180deg);
+  }
+
+  .sub-item {
+    padding-left: 34px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+
+    .item-label {
+      font-size: 0.82rem;
+      color: $text-bright;
+      font-weight: 600;
+    }
+  }
 }
 
 /* ── Footer ────────────────────────────────────── */
@@ -470,3 +535,5 @@ $sidebar-width: 220px;
     box-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
   }
 }
+
+/* ── Chat badge ────────────────────────────────── */

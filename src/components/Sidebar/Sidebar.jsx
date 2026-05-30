@@ -8,6 +8,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
   const location = useLocation();
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const [openMenus, setOpenMenus] = React.useState({});
   const [ripple, setRipple] = React.useState({ id: null, x: 0, y: 0 });
 
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
@@ -18,6 +19,10 @@ const Sidebar = ({ userType = 'superuser' }) => {
     setTimeout(() => setRipple({ id: null, x: 0, y: 0 }), 500);
     navigate(path);
     if (isMobileOpen) setIsMobileOpen(false);
+  };
+
+  const handleToggleMenu = (index) => {
+    setOpenMenus((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
   const Icons = {
@@ -73,9 +78,26 @@ const Sidebar = ({ userType = 'superuser' }) => {
         <path d="M3 10h18"></path>
       </svg>
     ),
+    SchoolInfo: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+    ),
+    IDCard: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+        <path d="M7 9h10M7 13h7" strokeLinecap="round"></path>
+      </svg>
+    ),
     Folder: () => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+      </svg>
+    ),
+    SubItem: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="2"></circle>
       </svg>
     ),
     Attendance: () => (
@@ -84,7 +106,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
         <path d="M16 2v4M8 2v4M3 10h18"></path>
         <path d="M9 16l2 2 4-4"></path>
       </svg>
-    )
+    ),
   };
 
   const menuConfigs = {
@@ -100,17 +122,26 @@ const Sidebar = ({ userType = 'superuser' }) => {
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/admin/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/admin/paid-fee' },
       { icon: <Icons.Calendar />, label: 'Academic Calendar', path: '/admin/calendar' },
+      { icon: <Icons.SchoolInfo />, label: 'School Information', path: '/admin/school-info' },
     ],
     teacher: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },
       { icon: <Icons.Students />, label: 'Student List', path: '/staff/students' },
       { icon: <Icons.Attendance />, label: 'Attendance', path: '/staff/attendance' },
+      {
+        icon: <Icons.IDCard />,
+        label: 'ID Card',
+        children: [
+          { label: 'ID Card Details', path: '/staff/id-card/details' },
+          { label: 'Issue ID Card', path: '/staff/id-card/issue' },
+        ],
+      },
     ],
     parent: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/parent-dashboard' },
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/parent/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/parent/paid-fee' },
-    ]
+    ],
   };
 
   const menuItems = menuConfigs[userType] || [];
@@ -135,21 +166,51 @@ const Sidebar = ({ userType = 'superuser' }) => {
           </span>
         </div>
 
-<nav className="sidebar-nav">
+        <nav className="sidebar-nav">
           {menuItems.map((item, index) => {
-            const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+            const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+            const isActive = item.path && (location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)));
+            const isChildActive = hasChildren && item.children.some((child) => location.pathname === child.path || location.pathname.startsWith(child.path));
+            const isOpen = hasChildren && (openMenus[index] || isChildActive);
+
             return (
-              <div
-                key={index}
-                className={`nav-item ${isActive ? 'active' : ''}`}
-                onClick={(e) => handleNavClick(e, item.path, index)}
-              >
-                {ripple.id === index && (
-                  <span className="nav-ripple" style={{ left: ripple.x, top: ripple.y }} />
+              <div key={index} className={`nav-item-group ${isActive || isChildActive ? 'active' : ''} ${isOpen ? 'open' : ''}`}>
+                <div
+                  className={`nav-item ${isActive || isChildActive ? 'active' : ''}`}
+                  onClick={(e) => {
+                    if (hasChildren) {
+                      handleToggleMenu(index);
+                    } else if (item.path) {
+                      handleNavClick(e, item.path, index);
+                    }
+                  }}
+                >
+                  {ripple.id === index && (
+                    <span className="nav-ripple" style={{ left: ripple.x, top: ripple.y }} />
+                  )}
+                  <span className="item-icon">{item.icon}</span>
+                  <span className="item-label">{item.label}</span>
+                  {hasChildren && <span className={`submenu-arrow ${isOpen ? 'open' : ''}`}>▾</span>}
+                  {(isActive || isChildActive) && <span className="active-dot" />}
+                </div>
+                {hasChildren && (
+                  <div className="nav-submenu">
+                    {item.children.map((child, childIndex) => {
+                      const childActive = location.pathname === child.path || location.pathname.startsWith(child.path);
+                      return (
+                        <div
+                          key={childIndex}
+                          className={`nav-item sub-item ${childActive ? 'active' : ''}`}
+                          onClick={(e) => handleNavClick(e, child.path, `${index}-${childIndex}`)}
+                        >
+                          <span className="item-icon sub-icon"><Icons.SubItem /></span>
+                          <span className="item-label">{child.label}</span>
+                          {childActive && <span className="active-dot" />}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
-                <span className="item-icon">{item.icon}</span>
-                <span className="item-label">{item.label}</span>
-                {isActive && <span className="active-dot" />}
               </div>
             );
           })}

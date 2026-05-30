@@ -12,8 +12,8 @@ const DEFAULT_STUDENT_BASE_URL =
     ? 'http://127.0.0.1:8000/student_data/'
     : 'https://magnetpro.in/student_data/';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL;
-const STUDENT_BASE_URL = import.meta.env.VITE_STUDENT_BASE_URL || DEFAULT_STUDENT_BASE_URL;
+const API_BASE_URL = ((import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')) + '/';
+const STUDENT_BASE_URL = ((import.meta.env.VITE_STUDENT_BASE_URL || DEFAULT_STUDENT_BASE_URL).replace(/\/+$/, '')) + '/';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -119,3 +119,40 @@ export const updateCalendarEvent = (id, data) => api.put(`calendar/events/${id}/
 export const deleteCalendarEvent = (id) => api.delete(`calendar/events/${id}/`, { skipAuth: true });
 
 export default api;
+
+// School Information
+export const fetchSchoolInfo = (institutionId) =>
+  api.get(`school-info/?institution_id=${encodeURIComponent(institutionId)}`);
+
+export const saveSchoolInfo = (formData) =>
+  api.post('school-info/save/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+// ID Card
+export const fetchIDCardStudents = (institutionId, studentClass, div) =>
+  api.get('id-card/students/', {
+    params: {
+      institution_id: institutionId,
+      student_class: studentClass || undefined,
+      div: div || undefined,
+    },
+  });
+
+export const sendIDCardLink = (data) =>
+  api.post('id-card/send-link/', data);
+
+export const bulkSendIDCardLinks = (data) =>
+  api.post('id-card/bulk-send/', data);
+
+export const fetchIDCardParentLink = (token) =>
+  api.get(`id-card/parent-link/?token=${encodeURIComponent(token)}`, { skipAuth: true });
+
+export const submitIDCardParentForm = (token, data) =>
+  api.post('id-card/submit/', { token, ...data }, { skipAuth: true });
+
+export const fetchIDCardSubmission = (institutionId, admno) =>
+  api.get(`id-card/submission/?institution_id=${encodeURIComponent(institutionId)}&admno=${encodeURIComponent(admno)}`);
+
+export const updateIDCardSubmission = (id, data) =>
+  api.put(`id-card/submission/${id}/`, data);
