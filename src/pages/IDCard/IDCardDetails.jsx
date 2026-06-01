@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchIDCardStudents, sendIDCardLink, bulkSendIDCardLinks } from '../../services/api';
+import { fetchIDCardStudents, updateIDCardSubmission } from '../../services/api';
 import './IDCard.scss';
 
 const EyeIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
     <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
@@ -25,18 +32,34 @@ const DETAIL_LABELS = {
   pin:          'PIN Code',
 };
 
+const EDIT_FIELDS = [
+  { name: 'student_name', label: 'Student Name',  type: 'text'  },
+  { name: 'father_name',  label: 'Father Name',   type: 'text'  },
+  { name: 'mother_name',  label: 'Mother Name',   type: 'text'  },
+  { name: 'dob',          label: 'Date of Birth', type: 'date'  },
+  { name: 'phone',        label: 'Phone',         type: 'tel'   },
+  { name: 'email',        label: 'Email',         type: 'email' },
+  { name: 'place',        label: 'Place',         type: 'text'  },
+  { name: 'district',     label: 'District',      type: 'text'  },
+  { name: 'city',         label: 'City',          type: 'text'  },
+  { name: 'state',        label: 'State',         type: 'text'  },
+  { name: 'pin',          label: 'PIN Code',      type: 'text'  },
+];
+
 const IDCardDetails = () => {
-  const institutionId   = localStorage.getItem('institutionId')   || '';
-  const assignedClass   = localStorage.getItem('assignedClass')   || '';
+  const institutionId    = localStorage.getItem('institutionId')    || '';
+  const assignedClass    = localStorage.getItem('assignedClass')    || '';
   const assignedDivision = localStorage.getItem('assignedDivision') || '';
 
-  const [students, setStudents]           = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [search, setSearch]               = useState('');
-  const [sending, setSending]             = useState(false);
-  const [viewStudent, setViewStudent]     = useState(null); // modal data
+  const [students, setStudents]       = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState('');
+  const [search, setSearch]           = useState('');
+  const [viewStudent, setViewStudent] = useState(null);
+  const [editStudent, setEditStudent] = useState(null);
+  const [editForm, setEditForm]       = useState({});
+  const [saving, setSaving]           = useState(false);
+  const [saveMsg, setSaveMsg]         = useState('');
 
   const loadStudents = async () => {
     if (!institutionId) {
@@ -58,31 +81,32 @@ const IDCardDetails = () => {
 
   useEffect(() => { loadStudents(); }, [institutionId, assignedClass, assignedDivision]);
 
-  const handleSendLink = async (admno) => {
-    setSending(true);
-    setStatusMessage('');
-    try {
-      await sendIDCardLink({ institution_id: institutionId, admno });
-      setStatusMessage(`WhatsApp link sent for ${admno}.`);
-      loadStudents();
-    } catch (err) {
-      setStatusMessage(err.response?.data?.message || 'Failed to send link.');
-    } finally {
-      setSending(false);
-    }
+  const openEdit = (student) => {
+    setEditStudent(student);
+    setEditForm({ ...student.details });
+    setSaveMsg('');
   };
 
-  const handleBulkSend = async () => {
-    setSending(true);
-    setStatusMessage('');
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!editStudent?.form_id) return;
+    setSaving(true);
+    setSaveMsg('');
     try {
-      const res = await bulkSendIDCardLinks({ institution_id: institutionId, student_class: assignedClass, div: assignedDivision });
-      setStatusMessage(`Bulk send completed: ${res.data.sent_count || 0} links sent.`);
-      loadStudents();
+      await updateIDCardSubmission(editStudent.form_id, editForm);
+      setSaveMsg('Details updated successfully.');
+      // refresh list so eye modal also reflects new data
+      await loadStudents();
+      // close after short delay so user sees success
+      setTimeout(() => { setEditStudent(null); setSaveMsg(''); }, 1200);
     } catch (err) {
-      setStatusMessage(err.response?.data?.message || 'Bulk send failed.');
+      setSaveMsg(err.response?.data?.message || 'Failed to save. Please try again.');
     } finally {
-      setSending(false);
+      setSaving(false);
     }
   };
 
@@ -106,26 +130,20 @@ const IDCardDetails = () => {
         <Navbar />
         <div className="idcard-page">
 
-          {/* Header */}
           <div className="idcard-header">
             <div>
               <h1>ID Card Details</h1>
-              <p>Send one-time WhatsApp links so parents can enter the student's ID card information.</p>
+              <p>View and edit submitted ID card information for each student.</p>
             </div>
             <div className="idcard-actions">
-              <button type="button" className="primary-btn" onClick={handleBulkSend} disabled={sending || loading}>
-                {sending ? 'Sending...' : 'Bulk Send Links'}
-              </button>
               <button type="button" className="secondary-btn" onClick={loadStudents} disabled={loading}>
                 Refresh List
               </button>
             </div>
           </div>
 
-          {statusMessage && <div className="idcard-status">{statusMessage}</div>}
-          {error         && <div className="idcard-error">{error}</div>}
+          {error && <div className="idcard-error">{error}</div>}
 
-          {/* Search */}
           <div className="idcard-search-bar">
             <input
               type="text"
@@ -135,7 +153,6 @@ const IDCardDetails = () => {
             />
           </div>
 
-          {/* Table */}
           <div className="idcard-table-card">
             {loading ? (
               <div className="idcard-empty">Loading students...</div>
@@ -153,8 +170,7 @@ const IDCardDetails = () => {
                       <th>Div</th>
                       <th>Mobile</th>
                       <th>Status</th>
-                      <th>Send Link</th>
-                      <th>Details</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -168,26 +184,25 @@ const IDCardDetails = () => {
                         <td>{student.mobile || '-'}</td>
                         <td>{statusBadge(student.link_status)}</td>
                         <td>
-                          <button
-                            type="button"
-                            className="action-btn whatsapp-btn"
-                            onClick={() => handleSendLink(student.admno)}
-                            disabled={sending || !student.mobile}
-                            title={student.mobile ? 'Send WhatsApp link' : 'Missing mobile number'}
-                          >
-                            📱
-                          </button>
-                        </td>
-                        <td>
                           {student.parent_submitted && (
-                            <button
-                              type="button"
-                              className="action-btn eye-btn"
-                              onClick={() => setViewStudent(student)}
-                              title="View submitted details"
-                            >
-                              <EyeIcon />
-                            </button>
+                            <div className="idcard-actions-cell">
+                              <button
+                                type="button"
+                                className="action-btn eye-btn"
+                                onClick={() => setViewStudent(student)}
+                                title="View details"
+                              >
+                                <EyeIcon />
+                              </button>
+                              <button
+                                type="button"
+                                className="action-btn edit-btn"
+                                onClick={() => openEdit(student)}
+                                title="Edit details"
+                              >
+                                <EditIcon />
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -200,7 +215,7 @@ const IDCardDetails = () => {
         </div>
       </main>
 
-      {/* Details Modal */}
+      {/* ── View Modal ── */}
       {viewStudent && (
         <div className="modal-overlay" onClick={() => setViewStudent(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -212,17 +227,67 @@ const IDCardDetails = () => {
               <button className="modal-close" onClick={() => setViewStudent(null)}>✕</button>
             </div>
             <div className="modal-body">
-              {Object.entries(DETAIL_LABELS).map(([key, label]) => (
+              {Object.entries(DETAIL_LABELS).map(([key, label]) =>
                 viewStudent.details?.[key] ? (
                   <div className="modal-row" key={key}>
                     <span className="modal-label">{label}</span>
                     <span className="modal-value">{viewStudent.details[key]}</span>
                   </div>
                 ) : null
-              ))}
+              )}
             </div>
             <div className="modal-footer">
               <button className="secondary-btn" onClick={() => setViewStudent(null)}>Close</button>
+              <button className="primary-btn" onClick={() => { setViewStudent(null); openEdit(viewStudent); }}>
+                Edit Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Modal ── */}
+      {editStudent && (
+        <div className="modal-overlay" onClick={() => !saving && setEditStudent(null)}>
+          <div className="modal-card modal-card--wide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>Edit — {editStudent.student_name}</h2>
+                <span className="modal-admno">{editStudent.admno}</span>
+              </div>
+              <button className="modal-close" onClick={() => setEditStudent(null)} disabled={saving}>✕</button>
+            </div>
+
+            <div className="modal-edit-body">
+              {saveMsg && (
+                <div className={`modal-save-msg ${saveMsg.includes('success') ? 'modal-save-msg--ok' : 'modal-save-msg--err'}`}>
+                  {saveMsg}
+                </div>
+              )}
+              <div className="modal-edit-grid">
+                {EDIT_FIELDS.map(({ name, label, type }) => (
+                  <div className="modal-edit-field" key={name}>
+                    <label htmlFor={`edit-${name}`}>{label}</label>
+                    <input
+                      id={`edit-${name}`}
+                      type={type}
+                      name={name}
+                      value={editForm[name] || ''}
+                      onChange={handleEditChange}
+                      disabled={saving}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="secondary-btn" onClick={() => setEditStudent(null)} disabled={saving}>
+                Cancel
+              </button>
+              <button className="primary-btn" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving...' : '💾 Save Changes'}
+              </button>
             </div>
           </div>
         </div>

@@ -1,0 +1,512 @@
+/* ── Issue ID Card Page Layout ───────────────────────────────────────────── */
+.issue-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.issue-list-panel { display: flex; flex-direction: column; gap: 12px; }
+
+.issue-list-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 24px rgba(15,23,42,0.06);
+  overflow: hidden;
+}
+
+.issue-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  background: linear-gradient(90deg, #162040 0%, #1e2f5a 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.issue-list-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.issue-list-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  background: rgba(79,110,247,0.2);
+  border: 1px solid rgba(79,110,247,0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.issue-student-list {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+.issue-student-list::-webkit-scrollbar { width: 4px; }
+.issue-student-list::-webkit-scrollbar-track { background: #f1f5f9; }
+.issue-student-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+
+.issue-student-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.issue-student-row:last-child { border-bottom: none; }
+.issue-student-row:hover { background: #f8fafc; }
+.issue-student-row--active { background: #eef2ff; border-left-color: #4f6ef7; }
+
+.issue-student-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f6ef7, #6366f1);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(79,110,247,0.25);
+}
+.issue-student-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.issue-student-info { flex: 1; min-width: 0; }
+.issue-student-name { font-weight: 700; color: #111827; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.issue-student-meta { font-size: 0.73rem; color: #64748b; margin-top: 1px; }
+
+.issue-student-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.issue-download-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: linear-gradient(135deg, #4f6ef7 0%, #6a7ff5 100%);
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(79,110,247,0.25);
+}
+
+.issue-download-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3d5af1 0%, #5b6ef5 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79,110,247,0.35);
+}
+
+.issue-download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.issue-preview-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.issue-no-selection {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 80px 20px;
+  background: #f8fafc; border-radius: 20px;
+  border: 2px dashed #e2e8f0; color: #94a3b8; text-align: center;
+  font-size: 0.93rem;
+}
+
+.idt-preview-row { display: flex; gap: 24px; flex-wrap: wrap; }
+
+.issue-photo-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #162040 0%, #1e2f5a 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 4px 16px rgba(15,23,42,0.15);
+}
+.issue-photo-hint { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+.issue-photo-section .primary-btn {
+  background: linear-gradient(135deg, #4f6ef7 0%, #6a7ff5 100%);
+  box-shadow: 0 4px 16px rgba(79,110,247,0.35);
+  font-size: 0.85rem;
+  padding: 10px 18px;
+}
+
+.issue-photo-section .secondary-btn {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(100,116,139,0.25);
+}
+
+.issue-photo-section .secondary-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(100,116,139,0.35);
+}
+
+.issue-photo-section .secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ID CARD TEMPLATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.idt-card {
+  width: 280px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(15,23,42,0.22), 0 2px 8px rgba(15,23,42,0.1);
+  position: relative;
+  flex-shrink: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Ensure images load properly for PDF generation */
+.idt-card img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+/* Ensure elements are visible for PDF capture */
+.idt-card * {
+  -webkit-print-color-adjust: exact !important;
+  color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* Force background colors to show in PDF */
+.idt-blob,
+.idt-photo-ring,
+.idt-photo-empty,
+.idt-back,
+.idt-back-tri--purple,
+.idt-back-tri--blue {
+  -webkit-print-color-adjust: exact !important;
+  color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* ── FRONT ─────────────────────────────────────────────────────────────────── */
+.idt-front {
+  background: #ffffff;
+  min-height: 420px;
+}
+
+/* White top strip with logo + address box */
+.idt-top-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 10px 12px 8px;
+  position: relative;
+  z-index: 3;
+  min-height: 68px;
+}
+
+.idt-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.idt-logo {
+  width: 42px; height: 42px;
+  object-fit: contain;
+}
+.idt-logo-placeholder {
+  width: 42px; height: 42px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+}
+.idt-school-name {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #1b254b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  max-width: 100px;
+}
+
+.idt-address-box {
+  background: #2d3f7c;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-align: right;
+  line-height: 1.4;
+  max-width: 90px;
+}
+
+/* Large purple/blue curved blob */
+.idt-blob-area {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  margin-top: -2px;
+}
+
+.idt-blob {
+  position: absolute;
+  top: -20px;
+  left: -30px;
+  width: 240px;
+  height: 240px;
+  background: linear-gradient(135deg, #5b3fa0 0%, #4a3494 25%, #3d2d8e 50%, #2d2d8e 75%, #2d3fa0 100%);
+  border-radius: 50% 60% 55% 45% / 50% 45% 60% 55%;
+  z-index: 1;
+}
+
+/* Geometric diamond pattern at bottom of front */
+.idt-pattern {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(100,100,200,0.08) 0px,
+      rgba(100,100,200,0.08) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(100,100,200,0.08) 0px,
+      rgba(100,100,200,0.08) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  z-index: 0;
+}
+
+/* Photo circle — centered in blob */
+.idt-photo-ring {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 20px rgba(45,45,142,0.4);
+  overflow: hidden;
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #5b3fa0 0%, #4a3494 25%, #3d2d8e 50%, #2d2d8e 75%, #2d3fa0 100%);
+  z-index: 2;
+}
+.idt-photo { width: 100%; height: 100%; object-fit: cover; }
+.idt-photo-empty {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem;
+  background: linear-gradient(135deg, #5b3fa0 0%, #4a3494 25%, #3d2d8e 50%, #2d2d8e 75%, #2d3fa0 100%);
+  color: rgba(255,255,255,0.35);
+}
+
+/* Student info below blob */
+.idt-body {
+  padding: 12px 16px 16px;
+  text-align: center;
+  background: #ffffff;
+  position: relative;
+  z-index: 2;
+}
+.idt-student-name {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #111827;
+  letter-spacing: 0.03em;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+.idt-class {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 12px;
+}
+.idt-info-rows {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px;
+}
+.idt-info-row { display: flex; gap: 4px; font-size: 0.76rem; align-items: flex-start; }
+.idt-info-label { color: #2d3f7c; font-weight: 700; min-width: 54px; }
+.idt-info-sep { color: #64748b; flex-shrink: 0; }
+.idt-info-val { color: #1e293b; flex: 1; line-height: 1.4; }
+
+/* ── BACK ──────────────────────────────────────────────────────────────────── */
+.idt-back {
+  background: linear-gradient(180deg, #dde4f0 0%, #eef1f8 40%, #f5f7fc 100%);
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Two triangles at top */
+.idt-back-top {
+  position: relative;
+  height: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Purple triangle — top left */
+.idt-back-tri--purple {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  border-right: 140px solid transparent;
+  border-top: 100px solid #7c3aed;
+}
+
+/* Blue triangle — top right, slightly smaller */
+.idt-back-tri--blue {
+  position: absolute;
+  top: 0; right: 0;
+  width: 0; height: 0;
+  border-left: 280px solid transparent;
+  border-top: 70px solid #2d3f7c;
+}
+
+/* Logo pill */
+.idt-back-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin: -28px 0 16px;
+  position: relative;
+  z-index: 2;
+}
+.idt-back-logo-pill {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 10px 20px;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.idt-back-logo {
+  width: 110px; height: 52px;
+  object-fit: contain;
+}
+.idt-back-logo-placeholder {
+  font-size: 2rem;
+  width: 110px;
+  text-align: center;
+}
+
+/* Rules */
+.idt-back-rules {
+  padding: 4px 18px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.idt-back-rules p {
+  font-size: 0.73rem;
+  color: #334155;
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.4;
+}
+.idt-bullet {
+  color: #2d3f7c;
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  margin-top: 3px;
+}
+
+/* School info footer */
+.idt-back-school-info {
+  padding: 12px 18px 18px;
+  border-top: 1px solid rgba(45,63,124,0.12);
+  margin-top: 4px;
+}
+.idt-back-school-name {
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #1b254b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.idt-back-affiliation {
+  font-size: 0.68rem;
+  color: #475569;
+  margin-bottom: 8px;
+}
+.idt-back-detail {
+  font-size: 0.7rem;
+  color: #334155;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+.idt-back-detail-icon { flex-shrink: 0; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .issue-layout { grid-template-columns: 280px 1fr; }
+}
+@media (max-width: 900px) {
+  .issue-layout { grid-template-columns: 1fr; }
+  .idt-preview-row { justify-content: center; }
+  .issue-student-list { max-height: 300px; }
+}
+
+/* ── Header Actions ──────────────────────────────────────────────────────── */
+.idcard-header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .idcard-header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .idcard-header-actions .secondary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

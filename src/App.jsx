@@ -44,6 +44,7 @@ function App() {
           <Route path="/staff/attendance/student/:admno" element={<StudentAttendance />} />
           <Route path="/staff/id-card/details" element={<IDCardDetails />} />
           <Route path="/staff/id-card/issue" element={<IssueIDCard />} />
+          <Route path="/id-card/form" element={<IDCardParentForm />} />
           <Route path="/id-card/form/:token" element={<IDCardParentForm />} />
           <Route path="/admin/calendar" element={<CalendarSetup />} />
           <Route path="/parent-dashboard" element={<ParentDashboard />} />

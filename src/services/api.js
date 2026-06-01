@@ -151,8 +151,20 @@ export const fetchIDCardParentLink = (token) =>
 export const submitIDCardParentForm = (token, data) =>
   api.post('id-card/submit/', { token, ...data }, { skipAuth: true });
 
+export const lookupIDCardByPhone = (phone) =>
+  api.post('id-card/lookup-by-phone/', { phone }, { skipAuth: true });
+
+export const submitIDCardByPhone = (data) =>
+  api.post('id-card/submit-by-phone/', data, { skipAuth: true });
+
 export const fetchIDCardSubmission = (institutionId, admno) =>
   api.get(`id-card/submission/?institution_id=${encodeURIComponent(institutionId)}&admno=${encodeURIComponent(admno)}`);
 
 export const updateIDCardSubmission = (id, data) =>
   api.put(`id-card/submission/${id}/`, data);
+
+export const uploadStudentPhoto = (formData) =>
+  api.post('id-card/upload-photo/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+export const fetchIDCardSchoolInfo = (institutionId) =>
+  api.get(`id-card/school-info/?institution_id=${encodeURIComponent(institutionId)}`);
