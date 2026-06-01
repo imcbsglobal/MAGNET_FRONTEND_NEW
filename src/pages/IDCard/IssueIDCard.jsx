@@ -170,167 +170,56 @@ const IssueIDCard = () => {
     await Promise.all(imagePromises);
   };
 
-  // Convert image URL to base64 data URL using multiple methods - BULLETPROOF VERSION
-  const imageToDataURL = async (url) => {
+  // SIMPLE AND RELIABLE image conversion - no CORS issues
+  const convertImageToBase64 = async (url) => {
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     
-    console.log('Converting image to data URL:', url);
+    console.log('Converting image:', url);
     
-    // Method 1: Create a proxy image element and draw to canvas
     try {
-      return await new Promise((resolve, reject) => {
-        const img = new Image();
-        
-        // Set up the image element
-        img.crossOrigin = 'anonymous';
-        img.style.display = 'none';
-        document.body.appendChild(img);
-        
+      // Create a simple image element
+      const img = new Image();
+      
+      return new Promise((resolve) => {
         img.onload = () => {
           try {
-            // Create canvas and draw image
+            // Create canvas with exact image dimensions
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.naturalWidth || img.width;
-            canvas.height = img.naturalHeight || img.height;
             
-            // Draw the image
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            // Draw image to canvas
             ctx.drawImage(img, 0, 0);
             
-            // Convert to data URL
+            // Convert to base64
             const dataURL = canvas.toDataURL('image/png', 1.0);
-            
-            // Cleanup
-            document.body.removeChild(img);
-            canvas.remove();
-            
-            console.log('Method 1 success for:', url);
+            console.log('Image converted successfully:', url);
             resolve(dataURL);
           } catch (error) {
-            document.body.removeChild(img);
-            console.warn('Method 1 canvas failed:', error);
-            reject(error);
+            console.warn('Canvas conversion failed:', error);
+            resolve(null);
           }
         };
         
         img.onerror = () => {
-          document.body.removeChild(img);
-          console.warn('Method 1 image load failed:', url);
-          reject(new Error('Image load failed'));
-        };
-        
-        // Set source last
-        img.src = url;
-        
-        // Timeout after 15 seconds
-        setTimeout(() => {
-          if (img.parentNode) {
-            document.body.removeChild(img);
-          }
-          console.warn('Method 1 timeout:', url);
-          reject(new Error('Timeout'));
-        }, 15000);
-      });
-    } catch (error) {
-      console.log('Method 1 failed, trying Method 2...');
-    }
-    
-    // Method 2: Try without CORS
-    try {
-      return await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.style.display = 'none';
-        document.body.appendChild(img);
-        
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.naturalWidth || img.width;
-            canvas.height = img.naturalHeight || img.height;
-            ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL('image/png', 1.0);
-            
-            document.body.removeChild(img);
-            canvas.remove();
-            
-            console.log('Method 2 success for:', url);
-            resolve(dataURL);
-          } catch (error) {
-            document.body.removeChild(img);
-            console.warn('Method 2 canvas failed:', error);
-            reject(error);
-          }
-        };
-        
-        img.onerror = () => {
-          document.body.removeChild(img);
-          console.warn('Method 2 image load failed:', url);
-          reject(new Error('Image load failed'));
-        };
-        
-        img.src = url;
-        
-        setTimeout(() => {
-          if (img.parentNode) {
-            document.body.removeChild(img);
-          }
-          reject(new Error('Timeout'));
-        }, 15000);
-      });
-    } catch (error) {
-      console.log('Method 2 failed, trying Method 3...');
-    }
-    
-    // Method 3: Fetch as blob and convert
-    try {
-      const response = await fetch(url, { 
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const blob = await response.blob();
-      
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          console.log('Method 3 success for:', url);
-          resolve(reader.result);
-        };
-        reader.onerror = () => {
-          console.warn('Method 3 FileReader failed:', url);
+          console.warn('Image load failed:', url);
           resolve(null);
         };
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.log('Method 3 failed, trying Method 4...');
-    }
-    
-    // Method 4: Try with no-cors mode
-    try {
-      const response = await fetch(url, { mode: 'no-cors' });
-      const blob = await response.blob();
-      
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          console.log('Method 4 success for:', url);
-          resolve(reader.result);
-        };
-        reader.onerror = () => {
-          console.warn('Method 4 failed:', url);
+        
+        // Set source without CORS
+        img.src = url;
+        
+        // Timeout fallback
+        setTimeout(() => {
+          console.warn('Image conversion timeout:', url);
           resolve(null);
-        };
-        reader.readAsDataURL(blob);
+        }, 10000);
       });
     } catch (error) {
-      console.warn('All methods failed for:', url, error);
+      console.warn('Image conversion error:', error);
       return null;
     }
   };
@@ -379,16 +268,14 @@ const IssueIDCard = () => {
     
     return canvas.toDataURL('image/png');
   };
+  // Fetch logo once and store as data URL so html2canvas never hits CORS
   const fetchLogoAsDataUrl = async (url) => {
     console.log('Fetching logo as data URL:', url);
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     try {
-      const dataUrl = await imageToDataURL(url);
+      const dataUrl = await convertImageToBase64(url);
       console.log('Logo conversion result:', dataUrl ? 'SUCCESS' : 'FAILED');
-      if (dataUrl) {
-        console.log('Logo data URL length:', dataUrl.length);
-      }
       return dataUrl;
     } catch (error) {
       console.error('Logo fetch error:', error);
@@ -396,50 +283,52 @@ const IssueIDCard = () => {
     }
   };
 
-  // BULLETPROOF image preloading system
+  // SIMPLE image preloading system
   const preloadAndConvertImages = async (container) => {
     const images = container.querySelectorAll('img');
     console.log(`Preloading ${images.length} images for PDF generation`);
     
-    const imagePromises = Array.from(images).map(async (img, index) => {
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i];
       const originalSrc = img.src;
-      console.log(`Processing image ${index + 1}: ${originalSrc}`);
+      console.log(`Processing image ${i + 1}: ${originalSrc}`);
       
       if (!originalSrc || originalSrc.startsWith('data:')) {
-        console.log(`Image ${index + 1} is already a data URL or empty, skipping`);
-        return;
+        console.log(`Image ${i + 1} is already a data URL or empty, skipping`);
+        continue;
       }
       
       try {
         // Convert to data URL
-        const dataUrl = await imageToDataURL(originalSrc);
+        const dataUrl = await convertImageToBase64(originalSrc);
         
         if (dataUrl && dataUrl.startsWith('data:')) {
           // Replace the src with data URL
           img.src = dataUrl;
-          console.log(`Successfully converted image ${index + 1} to data URL`);
+          console.log(`Successfully converted image ${i + 1} to data URL`);
           
-          // Ensure the image is loaded
-          if (!img.complete) {
-            await new Promise((resolve) => {
+          // Wait for the image to load
+          await new Promise((resolve) => {
+            if (img.complete) {
+              resolve();
+            } else {
               img.onload = resolve;
               img.onerror = resolve;
               setTimeout(resolve, 1000); // Fallback timeout
-            });
-          }
+            }
+          });
         } else {
-          console.warn(`Failed to convert image ${index + 1}, keeping original src`);
+          console.warn(`Failed to convert image ${i + 1}, keeping original src`);
         }
       } catch (error) {
-        console.warn(`Error processing image ${index + 1}:`, error);
+        console.warn(`Error processing image ${i + 1}:`, error);
       }
-    });
+    }
     
-    await Promise.all(imagePromises);
     console.log('All images processed for PDF generation');
     
     // Additional wait to ensure all images are rendered
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
   };
 
   // Debug function to test canvas creation
@@ -579,11 +468,8 @@ const IssueIDCard = () => {
     if (student?.photo_url) {
       try {
         console.log('Converting student photo to base64...');
-        photoB64 = await imageToDataURL(student.photo_url);
+        photoB64 = await convertImageToBase64(student.photo_url);
         console.log('Student photo conversion:', photoB64 ? 'SUCCESS' : 'FAILED');
-        if (photoB64) {
-          console.log('Photo data URL length:', photoB64.length);
-        }
       } catch (error) {
         console.warn('Failed to convert student photo:', error);
         photoB64 = null;
@@ -601,11 +487,8 @@ const IssueIDCard = () => {
     if (!finalLogoB64 && school?.logo_url) {
       try {
         console.log('Converting school logo to base64...');
-        finalLogoB64 = await imageToDataURL(school.logo_url);
+        finalLogoB64 = await convertImageToBase64(school.logo_url);
         console.log('School logo conversion:', finalLogoB64 ? 'SUCCESS' : 'FAILED');
-        if (finalLogoB64) {
-          console.log('Logo data URL length:', finalLogoB64.length);
-        }
       } catch (error) {
         console.warn('Failed to convert school logo:', error);
         finalLogoB64 = null;
@@ -708,7 +591,7 @@ const IssueIDCard = () => {
               <div style="display:flex;align-items:flex-start;font-size:14px;">
                 <span style="color:#374151;font-weight:700;min-width:70px;">Address</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
-                <span style="color:#1f2937;font-weight:600;line-height:1.4;">${address || 'Wayanad, Wayanad, Kunhome, Kerala, 670731'}</span>
+                <span style="color:#1f2937;font-weight:600;line-height:1.4;word-wrap:break-word;max-width:200px;">${address || 'Wayanad, Wayanad, Kunhome, Kerala, 670731'}</span>
               </div>
             </div>
           </div>
@@ -797,21 +680,27 @@ const IssueIDCard = () => {
     // 5. Final wait for complete rendering
     await new Promise(res => setTimeout(res, 1000));
 
-    // 6. Capture with html2canvas - BULLETPROOF SETTINGS
+    // 6. Capture with html2canvas - OPTIMIZED SETTINGS
+    console.log('Starting PDF capture...');
     const canvas = await html2canvas(container.firstElementChild, {
       scale: 2,
-      useCORS: false, // We're using data URLs, no CORS needed
-      allowTaint: true, // Allow tainted canvas
+      useCORS: false,
+      allowTaint: true,
       backgroundColor: '#e5e7eb',
-      logging: true, // Enable logging for debugging
+      logging: true,
       width: container.firstElementChild.scrollWidth,
       height: container.firstElementChild.scrollHeight,
+      windowWidth: 1200,
+      windowHeight: 800,
+      scrollX: 0,
+      scrollY: 0,
       ignoreElements: (element) => {
-        // Ignore any elements that might cause issues
         return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
       },
       onclone: (clonedDoc, element) => {
-        // Ensure all images are visible and properly loaded in the cloned document
+        console.log('Cloning document for PDF capture...');
+        
+        // Ensure all images are visible and properly loaded
         const images = clonedDoc.querySelectorAll('img');
         images.forEach((img, index) => {
           img.style.display = 'block';
@@ -819,38 +708,58 @@ const IssueIDCard = () => {
           img.style.visibility = 'visible';
           img.style.maxWidth = 'none';
           img.style.maxHeight = 'none';
+          img.style.objectFit = 'cover';
           
-          // Log image sources for debugging
           console.log(`Cloned image ${index + 1} src:`, img.src.substring(0, 50) + '...');
+        });
+        
+        // Ensure text is visible
+        const textElements = clonedDoc.querySelectorAll('div, span, p');
+        textElements.forEach(el => {
+          el.style.visibility = 'visible';
+          el.style.opacity = '1';
         });
         
         // Force layout recalculation
         element.style.transform = 'translateZ(0)';
+        element.style.backfaceVisibility = 'hidden';
       }
     });
+    
+    console.log('PDF capture completed. Canvas size:', canvas.width, 'x', canvas.height);
 
     // 7. Cleanup
     document.body.removeChild(container);
 
-    // 8. Add to PDF page
+    // 8. Add to PDF page with better sizing
     if (!isFirst) pdf.addPage();
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     
-    // Calculate dimensions to fit both cards side by side
-    const imgW = Math.min(pageW - 20, (canvas.width / canvas.height) * (pageH - 40));
-    const imgH = (canvas.height / canvas.width) * imgW;
+    // Calculate dimensions to fit the content properly
+    const aspectRatio = canvas.width / canvas.height;
+    let imgW = pageW - 40; // More margin
+    let imgH = imgW / aspectRatio;
+    
+    // If height is too large, scale by height instead
+    if (imgH > pageH - 60) {
+      imgH = pageH - 60;
+      imgW = imgH * aspectRatio;
+    }
+    
     const imgX = (pageW - imgW) / 2;
     const imgY = (pageH - imgH) / 2;
     
+    // Add the image to PDF
     pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', imgX, imgY, imgW, imgH);
 
-    // Student info text below
+    // Student info text below with better positioning
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(75, 85, 99);
     const info = `${student?.student_name || ''} • Adm No: ${student?.admno || ''} • Class: ${student?.student_class || ''}-${student?.div || ''}`;
-    pdf.text(info, pageW / 2, imgY + imgH + 12, { align: 'center' });
+    const textY = Math.min(imgY + imgH + 15, pageH - 10);
+    pdf.text(info, pageW / 2, textY, { align: 'center' });
   };
 
   // Single student PDF download
