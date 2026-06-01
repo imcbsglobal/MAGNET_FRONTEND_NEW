@@ -170,47 +170,67 @@ const IssueIDCard = () => {
     await Promise.all(imagePromises);
   };
 
-  // Convert image URL to base64 data URL using multiple methods
+  // Convert image URL to base64 data URL using multiple methods - BULLETPROOF VERSION
   const imageToDataURL = async (url) => {
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     
     console.log('Converting image to data URL:', url);
     
-    // Method 1: Try with canvas and CORS
+    // Method 1: Create a proxy image element and draw to canvas
     try {
       return await new Promise((resolve, reject) => {
         const img = new Image();
+        
+        // Set up the image element
         img.crossOrigin = 'anonymous';
+        img.style.display = 'none';
+        document.body.appendChild(img);
         
         img.onload = () => {
           try {
+            // Create canvas and draw image
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
+            
+            // Draw the image
             ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL('image/png');
-            console.log('Method 1 (CORS) success for:', url);
+            
+            // Convert to data URL
+            const dataURL = canvas.toDataURL('image/png', 1.0);
+            
+            // Cleanup
+            document.body.removeChild(img);
+            canvas.remove();
+            
+            console.log('Method 1 success for:', url);
             resolve(dataURL);
           } catch (error) {
-            console.warn('Method 1 (CORS) canvas failed:', error);
+            document.body.removeChild(img);
+            console.warn('Method 1 canvas failed:', error);
             reject(error);
           }
         };
         
         img.onerror = () => {
-          console.warn('Method 1 (CORS) image load failed:', url);
+          document.body.removeChild(img);
+          console.warn('Method 1 image load failed:', url);
           reject(new Error('Image load failed'));
         };
         
+        // Set source last
         img.src = url;
         
-        // Timeout after 10 seconds
+        // Timeout after 15 seconds
         setTimeout(() => {
-          console.warn('Method 1 (CORS) timeout:', url);
+          if (img.parentNode) {
+            document.body.removeChild(img);
+          }
+          console.warn('Method 1 timeout:', url);
           reject(new Error('Timeout'));
-        }, 10000);
+        }, 15000);
       });
     } catch (error) {
       console.log('Method 1 failed, trying Method 2...');
@@ -220,53 +240,91 @@ const IssueIDCard = () => {
     try {
       return await new Promise((resolve, reject) => {
         const img = new Image();
-        // Don't set crossOrigin
+        img.style.display = 'none';
+        document.body.appendChild(img);
         
         img.onload = () => {
           try {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
             ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL('image/png');
-            console.log('Method 2 (no CORS) success for:', url);
+            const dataURL = canvas.toDataURL('image/png', 1.0);
+            
+            document.body.removeChild(img);
+            canvas.remove();
+            
+            console.log('Method 2 success for:', url);
             resolve(dataURL);
           } catch (error) {
-            console.warn('Method 2 (no CORS) canvas failed:', error);
+            document.body.removeChild(img);
+            console.warn('Method 2 canvas failed:', error);
             reject(error);
           }
         };
         
         img.onerror = () => {
-          console.warn('Method 2 (no CORS) image load failed:', url);
+          document.body.removeChild(img);
+          console.warn('Method 2 image load failed:', url);
           reject(new Error('Image load failed'));
         };
         
         img.src = url;
         
-        // Timeout after 10 seconds
         setTimeout(() => {
-          console.warn('Method 2 (no CORS) timeout:', url);
+          if (img.parentNode) {
+            document.body.removeChild(img);
+          }
           reject(new Error('Timeout'));
-        }, 10000);
+        }, 15000);
       });
     } catch (error) {
       console.log('Method 2 failed, trying Method 3...');
     }
     
-    // Method 3: Try with fetch
+    // Method 3: Fetch as blob and convert
     try {
-      const response = await fetch(url, { mode: 'no-cors' });
+      const response = await fetch(url, { 
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
       const blob = await response.blob();
+      
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => {
-          console.log('Method 3 (fetch) success for:', url);
+          console.log('Method 3 success for:', url);
           resolve(reader.result);
         };
         reader.onerror = () => {
-          console.warn('Method 3 (fetch) failed:', url);
+          console.warn('Method 3 FileReader failed:', url);
+          resolve(null);
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.log('Method 3 failed, trying Method 4...');
+    }
+    
+    // Method 4: Try with no-cors mode
+    try {
+      const response = await fetch(url, { mode: 'no-cors' });
+      const blob = await response.blob();
+      
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          console.log('Method 4 success for:', url);
+          resolve(reader.result);
+        };
+        reader.onerror = () => {
+          console.warn('Method 4 failed:', url);
           resolve(null);
         };
         reader.readAsDataURL(blob);
@@ -277,7 +335,50 @@ const IssueIDCard = () => {
     }
   };
 
-  // Fetch logo once and store as data URL so html2canvas never hits CORS
+  // Fallback base64 images for when conversion fails
+  const getDefaultLogoB64 = () => {
+    // A simple blue circle with "LOGO" text as fallback
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw blue circle
+    ctx.fillStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.arc(50, 50, 45, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw white text
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('LOGO', 50, 55);
+    
+    return canvas.toDataURL('image/png');
+  };
+
+  const getDefaultPhotoB64 = () => {
+    // A simple gray circle with person icon as fallback
+    const canvas = document.createElement('canvas');
+    canvas.width = 150;
+    canvas.height = 150;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw gray circle
+    ctx.fillStyle = '#6b7280';
+    ctx.beginPath();
+    ctx.arc(75, 75, 70, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw white person icon (simplified)
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 60px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('👤', 75, 95);
+    
+    return canvas.toDataURL('image/png');
+  };
   const fetchLogoAsDataUrl = async (url) => {
     console.log('Fetching logo as data URL:', url);
     if (!url) return null;
@@ -295,35 +396,50 @@ const IssueIDCard = () => {
     }
   };
 
-  // Preprocess images in the element to convert external URLs to data URLs
-  const preprocessImages = async (element) => {
-    const images = element.querySelectorAll('img');
-    console.log(`Found ${images.length} images to preprocess`);
+  // BULLETPROOF image preloading system
+  const preloadAndConvertImages = async (container) => {
+    const images = container.querySelectorAll('img');
+    console.log(`Preloading ${images.length} images for PDF generation`);
     
-    const promises = Array.from(images).map(async (img, index) => {
+    const imagePromises = Array.from(images).map(async (img, index) => {
       const originalSrc = img.src;
       console.log(`Processing image ${index + 1}: ${originalSrc}`);
       
-      if (originalSrc && !originalSrc.startsWith('data:') && !originalSrc.startsWith(window.location.origin)) {
-        try {
-          console.log(`Converting external image to data URL: ${originalSrc}`);
-          const dataUrl = await imageToDataURL(originalSrc);
-          if (dataUrl) {
-            img.src = dataUrl;
-            console.log(`Successfully converted image ${index + 1} to data URL`);
-          } else {
-            console.warn(`Failed to convert image ${index + 1}, keeping original src`);
+      if (!originalSrc || originalSrc.startsWith('data:')) {
+        console.log(`Image ${index + 1} is already a data URL or empty, skipping`);
+        return;
+      }
+      
+      try {
+        // Convert to data URL
+        const dataUrl = await imageToDataURL(originalSrc);
+        
+        if (dataUrl && dataUrl.startsWith('data:')) {
+          // Replace the src with data URL
+          img.src = dataUrl;
+          console.log(`Successfully converted image ${index + 1} to data URL`);
+          
+          // Ensure the image is loaded
+          if (!img.complete) {
+            await new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+              setTimeout(resolve, 1000); // Fallback timeout
+            });
           }
-        } catch (error) {
-          console.warn(`Error preprocessing image ${index + 1}:`, originalSrc, error);
+        } else {
+          console.warn(`Failed to convert image ${index + 1}, keeping original src`);
         }
-      } else {
-        console.log(`Image ${index + 1} is already local or data URL, skipping`);
+      } catch (error) {
+        console.warn(`Error processing image ${index + 1}:`, error);
       }
     });
     
-    await Promise.all(promises);
-    console.log('Image preprocessing completed');
+    await Promise.all(imagePromises);
+    console.log('All images processed for PDF generation');
+    
+    // Additional wait to ensure all images are rendered
+    await new Promise(resolve => setTimeout(resolve, 1000));
   };
 
   // Debug function to test canvas creation
@@ -458,7 +574,7 @@ const IssueIDCard = () => {
     console.log('- Student photo URL:', student?.photo_url);
     console.log('- School logo URL:', school?.logo_url);
     
-    // 1. Fetch student photo as base64 with better error handling
+    // 1. Fetch student photo as base64 with better error handling and fallback
     let photoB64 = null;
     if (student?.photo_url) {
       try {
@@ -473,8 +589,14 @@ const IssueIDCard = () => {
         photoB64 = null;
       }
     }
+    
+    // Use fallback if conversion failed
+    if (!photoB64) {
+      console.log('Using fallback photo for PDF');
+      photoB64 = getDefaultPhotoB64();
+    }
 
-    // 2. Ensure school logo is also converted if not already provided
+    // 2. Ensure school logo is also converted if not already provided with fallback
     let finalLogoB64 = logoB64;
     if (!finalLogoB64 && school?.logo_url) {
       try {
@@ -488,6 +610,12 @@ const IssueIDCard = () => {
         console.warn('Failed to convert school logo:', error);
         finalLogoB64 = null;
       }
+    }
+    
+    // Use fallback if conversion failed
+    if (!finalLogoB64) {
+      console.log('Using fallback logo for PDF');
+      finalLogoB64 = getDefaultLogoB64();
     }
 
     // 3. Build the card HTML string (mirrors IDCardFront + IDCardBack JSX exactly)
@@ -663,54 +791,48 @@ const IssueIDCard = () => {
     container.innerHTML = cardHTML;
     document.body.appendChild(container);
 
-    // 4. Wait for images to load
-    const imgs = container.querySelectorAll('img');
-    console.log(`Found ${imgs.length} images to load in PDF template`);
+    // 4. Preload and convert all images to data URLs
+    await preloadAndConvertImages(container);
     
-    await Promise.all(Array.from(imgs).map((img, index) =>
-      new Promise(res => { 
-        if (img.complete) {
-          console.log(`Image ${index + 1} already loaded`);
-          res(); 
-        } else { 
-          img.onload = () => {
-            console.log(`Image ${index + 1} loaded successfully`);
-            res();
-          }; 
-          img.onerror = () => {
-            console.warn(`Image ${index + 1} failed to load`);
-            res();
-          }; 
-        } 
-      })
-    ));
-    
-    // Extra wait to ensure rendering is complete
-    await new Promise(res => setTimeout(res, 500));
+    // 5. Final wait for complete rendering
+    await new Promise(res => setTimeout(res, 1000));
 
-    // 5. Capture with html2canvas
+    // 6. Capture with html2canvas - BULLETPROOF SETTINGS
     const canvas = await html2canvas(container.firstElementChild, {
       scale: 2,
-      useCORS: false, // Since we're using base64 data URLs, we don't need CORS
-      allowTaint: true, // Allow tainted canvas since we're using data URLs
+      useCORS: false, // We're using data URLs, no CORS needed
+      allowTaint: true, // Allow tainted canvas
       backgroundColor: '#e5e7eb',
-      logging: false,
+      logging: true, // Enable logging for debugging
       width: container.firstElementChild.scrollWidth,
       height: container.firstElementChild.scrollHeight,
-      onclone: (clonedDoc) => {
-        // Ensure all images are properly loaded in the cloned document
+      ignoreElements: (element) => {
+        // Ignore any elements that might cause issues
+        return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+      },
+      onclone: (clonedDoc, element) => {
+        // Ensure all images are visible and properly loaded in the cloned document
         const images = clonedDoc.querySelectorAll('img');
-        images.forEach(img => {
+        images.forEach((img, index) => {
           img.style.display = 'block';
           img.style.opacity = '1';
           img.style.visibility = 'visible';
+          img.style.maxWidth = 'none';
+          img.style.maxHeight = 'none';
+          
+          // Log image sources for debugging
+          console.log(`Cloned image ${index + 1} src:`, img.src.substring(0, 50) + '...');
         });
+        
+        // Force layout recalculation
+        element.style.transform = 'translateZ(0)';
       }
     });
 
+    // 7. Cleanup
     document.body.removeChild(container);
 
-    // 6. Add to PDF page
+    // 8. Add to PDF page
     if (!isFirst) pdf.addPage();
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
