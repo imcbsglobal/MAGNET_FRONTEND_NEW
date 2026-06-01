@@ -455,24 +455,49 @@ const IssueIDCard = () => {
     console.log('captureCardToPdf called with:');
     console.log('- Student:', student?.student_name);
     console.log('- School:', school?.school_name);
-    console.log('- Logo B64:', logoB64 ? 'PROVIDED' : 'NULL');
-    console.log('- Logo B64 length:', logoB64?.length || 0);
+    console.log('- Student photo URL:', student?.photo_url);
+    console.log('- School logo URL:', school?.logo_url);
     
-    // 1. Fetch student photo as base64
-    let photoB64 = student?.photo_url
-      ? await imageToDataURL(student.photo_url).catch(() => null)
-      : null;
+    // 1. Fetch student photo as base64 with better error handling
+    let photoB64 = null;
+    if (student?.photo_url) {
+      try {
+        console.log('Converting student photo to base64...');
+        photoB64 = await imageToDataURL(student.photo_url);
+        console.log('Student photo conversion:', photoB64 ? 'SUCCESS' : 'FAILED');
+        if (photoB64) {
+          console.log('Photo data URL length:', photoB64.length);
+        }
+      } catch (error) {
+        console.warn('Failed to convert student photo:', error);
+        photoB64 = null;
+      }
+    }
 
-    // 2. Build the card HTML string (mirrors IDCardFront + IDCardBack JSX exactly)
+    // 2. Ensure school logo is also converted if not already provided
+    let finalLogoB64 = logoB64;
+    if (!finalLogoB64 && school?.logo_url) {
+      try {
+        console.log('Converting school logo to base64...');
+        finalLogoB64 = await imageToDataURL(school.logo_url);
+        console.log('School logo conversion:', finalLogoB64 ? 'SUCCESS' : 'FAILED');
+        if (finalLogoB64) {
+          console.log('Logo data URL length:', finalLogoB64.length);
+        }
+      } catch (error) {
+        console.warn('Failed to convert school logo:', error);
+        finalLogoB64 = null;
+      }
+    }
+
+    // 3. Build the card HTML string (mirrors IDCardFront + IDCardBack JSX exactly)
     const d = student?.details || {};
     const address = [d.place, d.district, d.city, d.state, d.pin].filter(Boolean).join(', ');
     const studentName = (d.student_name || student?.student_name || '').toUpperCase();
 
-    const logoSrc  = logoB64 || (school?.logo_url && !school.logo_url.startsWith('http') ? school.logo_url : '');
-    const photoSrc = photoB64 || '';
-
-    console.log('Using logo src:', logoSrc ? 'DATA_URL' : 'PLACEHOLDER');
-    console.log('Using photo src:', photoSrc ? 'DATA_URL' : 'PLACEHOLDER');
+    console.log('Final image sources for PDF:');
+    console.log('- Logo B64:', finalLogoB64 ? 'AVAILABLE' : 'NULL');
+    console.log('- Photo B64:', photoB64 ? 'AVAILABLE' : 'NULL');
 
     const cardHTML = `
       <div style="display:flex;gap:24px;align-items:flex-start;background:#e5e7eb;padding:32px;width:fit-content;">
@@ -487,8 +512,8 @@ const IssueIDCard = () => {
           <!-- Top white section with logo and school name -->
           <div style="background:#ffffff;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;min-height:80px;">
             <div style="display:flex;align-items:center;gap:12px;flex:1;">
-              ${logoSrc
-                ? `<img src="${logoSrc}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;" crossorigin="anonymous"/>`
+              ${finalLogoB64
+                ? `<img src="${finalLogoB64}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;" />`
                 : `<div style="width:48px;height:48px;background:#3b82f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:bold;">🏫</div>`}
               <div style="font-size:14px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2;max-width:140px;">
                 ${school?.school_name || 'IMCB SOLUTIONS LLP'}
@@ -525,8 +550,8 @@ const IssueIDCard = () => {
               box-shadow:0 8px 32px rgba(0,0,0,0.2);
               z-index:10;
             ">
-              ${photoSrc
-                ? `<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;" crossorigin="anonymous"/>`
+              ${photoB64
+                ? `<img src="${photoB64}" style="width:100%;height:100%;object-fit:cover;" />`
                 : `<div style="width:100%;height:100%;background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #3b4d7a 100%);display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(255,255,255,0.4);">📷</div>`}
             </div>
           </div>
@@ -583,8 +608,8 @@ const IssueIDCard = () => {
           <div style="display:flex;justify-content:center;margin:-40px 0 24px;position:relative;z-index:2;">
             <div style="background:#ffffff;border-radius:24px;padding:12px 24px;
               box-shadow:0 4px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;min-height:60px;">
-              ${logoSrc
-                ? `<img src="${logoSrc}" style="height:36px;max-width:120px;object-fit:contain;" crossorigin="anonymous"/>`
+              ${finalLogoB64
+                ? `<img src="${finalLogoB64}" style="height:36px;max-width:120px;object-fit:contain;" />`
                 : `<div style="color:#3b82f6;font-size:24px;font-weight:bold;">🏫</div>`}
             </div>
           </div>
@@ -640,16 +665,34 @@ const IssueIDCard = () => {
 
     // 4. Wait for images to load
     const imgs = container.querySelectorAll('img');
-    await Promise.all(Array.from(imgs).map(img =>
-      new Promise(res => { if (img.complete) res(); else { img.onload = res; img.onerror = res; } })
+    console.log(`Found ${imgs.length} images to load in PDF template`);
+    
+    await Promise.all(Array.from(imgs).map((img, index) =>
+      new Promise(res => { 
+        if (img.complete) {
+          console.log(`Image ${index + 1} already loaded`);
+          res(); 
+        } else { 
+          img.onload = () => {
+            console.log(`Image ${index + 1} loaded successfully`);
+            res();
+          }; 
+          img.onerror = () => {
+            console.warn(`Image ${index + 1} failed to load`);
+            res();
+          }; 
+        } 
+      })
     ));
-    await new Promise(res => setTimeout(res, 200));
+    
+    // Extra wait to ensure rendering is complete
+    await new Promise(res => setTimeout(res, 500));
 
     // 5. Capture with html2canvas
     const canvas = await html2canvas(container.firstElementChild, {
       scale: 2,
-      useCORS: true,
-      allowTaint: false,
+      useCORS: false, // Since we're using base64 data URLs, we don't need CORS
+      allowTaint: true, // Allow tainted canvas since we're using data URLs
       backgroundColor: '#e5e7eb',
       logging: false,
       width: container.firstElementChild.scrollWidth,
