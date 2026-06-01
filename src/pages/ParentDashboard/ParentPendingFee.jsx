@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
+import RazorpayPayment from '../../components/Payment/RazorpayPayment';
 import { fetchPendingFees } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './ParentPendingFee.scss';
@@ -15,6 +16,11 @@ const ParentPendingFee = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filterType, setFilterType] = useState('all');
   const [search, setSearch] = useState('');
+  const [selectedFees, setSelectedFees] = useState([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentType, setPaymentType] = useState('individual'); // 'individual' or 'bulk'
+  const [paymentFees, setPaymentFees] = useState([]);
+  const [paymentMessage, setPaymentMessage] = useState('');
 
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno = localStorage.getItem('admno') || '';
@@ -51,6 +57,72 @@ const ParentPendingFee = () => {
   const lastIndex = Math.min(filteredFees.length, firstIndex + pageSize);
   const paginatedFees = filteredFees.slice(firstIndex, lastIndex);
   const totalDue = filteredFees.reduce((sum, f) => sum + parseFloat(f.amount) + parseFloat(f.fine), 0);
+  const selectedTotal = selectedFees.reduce((sum, feeId) => {
+    const fee = fees.find(f => f.id === feeId);
+    return fee ? sum + parseFloat(fee.amount) + parseFloat(fee.fine) : sum;
+  }, 0);
+
+  const handleFeeSelection = (feeId) => {
+    setSelectedFees(prev => 
+      prev.includes(feeId) 
+        ? prev.filter(id => id !== feeId)
+        : [...prev, feeId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedFees.length === filteredFees.length) {
+      setSelectedFees([]);
+    } else {
+      setSelectedFees(filteredFees.map(fee => fee.id));
+    }
+  };
+
+  const handleIndividualPayment = (fee) => {
+    setPaymentFees([fee]);
+    setPaymentType('individual');
+    setShowPayment(true);
+  };
+
+  const handleBulkPayment = () => {
+    if (selectedFees.length === 0) {
+      setPaymentMessage('Please select at least one fee to pay.');
+      setTimeout(() => setPaymentMessage(''), 3000);
+      return;
+    }
+    const feesToPay = fees.filter(fee => selectedFees.includes(fee.id));
+    setPaymentFees(feesToPay);
+    setPaymentType('bulk');
+    setShowPayment(true);
+  };
+
+  const handlePayAllFees = () => {
+    setPaymentFees(filteredFees);
+    setPaymentType('bulk');
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = (paymentData) => {
+    console.log('Payment successful:', paymentData);
+    setShowPayment(false);
+    setSelectedFees([]);
+    setPaymentMessage(`✅ Payment of ₹${paymentData.amount.toFixed(2)} completed successfully! Payment ID: ${paymentData.payment_id}`);
+    
+    // In a real app, you would update the backend and refresh the fee list
+    // For demo purposes, we'll just show a success message
+    setTimeout(() => setPaymentMessage(''), 5000);
+  };
+
+  const handlePaymentError = (error) => {
+    console.error('Payment failed:', error);
+    setShowPayment(false);
+    setPaymentMessage(`❌ Payment failed: ${error}`);
+    setTimeout(() => setPaymentMessage(''), 5000);
+  };
+
+  const handlePaymentClose = () => {
+    setShowPayment(false);
+  };
 
   React.useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
@@ -93,6 +165,39 @@ const ParentPendingFee = () => {
             </div>
           </section>
 
+          {paymentMessage && (
+            <div className={`payment-message ${paymentMessage.startsWith('✅') ? 'success' : 'error'}`}>
+              {paymentMessage}
+            </div>
+          )}
+
+          <div className="payment-actions-bar">
+            <div className="bulk-actions">
+              {selectedFees.length > 0 && (
+                <>
+                  <span className="selected-info">
+                    {selectedFees.length} selected (₹{selectedTotal.toFixed(2)})
+                  </span>
+                  <button 
+                    className="bulk-pay-btn"
+                    onClick={handleBulkPayment}
+                  >
+                    💳 Pay Selected (₹{selectedTotal.toFixed(2)})
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="quick-actions">
+              <button 
+                className="pay-all-btn"
+                onClick={handlePayAllFees}
+                disabled={filteredFees.length === 0}
+              >
+                💰 Pay All Fees (₹{totalDue.toFixed(2)})
+              </button>
+            </div>
+          </div>
+
           <div className="top-filter-bar">
             <div className="table-filter">
               <label htmlFor="feeFilter">Filter</label>
@@ -132,27 +237,55 @@ const ParentPendingFee = () => {
                   <table className="fee-table">
                     <thead>
                       <tr>
+                        <th>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedFees.length === filteredFees.length && filteredFees.length > 0}
+                            onChange={handleSelectAll}
+                          />
+                        </th>
                         <th>No</th>
                         <th>Month/Term</th>
                         <th>Date</th>
                         <th>Ref No</th>
                         <th>Fine</th>
                         <th>Amount</th>
+                        <th>Total</th>
                         <th>Remark</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {paginatedFees.map((fee, index) => (
-                        <tr key={fee.id}>
-                          <td>{firstIndex + index + 1}</td>
-                          <td>{fee.month}</td>
-                          <td>{formatDate(fee.date)}</td>
-                          <td>{fee.refno}</td>
-                          <td className="amount-cell">₹{Number(fee.fine).toFixed(2)}</td>
-                          <td className="amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                          <td>{fee.remark || '-'}</td>
-                        </tr>
-                      ))}
+                      {paginatedFees.map((fee, index) => {
+                        const feeTotal = parseFloat(fee.amount) + parseFloat(fee.fine);
+                        return (
+                          <tr key={fee.id} className={selectedFees.includes(fee.id) ? 'selected-row' : ''}>
+                            <td>
+                              <input 
+                                type="checkbox" 
+                                checked={selectedFees.includes(fee.id)}
+                                onChange={() => handleFeeSelection(fee.id)}
+                              />
+                            </td>
+                            <td>{firstIndex + index + 1}</td>
+                            <td>{fee.month}</td>
+                            <td>{formatDate(fee.date)}</td>
+                            <td>{fee.refno}</td>
+                            <td className="amount-cell">₹{Number(fee.fine).toFixed(2)}</td>
+                            <td className="amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+                            <td className="total-cell">₹{feeTotal.toFixed(2)}</td>
+                            <td>{fee.remark || '-'}</td>
+                            <td>
+                              <button 
+                                className="pay-individual-btn"
+                                onClick={() => handleIndividualPayment(fee)}
+                              >
+                                💳 Pay
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -179,6 +312,23 @@ const ParentPendingFee = () => {
 
         </div>
       </main>
+      
+      {showPayment && (
+        <RazorpayPayment
+          amount={paymentFees.reduce((sum, fee) => sum + parseFloat(fee.amount) + parseFloat(fee.fine), 0)}
+          description={paymentType === 'bulk' 
+            ? `Bulk payment for ${paymentFees.length} fee items`
+            : `${paymentFees[0]?.month} - ${paymentFees[0]?.refno}`
+          }
+          studentName={studentName}
+          institutionId={institutionId}
+          admno={admno}
+          feeItems={paymentFees}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+          onClose={handlePaymentClose}
+        />
+      )}
     </div>
   );
 };

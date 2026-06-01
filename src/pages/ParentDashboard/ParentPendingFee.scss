@@ -338,3 +338,154 @@
   border: 1px solid #fecaca;
   margin: 14px;
 }
+/* Payment Actions Bar */
+.payment-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.selected-info {
+  color: #4f6ef7;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bulk-pay-btn {
+  background: linear-gradient(135deg, #4f6ef7 0%, #6a7ff5 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(79, 110, 247, 0.3);
+}
+
+.bulk-pay-btn:hover {
+  background: linear-gradient(135deg, #3d5af1 0%, #5b6ef5 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 110, 247, 0.4);
+}
+
+.pay-all-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.pay-all-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.pay-all-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Payment Messages */
+.payment-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.payment-message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.payment-message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+/* Table Enhancements */
+.fee-table th:first-child,
+.fee-table td:first-child {
+  width: 40px;
+  text-align: center;
+}
+
+.fee-table th:last-child,
+.fee-table td:last-child {
+  width: 80px;
+  text-align: center;
+}
+
+.selected-row {
+  background: #eef2ff !important;
+  border-left: 3px solid #4f6ef7;
+}
+
+.total-cell {
+  font-weight: 700;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.pay-individual-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+.pay-individual-btn:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-actions-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .bulk-actions {
+    justify-content: center;
+  }
+  
+  .quick-actions {
+    text-align: center;
+  }
+  
+  .pay-all-btn {
+    width: 100%;
+  }
+}
