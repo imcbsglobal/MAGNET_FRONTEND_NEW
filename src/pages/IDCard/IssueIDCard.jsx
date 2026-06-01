@@ -475,133 +475,155 @@ const IssueIDCard = () => {
     console.log('Using photo src:', photoSrc ? 'DATA_URL' : 'PLACEHOLDER');
 
     const cardHTML = `
-      <div style="display:flex;gap:24px;align-items:flex-start;background:#f0f0f0;padding:32px;width:fit-content;">
+      <div style="display:flex;gap:24px;align-items:flex-start;background:#e5e7eb;padding:32px;width:fit-content;">
 
-        <!-- FRONT -->
+        <!-- FRONT CARD -->
         <div style="
-          width:280px;border-radius:16px;overflow:hidden;
-          box-shadow:0 12px 40px rgba(15,23,42,0.22);
-          font-family:'Segoe UI',Arial,sans-serif;background:#fff;
+          width:320px;height:500px;border-radius:20px;overflow:hidden;
+          box-shadow:0 8px 32px rgba(0,0,0,0.15);
+          font-family:'Inter','Segoe UI',Arial,sans-serif;background:#ffffff;
           position:relative;flex-shrink:0;
         ">
-          <!-- Top strip -->
-          <div style="display:flex;justify-content:space-between;align-items:center;
-            background:#fff;padding:10px 12px 8px;min-height:68px;position:relative;z-index:3;">
-            <div style="display:flex;align-items:center;gap:8px;">
+          <!-- Top white section with logo and school name -->
+          <div style="background:#ffffff;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;min-height:80px;">
+            <div style="display:flex;align-items:center;gap:12px;flex:1;">
               ${logoSrc
-                ? `<img src="${logoSrc}" style="width:42px;height:42px;object-fit:contain;" crossorigin="anonymous"/>`
-                : `<div style="width:42px;height:42px;background:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🏫</div>`}
-              <div style="font-size:0.72rem;font-weight:800;color:#1b254b;text-transform:uppercase;
-                letter-spacing:0.04em;line-height:1.3;max-width:100px;">
-                ${school?.school_name || 'School Name'}
+                ? `<img src="${logoSrc}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;" crossorigin="anonymous"/>`
+                : `<div style="width:48px;height:48px;background:#3b82f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:bold;">🏫</div>`}
+              <div style="font-size:14px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2;max-width:140px;">
+                ${school?.school_name || 'IMCB SOLUTIONS LLP'}
               </div>
             </div>
             ${school?.place ? `
-              <div style="background:#2d3f7c;color:#fff;font-size:0.65rem;font-weight:600;
-                padding:6px 10px;border-radius:6px;text-align:right;line-height:1.4;max-width:90px;">
+              <div style="background:#3b4d7a;color:#ffffff;font-size:12px;font-weight:600;
+                padding:8px 12px;border-radius:8px;text-align:center;min-width:80px;">
                 ${school.place}
-              </div>` : ''}
+              </div>` : `
+              <div style="background:#3b4d7a;color:#ffffff;font-size:12px;font-weight:600;
+                padding:8px 12px;border-radius:8px;text-align:center;min-width:80px;">
+                WAYANAD
+              </div>`}
           </div>
 
-          <!-- Blob area -->
-          <div style="position:relative;height:200px;overflow:hidden;margin-top:-2px;">
+          <!-- Purple blob section with photo -->
+          <div style="position:relative;height:240px;background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #3b4d7a 100%);overflow:hidden;">
+            <!-- Organic blob shape -->
             <div style="
-              position:absolute;top:-20px;left:-30px;width:240px;height:240px;
-              background:linear-gradient(135deg,#5b3fa0 0%,#4a3494 25%,#3d2d8e 50%,#2d2d8e 75%,#2d3fa0 100%);
-              border-radius:50% 60% 55% 45% / 50% 45% 60% 55%;z-index:1;
+              position:absolute;top:-40px;left:-40px;width:280px;height:280px;
+              background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #3b4d7a 100%);
+              border-radius:60% 40% 30% 70% / 60% 30% 70% 40%;
+              transform:rotate(-15deg);
             "></div>
+            
+            <!-- Photo circle with white border -->
             <div style="
-              width:130px;height:130px;border-radius:50%;border:3px solid #fff;
-              box-shadow:0 4px 20px rgba(45,45,142,0.4);overflow:hidden;
-              position:absolute;top:30px;left:50%;transform:translateX(-50%);
-              background:linear-gradient(135deg,#5b3fa0 0%,#4a3494 25%,#3d2d8e 50%,#2d2d8e 75%,#2d3fa0 100%);
-              z-index:2;display:flex;align-items:center;justify-content:center;
+              position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);
+              width:140px;height:140px;border-radius:50%;
+              border:4px solid #ffffff;
+              background:#ffffff;
+              overflow:hidden;
+              box-shadow:0 8px 32px rgba(0,0,0,0.2);
+              z-index:10;
             ">
               ${photoSrc
                 ? `<img src="${photoSrc}" style="width:100%;height:100%;object-fit:cover;" crossorigin="anonymous"/>`
-                : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:rgba(255,255,255,0.35);">📷</div>`}
+                : `<div style="width:100%;height:100%;background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #3b4d7a 100%);display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(255,255,255,0.4);">📷</div>`}
             </div>
           </div>
 
-          <!-- Body -->
-          <div style="padding:12px 16px 16px;text-align:center;background:#fff;position:relative;z-index:2;">
-            <div style="font-size:1.05rem;font-weight:900;color:#111827;letter-spacing:0.03em;
-              margin-bottom:3px;text-transform:uppercase;">${studentName}</div>
-            <div style="font-size:1rem;font-weight:700;color:#7c3aed;margin-bottom:12px;">
-              ${student?.student_class || ''} ${student?.div || ''}
+          <!-- Student info section -->
+          <div style="padding:20px;text-align:center;background:#ffffff;">
+            <div style="font-size:20px;font-weight:900;color:#1f2937;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">
+              ${studentName}
             </div>
-            <div style="text-align:left;display:flex;flex-direction:column;gap:4px;padding:0 4px;">
-              ${[
-                ['Ad No',   student?.admno || ''],
-                ['Phone',   d.phone || student?.mobile || '-'],
-                ['Address', address],
-              ].map(([label, val]) => `
-                <div style="display:flex;gap:4px;font-size:0.76rem;align-items:flex-start;">
-                  <span style="color:#2d3f7c;font-weight:700;min-width:54px;">${label}</span>
-                  <span style="color:#64748b;flex-shrink:0;">:</span>
-                  <span style="color:#1e293b;flex:1;line-height:1.4;">${val}</span>
-                </div>`).join('')}
+            <div style="font-size:18px;font-weight:700;color:#7c3aed;margin-bottom:16px;">
+              ${student?.student_class || '1'}${student?.div || 'A'}
             </div>
-            <!-- Diamond pattern -->
-            <div style="
-              position:relative;height:40px;margin-top:8px;
-              background-image:
-                repeating-linear-gradient(45deg,rgba(100,100,200,0.08) 0px,rgba(100,100,200,0.08) 1px,transparent 1px,transparent 12px),
-                repeating-linear-gradient(-45deg,rgba(100,100,200,0.08) 0px,rgba(100,100,200,0.08) 1px,transparent 1px,transparent 12px);
-            "></div>
+            
+            <!-- Info rows -->
+            <div style="text-align:left;display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:flex-start;font-size:14px;">
+                <span style="color:#374151;font-weight:700;min-width:70px;">Ad No</span>
+                <span style="color:#6b7280;margin:0 8px;">:</span>
+                <span style="color:#1f2937;font-weight:600;">${student?.admno || 'S/7058'}</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;font-size:14px;">
+                <span style="color:#374151;font-weight:700;min-width:70px;">Phone</span>
+                <span style="color:#6b7280;margin:0 8px;">:</span>
+                <span style="color:#1f2937;font-weight:600;">${d.phone || student?.mobile || '9061947005'}</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;font-size:14px;">
+                <span style="color:#374151;font-weight:700;min-width:70px;">Address</span>
+                <span style="color:#6b7280;margin:0 8px;">:</span>
+                <span style="color:#1f2937;font-weight:600;line-height:1.4;">${address || 'Wayanad, Wayanad, Kunhome, Kerala, 670731'}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- BACK -->
+        <!-- BACK CARD -->
         <div style="
-          width:280px;border-radius:16px;overflow:hidden;
-          box-shadow:0 12px 40px rgba(15,23,42,0.22);
-          font-family:'Segoe UI',Arial,sans-serif;
-          background:linear-gradient(180deg,#dde4f0 0%,#eef1f8 40%,#f5f7fc 100%);
-          min-height:420px;display:flex;flex-direction:column;
+          width:320px;height:500px;border-radius:20px;overflow:hidden;
+          box-shadow:0 8px 32px rgba(0,0,0,0.15);
+          font-family:'Inter','Segoe UI',Arial,sans-serif;
+          background:linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
           position:relative;flex-shrink:0;
         ">
-          <!-- Triangles -->
-          <div style="position:relative;height:100px;flex-shrink:0;overflow:hidden;">
+          <!-- Top triangular design -->
+          <div style="position:relative;height:120px;overflow:hidden;">
+            <!-- Purple triangle -->
             <div style="position:absolute;top:0;left:0;width:0;height:0;
-              border-right:140px solid transparent;border-top:100px solid #7c3aed;"></div>
+              border-right:160px solid transparent;border-top:120px solid #7c3aed;"></div>
+            <!-- Blue triangle -->
             <div style="position:absolute;top:0;right:0;width:0;height:0;
-              border-left:280px solid transparent;border-top:70px solid #2d3f7c;"></div>
+              border-left:320px solid transparent;border-top:80px solid #3b4d7a;"></div>
           </div>
 
-          <!-- Logo pill -->
-          <div style="display:flex;justify-content:center;margin:-28px 0 16px;position:relative;z-index:2;">
-            <div style="background:#fff;border-radius:20px;padding:10px 20px;
-              box-shadow:0 4px 20px rgba(15,23,42,0.12);display:flex;align-items:center;justify-content:center;">
+          <!-- Logo in white pill -->
+          <div style="display:flex;justify-content:center;margin:-40px 0 24px;position:relative;z-index:2;">
+            <div style="background:#ffffff;border-radius:24px;padding:12px 24px;
+              box-shadow:0 4px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;min-height:60px;">
               ${logoSrc
-                ? `<img src="${logoSrc}" style="width:110px;height:52px;object-fit:contain;" crossorigin="anonymous"/>`
-                : `<div style="font-size:2rem;width:110px;text-align:center;">🏫</div>`}
+                ? `<img src="${logoSrc}" style="height:36px;max-width:120px;object-fit:contain;" crossorigin="anonymous"/>`
+                : `<div style="color:#3b82f6;font-size:24px;font-weight:bold;">🏫</div>`}
             </div>
           </div>
 
-          <!-- Rules -->
-          <div style="padding:4px 18px 10px;display:flex;flex-direction:column;gap:6px;flex:1;">
+          <!-- Rules section -->
+          <div style="padding:0 24px 16px;display:flex;flex-direction:column;gap:8px;">
             ${[
               'This card is issued for the academic year 2025-26',
               'This card is non-transferable.',
               'Always carry your card during school hours.',
               'In case of loss, inform issuing authority.',
               'If found, please post it to given address',
-            ].map(r => `
-              <p style="font-size:0.73rem;color:#334155;margin:0;display:flex;gap:8px;align-items:flex-start;line-height:1.4;">
-                <span style="color:#2d3f7c;flex-shrink:0;font-size:0.6rem;margin-top:3px;">●</span>
-                ${r}
-              </p>`).join('')}
+            ].map(rule => `
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#4b5563;line-height:1.4;">
+                <span style="color:#7c3aed;font-weight:bold;margin-top:2px;">•</span>
+                <span>${rule}</span>
+              </div>`).join('')}
           </div>
 
           <!-- School info footer -->
-          <div style="padding:12px 18px 18px;border-top:1px solid rgba(45,63,124,0.12);margin-top:4px;">
-            <div style="font-size:0.9rem;font-weight:900;color:#1b254b;text-transform:uppercase;
-              letter-spacing:0.04em;margin-bottom:2px;">${school?.school_name || ''}</div>
-            ${school?.address ? `<div style="font-size:0.68rem;color:#475569;margin-bottom:8px;">${school.address}</div>` : ''}
-            ${school?.place  ? `<div style="font-size:0.7rem;color:#334155;margin-bottom:3px;display:flex;gap:5px;">📍 ${school.place}</div>` : ''}
-            ${school?.phone  ? `<div style="font-size:0.7rem;color:#334155;margin-bottom:3px;display:flex;gap:5px;">📞 ${school.phone}</div>` : ''}
-            ${school?.email  ? `<div style="font-size:0.7rem;color:#334155;margin-bottom:3px;display:flex;gap:5px;">✉️ ${school.email}</div>` : ''}
+          <div style="padding:16px 24px;margin-top:auto;border-top:1px solid rgba(107,114,128,0.2);">
+            <div style="font-size:16px;font-weight:900;color:#1f2937;text-transform:uppercase;
+              letter-spacing:0.5px;margin-bottom:4px;">${school?.school_name || 'IMCB SOLUTIONS LLP'}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">${school?.address || 'IMCB SOLUTIONS LLP'}</div>
+            
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4b5563;">
+                <span style="color:#ef4444;">📍</span>
+                <span>${school?.place || 'WAYANAD'}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4b5563;">
+                <span style="color:#ef4444;">📞</span>
+                <span>${school?.phone || '9061947005'}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4b5563;">
+                <span style="color:#d1d5db;">✉️</span>
+                <span>${school?.email || 'sajiththomas231@gmail.com'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -625,11 +647,22 @@ const IssueIDCard = () => {
 
     // 5. Capture with html2canvas
     const canvas = await html2canvas(container.firstElementChild, {
-      scale: 3,
+      scale: 2,
       useCORS: true,
       allowTaint: false,
-      backgroundColor: '#f0f0f0',
+      backgroundColor: '#e5e7eb',
       logging: false,
+      width: container.firstElementChild.scrollWidth,
+      height: container.firstElementChild.scrollHeight,
+      onclone: (clonedDoc) => {
+        // Ensure all images are properly loaded in the cloned document
+        const images = clonedDoc.querySelectorAll('img');
+        images.forEach(img => {
+          img.style.display = 'block';
+          img.style.opacity = '1';
+          img.style.visibility = 'visible';
+        });
+      }
     });
 
     document.body.removeChild(container);
@@ -638,18 +671,21 @@ const IssueIDCard = () => {
     if (!isFirst) pdf.addPage();
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
-    const imgW  = pageW - 20;
-    const imgH  = (canvas.height / canvas.width) * imgW;
-    const imgX  = 10;
-    const imgY  = (pageH - imgH) / 2;
+    
+    // Calculate dimensions to fit both cards side by side
+    const imgW = Math.min(pageW - 20, (canvas.width / canvas.height) * (pageH - 40));
+    const imgH = (canvas.height / canvas.width) * imgW;
+    const imgX = (pageW - imgW) / 2;
+    const imgY = (pageH - imgH) / 2;
+    
     pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', imgX, imgY, imgW, imgH);
 
     // Student info text below
-    pdf.setFontSize(9);
+    pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(100, 116, 139);
-    const info = `${student?.student_name || ''} · Adm No: ${student?.admno || ''} · Class: ${student?.student_class || ''}-${student?.div || ''}`;
-    pdf.text(info, pageW / 2, imgY + imgH + 8, { align: 'center' });
+    pdf.setTextColor(75, 85, 99);
+    const info = `${student?.student_name || ''} • Adm No: ${student?.admno || ''} • Class: ${student?.student_class || ''}-${student?.div || ''}`;
+    pdf.text(info, pageW / 2, imgY + imgH + 12, { align: 'center' });
   };
 
   // Single student PDF download
