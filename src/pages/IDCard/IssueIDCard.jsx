@@ -10,6 +10,46 @@ import jsPDF from 'jspdf';
 import './IDCard.scss';
 import './IDCardTemplate.scss';
 
+// ── Utility Functions ────────────────────────────────────────────────────────
+const generateInitialsPhoto = (studentName) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 200;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  
+  const initials = (studentName || 'ST')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join('');
+  
+  const colors = [
+    ['#7c3aed', '#5b21b6'], ['#2563eb', '#1d4ed8'], ['#059669', '#047857'],
+    ['#dc2626', '#b91c1c'], ['#d97706', '#b45309'], ['#7c2d12', '#92400e']
+  ];
+  
+  const colorIndex = (initials.charCodeAt(0) + (initials.charCodeAt(1) || 0)) % colors.length;
+  const [color1, color2] = colors[colorIndex];
+  
+  const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
+  gradient.addColorStop(0, color1);
+  gradient.addColorStop(1, color2);
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(100, 100, 95, 0, 2 * Math.PI);
+  ctx.fill();
+  
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 60px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = 4;
+  ctx.fillText(initials, 100, 100);
+  
+  return canvas.toDataURL('image/png', 1.0);
+};
+
 // ── ID Card Template (front) ──────────────────────────────────────────────────
 const IDCardFront = ({ student, school, photoUrl }) => {
   const d = student?.details || {};
@@ -36,7 +76,11 @@ const IDCardFront = ({ student, school, photoUrl }) => {
         <div className="idt-photo-ring">
           {photoUrl
             ? <img src={photoUrl} alt="student" className="idt-photo" />
-            : <div className="idt-photo-empty">📷</div>}
+            : <img 
+                src={generateInitialsPhoto(d.student_name || student?.student_name)} 
+                alt="student" 
+                className="idt-photo" 
+              />}
         </div>
       </div>
 
@@ -244,36 +288,74 @@ const IssueIDCard = () => {
     });
   };
 
-  // Enhanced fallback base64 images
+  // Perfect fallback images matching the ID card design
   const getDefaultLogoB64 = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 120;
     canvas.height = 120;
     const ctx = canvas.getContext('2d');
     
-    // Draw gradient background
+    // Draw blue rounded rectangle background (matching the reference logo style)
     const gradient = ctx.createLinearGradient(0, 0, 120, 120);
-    gradient.addColorStop(0, '#3b82f6');
+    gradient.addColorStop(0, '#2563eb');
     gradient.addColorStop(1, '#1d4ed8');
     ctx.fillStyle = gradient;
-    ctx.beginPath();
     
-    // Use fillRect with rounded corners fallback
-    if (ctx.roundRect) {
-      ctx.roundRect(10, 10, 100, 100, 15);
-    } else {
-      // Fallback for browsers without roundRect
-      ctx.rect(10, 10, 100, 100);
-    }
+    // Draw rounded rectangle
+    const drawRoundedRect = (x, y, width, height, radius) => {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    };
+    
+    drawRoundedRect(15, 15, 90, 90, 12);
     ctx.fill();
     
-    // Draw white text
+    // Add subtle inner shadow effect
+    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 2;
+    
+    // Draw school building icon in white
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 16px Arial';
+    ctx.shadowColor = 'transparent';
+    
+    // Building base
+    drawRoundedRect(35, 65, 50, 25, 3);
+    ctx.fill();
+    
+    // Building roof (triangle)
+    ctx.beginPath();
+    ctx.moveTo(30, 65);
+    ctx.lineTo(60, 45);
+    ctx.lineTo(90, 65);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Door
+    ctx.fillStyle = '#2563eb';
+    drawRoundedRect(55, 75, 10, 15, 2);
+    ctx.fill();
+    
+    // Windows
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(40, 70, 6, 6);
+    ctx.fillRect(74, 70, 6, 6);
+    
+    // Add text below
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('SCHOOL', 60, 55);
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText('LOGO', 60, 75);
+    ctx.fillText('SCHOOL', 60, 100);
     
     return canvas.toDataURL('image/png', 1.0);
   };
@@ -284,28 +366,113 @@ const IssueIDCard = () => {
     canvas.height = 200;
     const ctx = canvas.getContext('2d');
     
-    // Draw gradient background
+    // Draw gradient background matching the ID card purple theme
     const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
-    gradient.addColorStop(0, '#9ca3af');
-    gradient.addColorStop(1, '#6b7280');
+    gradient.addColorStop(0, '#a855f7');
+    gradient.addColorStop(0.7, '#7c3aed');
+    gradient.addColorStop(1, '#5b21b6');
     ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(100, 100, 95, 0, 2 * Math.PI);
     ctx.fill();
     
-    // Draw person silhouette
-    ctx.fillStyle = 'white';
-    // Head
+    // Add subtle inner glow
+    const innerGlow = ctx.createRadialGradient(100, 100, 0, 100, 100, 80);
+    innerGlow.addColorStop(0, 'rgba(255,255,255,0.3)');
+    innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = innerGlow;
     ctx.beginPath();
-    ctx.arc(100, 80, 25, 0, 2 * Math.PI);
+    ctx.arc(100, 100, 80, 0, 2 * Math.PI);
     ctx.fill();
-    // Body
+    
+    // Draw professional person silhouette
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    
+    // Head (circle)
     ctx.beginPath();
-    ctx.arc(100, 140, 40, 0, Math.PI, true);
+    ctx.arc(100, 75, 28, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Neck
+    ctx.fillRect(92, 100, 16, 12);
+    
+    // Shoulders/Body (ellipse shape)
+    ctx.beginPath();
+    ctx.ellipse(100, 145, 45, 35, 0, 0, Math.PI);
+    ctx.fill();
+    
+    // Add subtle shadow for depth
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.beginPath();
+    ctx.arc(95, 70, 25, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Add a subtle highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(90, 65, 8, 0, 2 * Math.PI);
     ctx.fill();
     
     return canvas.toDataURL('image/png', 1.0);
   };
+  // Generate personalized profile picture with student initials
+  const getPersonalizedPhotoB64 = (studentName) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    
+    // Get initials from student name
+    const initials = (studentName || 'ST')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join('');
+    
+    // Create gradient background with colors based on initials
+    const colors = [
+      ['#7c3aed', '#5b21b6'], // Purple
+      ['#2563eb', '#1d4ed8'], // Blue  
+      ['#059669', '#047857'], // Green
+      ['#dc2626', '#b91c1c'], // Red
+      ['#d97706', '#b45309'], // Orange
+      ['#7c2d12', '#92400e'], // Brown
+    ];
+    
+    const colorIndex = (initials.charCodeAt(0) + (initials.charCodeAt(1) || 0)) % colors.length;
+    const [color1, color2] = colors[colorIndex];
+    
+    const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
+    gradient.addColorStop(0, color1);
+    gradient.addColorStop(1, color2);
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(100, 100, 95, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Add subtle inner glow
+    const innerGlow = ctx.createRadialGradient(100, 100, 0, 100, 100, 70);
+    innerGlow.addColorStop(0, 'rgba(255,255,255,0.2)');
+    innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = innerGlow;
+    ctx.beginPath();
+    ctx.arc(100, 100, 70, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw initials
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 60px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 2;
+    ctx.fillText(initials, 100, 100);
+    
+    return canvas.toDataURL('image/png', 1.0);
+  };
+
   // Fetch logo once and store as data URL so html2canvas never hits CORS
   const fetchLogoAsDataUrl = async (url) => {
     console.log('Fetching logo as data URL:', url);
@@ -446,11 +613,12 @@ const IssueIDCard = () => {
       console.log('Loading student photo:', student.photo_url);
       studentPhotoData = await embedImageDirectly(student.photo_url);
       if (!studentPhotoData) {
-        console.log('Student photo failed, using fallback');
-        studentPhotoData = getDefaultPhotoB64();
+        console.log('Student photo failed, using personalized fallback');
+        studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
       }
     } else {
-      studentPhotoData = getDefaultPhotoB64();
+      console.log('No photo URL, generating personalized photo');
+      studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
     }
     
     // Load school logo if not provided
@@ -762,7 +930,7 @@ const IssueIDCard = () => {
                         <div className="issue-student-avatar">
                           {s.photo_url
                             ? <img src={s.photo_url} alt="" />
-                            : (s.student_name?.charAt(0) || '?')}
+                            : <img src={generateInitialsPhoto(s.student_name)} alt="" />}
                         </div>
                         <div className="issue-student-info">
                           <div className="issue-student-name">{s.student_name}</div>
