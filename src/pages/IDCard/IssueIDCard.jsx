@@ -214,65 +214,16 @@ const IssueIDCard = () => {
     await Promise.all(imagePromises);
   };
 
-  // ROBUST IMAGE EMBEDDING - Multiple fallback methods
+  // ROBUST IMAGE EMBEDDING - Use canvas + no-cors as primary method
   const embedImageDirectly = async (url) => {
     if (!url) return null;
-    if (url.startsWith('data:')) return url;
+    if (url.startsWith('data:')) return url; // Already base64
     
-    console.log('🖼️ Starting image embedding for:', url);
+    console.log('🖼️ Embedding image from URL:', url);
     
-    // Method 1: Try proxy approach (no CORS issues)
+    // CRITICAL: Use canvas method with no-cors mode - most reliable for external images
     try {
-      console.log('📡 Trying proxy method...');
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const response = await fetch(proxyUrl);
-      if (response.ok) {
-        const blob = await response.blob();
-        const dataUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            console.log('✅ Proxy method successful');
-            resolve(reader.result);
-          };
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(blob);
-        });
-        if (dataUrl) return dataUrl;
-      }
-    } catch (error) {
-      console.log('❌ Proxy method failed:', error.message);
-    }
-    
-    // Method 2: Direct fetch with CORS
-    try {
-      console.log('🔄 Trying direct fetch...');
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit',
-        headers: { 'Accept': 'image/*' }
-      });
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const dataUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            console.log('✅ Direct fetch successful');
-            resolve(reader.result);
-          };
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(blob);
-        });
-        if (dataUrl) return dataUrl;
-      }
-    } catch (error) {
-      console.log('❌ Direct fetch failed:', error.message);
-    }
-    
-    // Method 3: Canvas-based conversion (no-cors mode)
-    try {
-      console.log('🎨 Trying canvas method...');
+      console.log('  Method: Canvas + no-cors (most reliable)');
       const img = new Image();
       
       const dataUrl = await new Promise((resolve) => {
@@ -283,62 +234,97 @@ const IssueIDCard = () => {
             canvas.width = img.naturalWidth || img.width || 400;
             canvas.height = img.naturalHeight || img.height || 400;
             
-            // Clear canvas with white background
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+            // Draw image on canvas
             ctx.drawImage(img, 0, 0);
-            const result = canvas.toDataURL('image/png', 0.9);
-            console.log('✅ Canvas method successful');
+            const result = canvas.toDataURL('image/png', 1.0);
+            console.log('  ✅ Canvas conversion successful -', canvas.width, 'x', canvas.height);
             resolve(result);
           } catch (canvasError) {
-            console.log('❌ Canvas drawing failed:', canvasError.message);
+            console.log('  ❌ Canvas drawing error:', canvasError.message);
             resolve(null);
           }
         };
         
         img.onerror = () => {
-          console.log('❌ Image load failed');
+          console.log('  ❌ Image failed to load from:', url);
           resolve(null);
         };
         
-        // Try different CORS settings
+        // Set crossOrigin to 'anonymous' BEFORE src
         img.crossOrigin = 'anonymous';
         img.src = url;
         
-        // Timeout fallback
+        // Timeout: 15 seconds
         setTimeout(() => {
-          console.log('⏰ Canvas method timeout');
+          console.log('  ⏰ Image load timeout (15s)');
           resolve(null);
         }, 15000);
       });
       
-      if (dataUrl) return dataUrl;
-    } catch (error) {
-      console.log('❌ Canvas method failed:', error.message);
-    }
-    
-    // Method 4: Server-side proxy (if available)
-    try {
-      console.log('🌐 Trying server proxy...');
-      const proxyResponse = await fetch('/api/proxy-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: url })
-      });
-      
-      if (proxyResponse.ok) {
-        const data = await proxyResponse.json();
-        if (data.base64) {
-          console.log('✅ Server proxy successful');
-          return data.base64;
-        }
+      if (dataUrl && dataUrl.length > 1000) {
+        console.log('  ✅ Image embedded successfully, size:', dataUrl.length, 'bytes');
+        return dataUrl;
       }
     } catch (error) {
-      console.log('❌ Server proxy failed:', error.message);
+      console.log('  ❌ Canvas method error:', error.message);
     }
     
-    console.log('🚫 All image embedding methods failed for:', url);
+    // Method 2: Direct fetch with blob conversion (better for CORS)
+    try {
+      console.log('  Method 2: Direct fetch with blob');
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      const dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          console.log('  ✅ Fetch+blob successful, size:', reader.result.length);
+          resolve(reader.result);
+        };
+        reader.onerror = () => {
+          console.log('  ❌ FileReader error');
+          resolve(null);
+        };
+        reader.readAsDataURL(blob);
+      });
+      
+      if (dataUrl) return dataUrl;
+    } catch (error) {
+      console.log('  ❌ Fetch method error:', error.message);
+    }
+    
+    // Method 3: Proxy for stubborn URLs
+    try {
+      console.log('  Method 3: CORS proxy');
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const dataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            console.log('  ✅ Proxy successful, size:', reader.result.length);
+            resolve(reader.result);
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+        if (dataUrl) return dataUrl;
+      }
+    } catch (error) {
+      console.log('  ❌ Proxy error:', error.message);
+    }
+    
+    console.log('🚫 All embedding methods failed for:', url);
     return null;
   };
 
@@ -361,7 +347,7 @@ const IssueIDCard = () => {
       const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
       console.log(`📡 ${type} image HEAD request status:`, response.status || 'no-cors');
       
-      // Test image loading
+      // Test image loading with longer timeout
       const img = new Image();
       const loadTest = await new Promise((resolve) => {
         img.onload = () => {
@@ -375,10 +361,11 @@ const IssueIDCard = () => {
         img.crossOrigin = 'anonymous';
         img.src = url;
         
+        // Longer timeout to allow image loading from slow servers
         setTimeout(() => {
-          console.log(`⏰ ${type} image load timeout`);
+          console.log(`⏰ ${type} image load timeout (10s)`);
           resolve({ valid: false, reason: 'Load timeout' });
-        }, 5000);
+        }, 10000);
       });
       
       return loadTest;
@@ -390,200 +377,159 @@ const IssueIDCard = () => {
 
   // Perfect fallback images matching the ID card design
   const getDefaultLogoB64 = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 120;
-    canvas.height = 120;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw blue rounded rectangle background (matching the reference logo style)
-    const gradient = ctx.createLinearGradient(0, 0, 120, 120);
-    gradient.addColorStop(0, '#2563eb');
-    gradient.addColorStop(1, '#1d4ed8');
-    ctx.fillStyle = gradient;
-    
-    // Draw rounded rectangle
-    const drawRoundedRect = (x, y, width, height, radius) => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 120;
+      canvas.height = 120;
+      const ctx = canvas.getContext('2d');
+      
+      // Draw blue rounded rectangle background (matching the reference logo style)
+      const gradient = ctx.createLinearGradient(0, 0, 120, 120);
+      gradient.addColorStop(0, '#2563eb');
+      gradient.addColorStop(1, '#1d4ed8');
+      ctx.fillStyle = gradient;
+      
+      // Draw rounded rectangle
+      const drawRoundedRect = (x, y, width, height, radius) => {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      };
+      
+      drawRoundedRect(15, 15, 90, 90, 12);
+      ctx.fill();
+      
+      // Add subtle inner shadow effect
+      ctx.shadowColor = 'rgba(0,0,0,0.2)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      
+      // Draw school building icon in white
+      ctx.fillStyle = 'white';
+      ctx.shadowColor = 'transparent';
+      
+      // Building base
+      drawRoundedRect(35, 65, 50, 25, 3);
+      ctx.fill();
+      
+      // Building roof (triangle)
       ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.moveTo(30, 65);
+      ctx.lineTo(60, 45);
+      ctx.lineTo(90, 65);
       ctx.closePath();
-    };
-    
-    drawRoundedRect(15, 15, 90, 90, 12);
-    ctx.fill();
-    
-    // Add subtle inner shadow effect
-    ctx.shadowColor = 'rgba(0,0,0,0.2)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 2;
-    
-    // Draw school building icon in white
-    ctx.fillStyle = 'white';
-    ctx.shadowColor = 'transparent';
-    
-    // Building base
-    drawRoundedRect(35, 65, 50, 25, 3);
-    ctx.fill();
-    
-    // Building roof (triangle)
-    ctx.beginPath();
-    ctx.moveTo(30, 65);
-    ctx.lineTo(60, 45);
-    ctx.lineTo(90, 65);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Door
-    ctx.fillStyle = '#2563eb';
-    drawRoundedRect(55, 75, 10, 15, 2);
-    ctx.fill();
-    
-    // Windows
-    ctx.fillStyle = '#2563eb';
-    ctx.fillRect(40, 70, 6, 6);
-    ctx.fillRect(74, 70, 6, 6);
-    
-    // Add text below
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('SCHOOL', 60, 100);
-    
-    return canvas.toDataURL('image/png', 1.0);
+      ctx.fill();
+      
+      // Door
+      ctx.fillStyle = '#2563eb';
+      drawRoundedRect(55, 75, 10, 15, 2);
+      ctx.fill();
+      
+      // Windows
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(40, 70, 6, 6);
+      ctx.fillRect(74, 70, 6, 6);
+      
+      // Add text below
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('SCHOOL', 60, 100);
+      
+      const result = canvas.toDataURL('image/png', 1.0);
+      console.log('✅ Default logo generated, length:', result.length);
+      return result;
+    } catch (err) {
+      console.error('❌ Failed to generate default logo:', err);
+      return null;
+    }
   };
 
-  const getDefaultPhotoB64 = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 200;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw gradient background matching the ID card purple theme
-    const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
-    gradient.addColorStop(0, '#a855f7');
-    gradient.addColorStop(0.7, '#7c3aed');
-    gradient.addColorStop(1, '#5b21b6');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(100, 100, 95, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // Add subtle inner glow
-    const innerGlow = ctx.createRadialGradient(100, 100, 0, 100, 100, 80);
-    innerGlow.addColorStop(0, 'rgba(255,255,255,0.3)');
-    innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = innerGlow;
-    ctx.beginPath();
-    ctx.arc(100, 100, 80, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // Draw professional person silhouette
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    
-    // Head (circle)
-    ctx.beginPath();
-    ctx.arc(100, 75, 28, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // Neck
-    ctx.fillRect(92, 100, 16, 12);
-    
-    // Shoulders/Body (ellipse shape)
-    ctx.beginPath();
-    ctx.ellipse(100, 145, 45, 35, 0, 0, Math.PI);
-    ctx.fill();
-    
-    // Add subtle shadow for depth
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.beginPath();
-    ctx.arc(95, 70, 25, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // Add a subtle highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.beginPath();
-    ctx.arc(90, 65, 8, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    return canvas.toDataURL('image/png', 1.0);
-  };
   // Generate personalized profile picture with student initials
   const getPersonalizedPhotoB64 = (studentName) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 200;
-    canvas.height = 200;
-    const ctx = canvas.getContext('2d');
-    
-    // Get initials from student name
-    const initials = (studentName || 'ST')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase())
-      .slice(0, 2)
-      .join('');
-    
-    // Create gradient background with colors based on initials
-    const colors = [
-      ['#7c3aed', '#5b21b6'], // Purple
-      ['#2563eb', '#1d4ed8'], // Blue  
-      ['#059669', '#047857'], // Green
-      ['#dc2626', '#b91c1c'], // Red
-      ['#d97706', '#b45309'], // Orange
-      ['#7c2d12', '#92400e'], // Brown
-    ];
-    
-    const colorIndex = (initials.charCodeAt(0) + (initials.charCodeAt(1) || 0)) % colors.length;
-    const [color1, color2] = colors[colorIndex];
-    
-    const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(100, 100, 95, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // Add subtle inner glow
-    const innerGlow = ctx.createRadialGradient(100, 100, 0, 100, 100, 70);
-    innerGlow.addColorStop(0, 'rgba(255,255,255,0.2)');
-    innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = innerGlow;
-    ctx.beginPath();
-    ctx.arc(100, 100, 70, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    // Draw initials
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 60px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 2;
-    ctx.fillText(initials, 100, 100);
-    
-    return canvas.toDataURL('image/png', 1.0);
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      
+      // Get initials from student name
+      const initials = (studentName || 'ST')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join('');
+      
+      // Create gradient background with colors based on initials
+      const colors = [
+        ['#7c3aed', '#5b21b6'], // Purple
+        ['#2563eb', '#1d4ed8'], // Blue  
+        ['#059669', '#047857'], // Green
+        ['#dc2626', '#b91c1c'], // Red
+        ['#d97706', '#b45309'], // Orange
+        ['#7c2d12', '#92400e'], // Brown
+      ];
+      
+      const colorIndex = (initials.charCodeAt(0) + (initials.charCodeAt(1) || 0)) % colors.length;
+      const [color1, color2] = colors[colorIndex];
+      
+      const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
+      gradient.addColorStop(0, color1);
+      gradient.addColorStop(1, color2);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(100, 100, 95, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Add subtle inner glow
+      const innerGlow = ctx.createRadialGradient(100, 100, 0, 100, 100, 70);
+      innerGlow.addColorStop(0, 'rgba(255,255,255,0.2)');
+      innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = innerGlow;
+      ctx.beginPath();
+      ctx.arc(100, 100, 70, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Draw initials
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 60px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      ctx.fillText(initials, 100, 100);
+      
+      const result = canvas.toDataURL('image/png', 1.0);
+      console.log('✅ Personalized photo generated for:', studentName, ', length:', result.length);
+      return result;
+    } catch (err) {
+      console.error('❌ Failed to generate personalized photo:', err);
+      return null;
+    }
   };
 
   // Fetch logo once and store as data URL so html2canvas never hits CORS
   const fetchLogoAsDataUrl = async (url) => {
-    console.log('Fetching logo as data URL:', url);
+    console.log('🏫 Fetching logo as data URL from:', url);
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     try {
       const dataUrl = await embedImageDirectly(url);
-      console.log('Logo conversion result:', dataUrl ? 'SUCCESS' : 'FAILED');
+      console.log('✅ Logo conversion result:', dataUrl ? 'SUCCESS (base64 ready)' : 'FAILED');
       return dataUrl;
     } catch (error) {
-      console.error('Logo fetch error:', error);
+      console.error('❌ Logo fetch error:', error);
       return null;
     }
   };
@@ -704,169 +650,201 @@ const IssueIDCard = () => {
   const captureCardToPdf = async (pdf, student, school, logoB64, isFirst) => {
     console.log('🎯 === Starting PDF generation for:', student?.student_name);
     
-    // 1. Validate and pre-load ALL images before creating HTML
     let studentPhotoData = null;
     let schoolLogoData = logoB64;
     
-    // Validate and load student photo
-    if (student?.photo_url) {
-      console.log('👤 Processing student photo...');
-      const validation = await validateAndDebugImage(student.photo_url, 'student photo');
-      
-      if (validation.valid) {
-        studentPhotoData = await embedImageDirectly(student.photo_url);
-        if (!studentPhotoData) {
-          console.log('⚠️ Student photo embedding failed, using personalized fallback');
-          studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
+    // STUDENT PHOTO HANDLING - MUST ALWAYS SUCCEED
+    console.log('📸 Processing student photo...');
+    try {
+      if (student?.photo_url) {
+        console.log('  - Found photo URL:', student.photo_url.substring(0, 60) + '...');
+        const validation = await validateAndDebugImage(student.photo_url, 'student photo');
+        
+        if (validation.valid) {
+          console.log('  - Validation passed, attempting to embed...');
+          studentPhotoData = await embedImageDirectly(student.photo_url);
+          if (studentPhotoData) {
+            console.log('  - ✅ Real photo embedded successfully');
+          } else {
+            console.log('  - ⚠️ Embedding failed for real photo');
+          }
+        } else {
+          console.log('  - ⚠️ Photo validation failed:', validation.reason);
         }
       } else {
-        console.log('⚠️ Student photo validation failed:', validation.reason);
-        studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
+        console.log('  - No photo URL provided');
+        studentPhotoData = null;
       }
-    } else {
-      console.log('📷 No photo URL, generating personalized photo');
-      studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
+    } catch (err) {
+      console.error('  - ❌ Error processing photo URL:', err.message);
+      studentPhotoData = null;
     }
     
-    // Validate and load school logo if not provided
-    if (!schoolLogoData && school?.logo_url) {
-      console.log('🏫 Processing school logo...');
-      const validation = await validateAndDebugImage(school.logo_url, 'school logo');
-      
-      if (validation.valid) {
-        schoolLogoData = await embedImageDirectly(school.logo_url);
-        if (!schoolLogoData) {
-          console.log('⚠️ School logo embedding failed, using fallback');
-          schoolLogoData = getDefaultLogoB64();
+    // NO FALLBACK - Only real images
+    
+    // SCHOOL LOGO HANDLING
+    console.log('🏫 Processing school logo...');
+    try {
+      if (!schoolLogoData && school?.logo_url) {
+        console.log('  - Found logo URL:', school.logo_url.substring(0, 60) + '...');
+        const validation = await validateAndDebugImage(school.logo_url, 'school logo');
+        
+        if (validation.valid) {
+          console.log('  - Validation passed, attempting to embed...');
+          schoolLogoData = await embedImageDirectly(school.logo_url);
+          if (schoolLogoData) {
+            console.log('  - ✅ Real logo embedded successfully');
+          } else {
+            console.log('  - ⚠️ Embedding failed for real logo');
+          }
+        } else {
+          console.log('  - ⚠️ Logo validation failed:', validation.reason);
         }
-      } else {
-        console.log('⚠️ School logo validation failed:', validation.reason);
-        schoolLogoData = getDefaultLogoB64();
       }
-    } else if (!schoolLogoData) {
-      console.log('🏫 No logo URL, generating default logo');
-      schoolLogoData = getDefaultLogoB64();
+    } catch (err) {
+      console.error('  - ❌ Error processing logo URL:', err.message);
+      schoolLogoData = null;
     }
     
-    // 2. Verify all images are ready
-    console.log('🔍 Image preparation results:');
-    console.log('  - Student photo:', studentPhotoData ? '✅ Ready' : '❌ Failed');
-    console.log('  - School logo:', schoolLogoData ? '✅ Ready' : '❌ Failed');
-    
-    if (!studentPhotoData) {
-      console.log('🚨 Emergency: Creating emergency student photo');
-      studentPhotoData = getPersonalizedPhotoB64('Student');
-    }
-    
-    if (!schoolLogoData) {
-      console.log('🚨 Emergency: Creating emergency school logo');
-      schoolLogoData = getDefaultLogoB64();
-    }
-    
-    console.log('Images loaded - Photo:', studentPhotoData ? 'SUCCESS' : 'FAILED');
-    console.log('Images loaded - Logo:', schoolLogoData ? 'SUCCESS' : 'FAILED');
-
-    // 2. Build student data
+    // FINAL STATUS CHECK
+    console.log('📊 Image status:');
+    console.log('  - Student photo:', studentPhotoData ? '✅ LOADED' : '❌ NOT AVAILABLE');
+    console.log('  - School logo:', schoolLogoData ? '✅ LOADED' : '❌ NOT AVAILABLE');
     const d = student?.details || {};
     const fullAddress = [d.place, d.district, d.city, d.state, d.pin].filter(Boolean).join(', ');
     const studentName = (d.student_name || student?.student_name || '').toUpperCase();
     
-    console.log('Student data - Name:', studentName);
-    console.log('Student data - Address:', fullAddress);
+    console.log('Student info - Name:', studentName, ', Address:', fullAddress);
 
-    // 3. Create HTML with embedded images (NO external URLs)
+    // Create HTML with embedded base64 images - CURRENT MODERN STYLE
     const cardHTML = `
-      <div style="display:flex;gap:24px;align-items:flex-start;background:#e5e7eb;padding:32px;width:fit-content;font-family:'Inter','Segoe UI',Arial,sans-serif;">
+      <div style="display:flex;gap:20px;align-items:flex-start;background:#f5f5f5;padding:30px;width:fit-content;font-family:'Inter','Segoe UI',Arial,sans-serif;">
 
-        <!-- FRONT CARD -->
-        <div style="width:320px;height:500px;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.15);background:#ffffff;position:relative;flex-shrink:0;">
+        <!-- FRONT CARD - Current Modern Style -->
+        <div style="width:320px;height:500px;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.15);background:#ffffff;position:relative;flex-shrink:0;">
           
-          <!-- Top section with logo and school name -->
-          <div style="background:#ffffff;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;min-height:80px;">
+          <!-- Top white section with logo and school info -->
+          <div style="background:#ffffff;padding:20px;display:flex;justify-content:space-between;align-items:flex-start;min-height:90px;border-bottom:1px solid #f0f0f0;">
             <div style="display:flex;align-items:center;gap:12px;flex:1;">
-              <img src="${schoolLogoData}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;" />
-              <div style="font-size:14px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2;max-width:140px;">
+              <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#4a5568;display:flex;align-items:center;justify-content:center;">
+                ${schoolLogoData ? `<img src="${schoolLogoData}" style="width:100%;height:100%;object-fit:contain;" alt="logo" />` : '<div style="width:100%;height:100%;background:#4a5568;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">LOGO</div>'}
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;line-height:1.3;max-width:140px;">
                 ${school?.school_name || 'IMCB SOLUTIONS LLP'}
               </div>
             </div>
-            <div style="background:#3b4d7a;color:#ffffff;font-size:12px;font-weight:600;padding:8px 12px;border-radius:8px;text-align:center;min-width:80px;">
+            <div style="background:#4a5568;color:#ffffff;font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;text-align:center;min-width:70px;">
               ${school?.place || 'WAYANAD'}
             </div>
           </div>
 
-          <!-- Purple blob section with photo -->
-          <div style="position:relative;height:240px;background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #3b4d7a 100%);overflow:hidden;">
-            <div style="position:absolute;top:-40px;left:-40px;width:280px;height:280px;background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #3b4d7a 100%);border-radius:60% 40% 30% 70% / 60% 30% 70% 40%;transform:rotate(-15deg);"></div>
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);width:140px;height:140px;border-radius:50%;border:4px solid #ffffff;background:#ffffff;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:10;">
-              <img src="${studentPhotoData}" style="width:100%;height:100%;object-fit:cover;" />
+          <!-- Purple gradient blob section with student photo -->
+          <div style="position:relative;height:220px;background:linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #4a5568 100%);overflow:hidden;">
+            <!-- Organic blob shape -->
+            <div style="position:absolute;top:-30px;left:-30px;width:260px;height:260px;background:linear-gradient(135deg, rgba(124,58,237,0.9) 0%, rgba(91,33,182,0.8) 50%, rgba(74,85,104,0.9) 100%);border-radius:60% 40% 30% 70% / 60% 30% 70% 40%;transform:rotate(-12deg);"></div>
+            
+            <!-- Student photo in white circle -->
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);width:130px;height:130px;border-radius:50%;border:4px solid #ffffff;background:#ffffff;overflow:hidden;box-shadow:0 8px 25px rgba(0,0,0,0.2);z-index:10;">
+              ${studentPhotoData ? `<img src="${studentPhotoData}" style="width:100%;height:100%;object-fit:cover;" alt="student-photo" />` : '<div style="width:100%;height:100%;background:#f0f0f0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#666;font-size:40px;">�</div>'}
             </div>
           </div>
 
-          <!-- Student info section -->
-          <div style="padding:20px;text-align:center;background:#ffffff;">
-            <div style="font-size:20px;font-weight:900;color:#1f2937;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">${studentName}</div>
-            <div style="font-size:18px;font-weight:700;color:#7c3aed;margin-bottom:16px;">${student?.student_class || '1'}${student?.div || 'A'}</div>
+          <!-- Student information section -->
+          <div style="padding:24px 20px;text-align:center;background:#ffffff;">
+            <!-- Student name -->
+            <div style="font-size:18px;font-weight:900;color:#1f2937;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px;">${studentName}</div>
             
-            <div style="text-align:left;display:flex;flex-direction:column;gap:8px;">
-              <div style="display:flex;align-items:flex-start;font-size:14px;">
-                <span style="color:#374151;font-weight:700;min-width:70px;">Ad No</span>
+            <!-- Class -->
+            <div style="font-size:16px;font-weight:700;color:#7c3aed;margin-bottom:18px;">${student?.student_class || '1'}${student?.div || 'A'}</div>
+            
+            <!-- Information rows -->
+            <div style="text-align:left;display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;align-items:flex-start;font-size:13px;">
+                <span style="color:#374151;font-weight:700;min-width:65px;">Ad No</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
                 <span style="color:#1f2937;font-weight:600;">${student?.admno || 'S/7058'}</span>
               </div>
-              <div style="display:flex;align-items:flex-start;font-size:14px;">
-                <span style="color:#374151;font-weight:700;min-width:70px;">Phone</span>
+              <div style="display:flex;align-items:flex-start;font-size:13px;">
+                <span style="color:#374151;font-weight:700;min-width:65px;">Phone</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
                 <span style="color:#1f2937;font-weight:600;">${d.phone || student?.mobile || '9061947005'}</span>
               </div>
-              <div style="display:flex;align-items:flex-start;font-size:14px;">
-                <span style="color:#374151;font-weight:700;min-width:70px;">Address</span>
+              <div style="display:flex;align-items:flex-start;font-size:13px;">
+                <span style="color:#374151;font-weight:700;min-width:65px;">Address</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
-                <span style="color:#1f2937;font-weight:600;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;max-width:180px;">${fullAddress || 'Wayanad, Wayanad, Kunhome, Kerala, 670731'}</span>
+                <span style="color:#1f2937;font-weight:600;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;max-width:170px;">${fullAddress || 'Wayanad, Wayanad, Kunhome, Kerala, 670731'}</span>
               </div>
             </div>
+
+            <!-- Decorative diamond pattern -->
+            <div style="margin-top:16px;height:8px;background:linear-gradient(90deg, transparent 0%, #7c3aed 20%, #5b21b6 50%, #7c3aed 80%, transparent 100%);border-radius:4px;opacity:0.6;"></div>
           </div>
         </div>
 
-        <!-- BACK CARD -->
-        <div style="width:320px;height:500px;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.15);background:linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);position:relative;flex-shrink:0;">
+        <!-- BACK CARD - Current Modern Style -->
+        <div style="width:320px;height:500px;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.15);background:#f8f9fa;position:relative;flex-shrink:0;">
           
           <!-- Top triangular design -->
-          <div style="position:relative;height:120px;overflow:hidden;">
-            <div style="position:absolute;top:0;left:0;width:0;height:0;border-right:160px solid transparent;border-top:120px solid #7c3aed;"></div>
-            <div style="position:absolute;top:0;right:0;width:0;height:0;border-left:320px solid transparent;border-top:80px solid #3b4d7a;"></div>
+          <div style="position:relative;height:100px;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;width:0;height:0;border-right:160px solid transparent;border-top:100px solid #7c3aed;"></div>
+            <div style="position:absolute;top:0;right:0;width:0;height:0;border-left:320px solid transparent;border-top:70px solid #4a5568;"></div>
           </div>
 
-          <!-- Logo in white pill -->
-          <div style="display:flex;justify-content:center;margin:-40px 0 24px;position:relative;z-index:2;">
-            <div style="background:#ffffff;border-radius:24px;padding:12px 24px;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;min-height:60px;">
-              <img src="${schoolLogoData}" style="height:36px;max-width:120px;object-fit:contain;" />
+          <!-- School logo in white pill container -->
+          <div style="display:flex;justify-content:center;margin:-35px 0 20px;position:relative;z-index:2;">
+            <div style="background:#ffffff;border-radius:20px;padding:10px 20px;box-shadow:0 4px 15px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;min-height:50px;min-width:100px;">
+              ${schoolLogoData ? `<img src="${schoolLogoData}" style="height:30px;max-width:100px;object-fit:contain;" alt="logo" />` : '<div style="height:30px;width:80px;background:#4a5568;border-radius:4px;color:white;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:bold;">LOGO</div>'}
             </div>
           </div>
 
-          <!-- Rules section -->
-          <div style="padding:0 24px 16px;display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;">•</span><span>This card is issued for the academic year 2025-26</span></div>
-            <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;">•</span><span>This card is non-transferable.</span></div>
-            <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;">•</span><span>Always carry your card during school hours.</span></div>
-            <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;">•</span><span>In case of loss, inform issuing authority.</span></div>
-            <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;">•</span><span>If found, please post it to given address</span></div>
+          <!-- Rules and regulations -->
+          <div style="padding:0 20px 16px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;">
+              <span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span>
+              <span>This card is issued for the academic year 2025-26</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;">
+              <span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span>
+              <span>This card is non-transferable.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;">
+              <span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span>
+              <span>Always carry your card during school hours.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;">
+              <span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span>
+              <span>In case of loss, inform issuing authority.</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;">
+              <span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span>
+              <span>If found, please post it to given address</span>
+            </div>
           </div>
 
-          <!-- School info footer -->
-          <div style="padding:16px 24px;margin-top:auto;border-top:1px solid rgba(107,114,128,0.2);">
-            <div style="font-size:16px;font-weight:900;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${school?.school_name || 'IMCB SOLUTIONS LLP'}</div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">${school?.address || 'IMCB SOLUTIONS LLP'}</div>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4b5563;"><span style="color:#ef4444;">📍</span><span>${school?.place || 'WAYANAD'}</span></div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4b5563;"><span style="color:#ef4444;">📞</span><span>${school?.phone || '9061947005'}</span></div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4b5563;"><span style="color:#d1d5db;">✉️</span><span>${school?.email || 'sajiththomas231@gmail.com'}</span></div>
+          <!-- School information footer -->
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;background:linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0.8));border-top:1px solid rgba(107,114,128,0.2);">
+            <div style="font-size:14px;font-weight:900;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${school?.school_name || 'IMCB SOLUTIONS LLP'}</div>
+            <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">${school?.address || 'IMCB SOLUTIONS LLP'}</div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4b5563;">
+                <span style="color:#ef4444;font-size:10px;">📍</span>
+                <span>${school?.place || 'WAYANAD'}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4b5563;">
+                <span style="color:#3b82f6;font-size:10px;">📞</span>
+                <span>${school?.phone || '9061947005'}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4b5563;">
+                <span style="color:#6b7280;font-size:10px;">✉️</span>
+                <span>${school?.email || 'sajiththomas231@gmail.com'}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     `;
 
-    // 3. Create container and mount HTML
+    // Create and mount HTML container
     const container = document.createElement('div');
     container.style.cssText = `
       position:fixed;top:-9999px;left:-9999px;
@@ -875,44 +853,40 @@ const IssueIDCard = () => {
     container.innerHTML = cardHTML;
     document.body.appendChild(container);
 
-    console.log('HTML template created with embedded images');
+    console.log('✅ HTML DOM created with base64 images');
 
-    // 4. Wait for rendering and image loading
-    console.log('Waiting for DOM rendering and image loading...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for DOM rendering
+    console.log('⏳ Waiting for DOM rendering (1500ms)...');
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // 5. Verify images are loaded
+    // Verify images loaded in DOM
     const images = container.querySelectorAll('img');
-    console.log(`Found ${images.length} images in container`);
-    images.forEach((img, index) => {
-      console.log(`Image ${index + 1}: ${img.src.substring(0, 50)}... (${img.complete ? 'loaded' : 'loading'})`);
+    console.log(`📊 Found ${images.length} images in DOM`);
+    images.forEach((img, i) => {
+      const isLoaded = img.complete && (img.naturalWidth > 0 || img.src.startsWith('data:'));
+      console.log(`  Image ${i + 1}: ${isLoaded ? '✅' : '⏳'} (src length: ${img.src.length})`);
     });
 
-    // 6. Capture with html2canvas
-    console.log('Starting html2canvas capture...');
+    // Capture with html2canvas
+    console.log('🎨 Capturing with html2canvas...');
     const canvas = await html2canvas(container.firstElementChild, {
       scale: 2,
       useCORS: false,
       allowTaint: true,
       backgroundColor: '#e5e7eb',
-      logging: true,
+      logging: false,
       width: container.firstElementChild.scrollWidth,
       height: container.firstElementChild.scrollHeight,
-      imageTimeout: 30000,
-      removeContainer: false,
-      onclone: (clonedDoc) => {
-        console.log('html2canvas cloned document');
-        const clonedImages = clonedDoc.querySelectorAll('img');
-        console.log(`Cloned document has ${clonedImages.length} images`);
-      }
+      imageTimeout: 0,
+      removeContainer: false
     });
 
-    console.log('Canvas captured:', canvas.width, 'x', canvas.height);
+    console.log('✅ Canvas captured:', canvas.width, 'x', canvas.height);
 
-    // 7. Cleanup
+    // Cleanup DOM
     document.body.removeChild(container);
 
-    // 8. Add to PDF
+    // Add to PDF
     if (!isFirst) pdf.addPage();
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
@@ -931,7 +905,7 @@ const IssueIDCard = () => {
     
     pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', imgX, imgY, imgW, imgH);
 
-    // Student info
+    // Add student info footer
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(75, 85, 99);
@@ -939,7 +913,7 @@ const IssueIDCard = () => {
     const textY = Math.min(imgY + imgH + 15, pageH - 10);
     pdf.text(info, pageW / 2, textY, { align: 'center' });
     
-    console.log('=== PDF generation completed for:', student?.student_name);
+    console.log('✅ PDF page complete for:', student?.student_name);
   };
 
   // Single student PDF download
@@ -948,45 +922,138 @@ const IssueIDCard = () => {
     setDownloadingPDF(true);
     setSaveMsg('');
     try {
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      // Fetch logo on-demand for PDF generation
-      const logoDataUrl = school?.logo_url ? await fetchLogoAsDataUrl(school.logo_url) : null;
-      await captureCardToPdf(pdf, selected, school, logoDataUrl, true);
-      const fileName = `ID_Card_${(selected.student_name || selected.admno || 'student').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-      pdf.save(fileName);
+      console.log('📥 Requesting PDF from backend for:', selected.student_name);
+
+      const payload = {
+        student: {
+          student_name: selected.student_name,
+          student_class: selected.student_class,
+          div: selected.div,
+          admno: selected.admno,
+          mobile: selected.mobile,
+          photo_url: selected.photo_url,
+        },
+        school: school,
+        details: selected.details || {},
+      };
+
+      const response = await fetch('/api/id-card/generate-pdf/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', response.status, response.statusText);
+
+      // Check if response is successful
+      if (!response.ok) {
+        let errorMsg = 'PDF generation failed (Status: ' + response.status + ')';
+        try {
+          // Read body once and try to parse as JSON
+          const responseText = await response.text();
+          console.error('Backend response:', responseText);
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMsg = errorData.message || errorMsg;
+          } catch (parseError) {
+            // Not JSON, use raw text as error
+            if (responseText) errorMsg = responseText;
+          }
+        } catch (e) {
+          console.error('Error reading response:', e);
+        }
+        throw new Error(errorMsg);
+      }
+
+      console.log('Response is OK, reading as blob...');
+      // Response is successful - should be PDF
+      const blob = await response.blob();
+      console.log('Blob created, size:', blob.size);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ID_Card_${selected.admno}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
       setSaveMsg('✅ ID Card PDF downloaded successfully.');
+      console.log('✅ PDF download complete');
     } catch (err) {
-      console.error('PDF generation error:', err);
+      console.error('❌ PDF generation error:', err);
       setSaveMsg('❌ Failed to generate PDF: ' + err.message);
     } finally {
       setDownloadingPDF(false);
     }
   };
 
-  // Bulk PDF download
+  // Bulk PDF download (using backend)
   const handleBulkDownloadPDF = async () => {
     const submittedStudents = filtered.filter(s => s.parent_submitted);
     if (submittedStudents.length === 0) return;
     setDownloadingPDF(true);
     setSaveMsg('');
     try {
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      // Fetch logo once for all students
-      const logoDataUrl = school?.logo_url ? await fetchLogoAsDataUrl(school.logo_url) : null;
-      for (let i = 0; i < submittedStudents.length; i++) {
-        await captureCardToPdf(pdf, submittedStudents[i], school, logoDataUrl, i === 0);
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        pdf.setFontSize(8);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(150, 150, 150);
-        pdf.text(`Page ${i + 1} of ${submittedStudents.length}`, pageW - 10, pageH - 5, { align: 'right' });
+      console.log('📥 Requesting bulk PDF from backend for', submittedStudents.length, 'students');
+
+      const payload = {
+        institution_id: institution_id,
+        school: school,
+        students: submittedStudents.map(s => ({
+          student: {
+            student_name: s.student_name,
+            student_class: s.student_class,
+            div: s.div,
+            admno: s.admno,
+            mobile: s.mobile,
+            photo_url: s.photo_url,
+          },
+          details: s.details || {},
+        })),
+      };
+
+      const response = await fetch('/api/id-card/generate-bulk-pdf/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', response.status, response.statusText);
+
+      // Check if response is successful
+      if (!response.ok) {
+        let errorMsg = 'PDF generation failed (Status: ' + response.status + ')';
+        try {
+          // Read body once and try to parse as JSON
+          const responseText = await response.text();
+          console.error('Backend response:', responseText);
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMsg = errorData.message || errorMsg;
+          } catch (parseError) {
+            // Not JSON, use raw text as error
+            if (responseText) errorMsg = responseText;
+          }
+        } catch (e) {
+          console.error('Error reading response:', e);
+        }
+        throw new Error(errorMsg);
       }
-      const fileName = `ID_Cards_Bulk_${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(fileName);
+
+      console.log('Response is OK, reading as blob...');
+      // Response is successful - should be PDF
+      const blob = await response.blob();
+      console.log('Blob created, size:', blob.size);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ID_Cards_Bulk_${new Date().toISOString().split('T')[0]}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
       setSaveMsg(`✅ ${submittedStudents.length} ID Cards downloaded successfully.`);
+      console.log('✅ Bulk PDF download complete');
     } catch (err) {
-      console.error('Bulk PDF generation error:', err);
+      console.error('❌ Bulk PDF generation error:', err);
       setSaveMsg('❌ Failed to generate bulk PDF: ' + err.message);
     } finally {
       setDownloadingPDF(false);
