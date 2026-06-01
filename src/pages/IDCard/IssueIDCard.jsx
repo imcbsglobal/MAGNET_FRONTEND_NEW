@@ -214,78 +214,178 @@ const IssueIDCard = () => {
     await Promise.all(imagePromises);
   };
 
-  // DIRECT IMAGE EMBEDDING - Enhanced with better error handling
+  // ROBUST IMAGE EMBEDDING - Multiple fallback methods
   const embedImageDirectly = async (url) => {
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     
-    console.log('Directly embedding image:', url);
+    console.log('🖼️ Starting image embedding for:', url);
     
+    // Method 1: Try proxy approach (no CORS issues)
     try {
-      // Method 1: Try fetch with blob
+      console.log('📡 Trying proxy method...');
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      if (response.ok) {
+        const blob = await response.blob();
+        const dataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            console.log('✅ Proxy method successful');
+            resolve(reader.result);
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+        if (dataUrl) return dataUrl;
+      }
+    } catch (error) {
+      console.log('❌ Proxy method failed:', error.message);
+    }
+    
+    // Method 2: Direct fetch with CORS
+    try {
+      console.log('🔄 Trying direct fetch...');
       const response = await fetch(url, {
         method: 'GET',
         mode: 'cors',
         credentials: 'omit',
-        headers: {
-          'Accept': 'image/*'
-        }
+        headers: { 'Accept': 'image/*' }
       });
       
       if (response.ok) {
         const blob = await response.blob();
-        return new Promise((resolve) => {
+        const dataUrl = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = () => {
-            console.log('Image successfully converted to base64:', url);
+            console.log('✅ Direct fetch successful');
             resolve(reader.result);
           };
-          reader.onerror = () => {
-            console.warn('FileReader failed for:', url);
-            resolve(null);
-          };
+          reader.onerror = () => resolve(null);
           reader.readAsDataURL(blob);
         });
+        if (dataUrl) return dataUrl;
       }
     } catch (error) {
-      console.log('Fetch method failed, trying canvas method...', error);
+      console.log('❌ Direct fetch failed:', error.message);
     }
     
-    // Method 2: Create image element and draw to canvas
-    return new Promise((resolve) => {
+    // Method 3: Canvas-based conversion (no-cors mode)
+    try {
+      console.log('🎨 Trying canvas method...');
       const img = new Image();
       
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = img.naturalWidth || img.width || 200;
-          canvas.height = img.naturalHeight || img.height || 200;
-          ctx.drawImage(img, 0, 0);
-          const dataURL = canvas.toDataURL('image/png', 0.9);
-          console.log('Canvas conversion successful:', url);
-          resolve(dataURL);
-        } catch (error) {
-          console.warn('Canvas drawing failed:', error);
+      const dataUrl = await new Promise((resolve) => {
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.naturalWidth || img.width || 400;
+            canvas.height = img.naturalHeight || img.height || 400;
+            
+            // Clear canvas with white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.drawImage(img, 0, 0);
+            const result = canvas.toDataURL('image/png', 0.9);
+            console.log('✅ Canvas method successful');
+            resolve(result);
+          } catch (canvasError) {
+            console.log('❌ Canvas drawing failed:', canvasError.message);
+            resolve(null);
+          }
+        };
+        
+        img.onerror = () => {
+          console.log('❌ Image load failed');
           resolve(null);
+        };
+        
+        // Try different CORS settings
+        img.crossOrigin = 'anonymous';
+        img.src = url;
+        
+        // Timeout fallback
+        setTimeout(() => {
+          console.log('⏰ Canvas method timeout');
+          resolve(null);
+        }, 15000);
+      });
+      
+      if (dataUrl) return dataUrl;
+    } catch (error) {
+      console.log('❌ Canvas method failed:', error.message);
+    }
+    
+    // Method 4: Server-side proxy (if available)
+    try {
+      console.log('🌐 Trying server proxy...');
+      const proxyResponse = await fetch('/api/proxy-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: url })
+      });
+      
+      if (proxyResponse.ok) {
+        const data = await proxyResponse.json();
+        if (data.base64) {
+          console.log('✅ Server proxy successful');
+          return data.base64;
         }
-      };
+      }
+    } catch (error) {
+      console.log('❌ Server proxy failed:', error.message);
+    }
+    
+    console.log('🚫 All image embedding methods failed for:', url);
+    return null;
+  };
+
+  // IMAGE VALIDATION AND DEBUGGING
+  const validateAndDebugImage = async (url, type = 'unknown') => {
+    console.log(`🔍 Validating ${type} image:`, url);
+    
+    if (!url) {
+      console.log(`❌ ${type} image URL is empty`);
+      return { valid: false, reason: 'Empty URL' };
+    }
+    
+    if (url.startsWith('data:')) {
+      console.log(`✅ ${type} image is already base64`);
+      return { valid: true, reason: 'Base64 data URL' };
+    }
+    
+    try {
+      // Test if URL is accessible
+      const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+      console.log(`📡 ${type} image HEAD request status:`, response.status || 'no-cors');
       
-      img.onerror = () => {
-        console.warn('Image load failed:', url);
-        resolve(null);
-      };
+      // Test image loading
+      const img = new Image();
+      const loadTest = await new Promise((resolve) => {
+        img.onload = () => {
+          console.log(`✅ ${type} image loads successfully:`, img.width, 'x', img.height);
+          resolve({ valid: true, width: img.width, height: img.height });
+        };
+        img.onerror = () => {
+          console.log(`❌ ${type} image failed to load`);
+          resolve({ valid: false, reason: 'Image load error' });
+        };
+        img.crossOrigin = 'anonymous';
+        img.src = url;
+        
+        setTimeout(() => {
+          console.log(`⏰ ${type} image load timeout`);
+          resolve({ valid: false, reason: 'Load timeout' });
+        }, 5000);
+      });
       
-      // Set crossOrigin and src
-      img.crossOrigin = 'anonymous';
-      img.src = url;
-      
-      // Fallback timeout
-      setTimeout(() => {
-        console.warn('Image loading timeout:', url);
-        resolve(null);
-      }, 10000);
-    });
+      return loadTest;
+    } catch (error) {
+      console.log(`❌ ${type} image validation error:`, error.message);
+      return { valid: false, reason: error.message };
+    }
   };
 
   // Perfect fallback images matching the ID card design
@@ -602,34 +702,64 @@ const IssueIDCard = () => {
 
   // Renders one student's cards into a hidden div, captures with html2canvas, adds to pdf
   const captureCardToPdf = async (pdf, student, school, logoB64, isFirst) => {
-    console.log('=== Starting PDF generation for:', student?.student_name);
+    console.log('🎯 === Starting PDF generation for:', student?.student_name);
     
-    // 1. Pre-load ALL images before creating HTML
+    // 1. Validate and pre-load ALL images before creating HTML
     let studentPhotoData = null;
     let schoolLogoData = logoB64;
     
-    // Load student photo
+    // Validate and load student photo
     if (student?.photo_url) {
-      console.log('Loading student photo:', student.photo_url);
-      studentPhotoData = await embedImageDirectly(student.photo_url);
-      if (!studentPhotoData) {
-        console.log('Student photo failed, using personalized fallback');
+      console.log('👤 Processing student photo...');
+      const validation = await validateAndDebugImage(student.photo_url, 'student photo');
+      
+      if (validation.valid) {
+        studentPhotoData = await embedImageDirectly(student.photo_url);
+        if (!studentPhotoData) {
+          console.log('⚠️ Student photo embedding failed, using personalized fallback');
+          studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
+        }
+      } else {
+        console.log('⚠️ Student photo validation failed:', validation.reason);
         studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
       }
     } else {
-      console.log('No photo URL, generating personalized photo');
+      console.log('📷 No photo URL, generating personalized photo');
       studentPhotoData = getPersonalizedPhotoB64(student?.student_name || student?.details?.student_name);
     }
     
-    // Load school logo if not provided
+    // Validate and load school logo if not provided
     if (!schoolLogoData && school?.logo_url) {
-      console.log('Loading school logo:', school.logo_url);
-      schoolLogoData = await embedImageDirectly(school.logo_url);
-      if (!schoolLogoData) {
-        console.log('School logo failed, using fallback');
+      console.log('🏫 Processing school logo...');
+      const validation = await validateAndDebugImage(school.logo_url, 'school logo');
+      
+      if (validation.valid) {
+        schoolLogoData = await embedImageDirectly(school.logo_url);
+        if (!schoolLogoData) {
+          console.log('⚠️ School logo embedding failed, using fallback');
+          schoolLogoData = getDefaultLogoB64();
+        }
+      } else {
+        console.log('⚠️ School logo validation failed:', validation.reason);
         schoolLogoData = getDefaultLogoB64();
       }
     } else if (!schoolLogoData) {
+      console.log('🏫 No logo URL, generating default logo');
+      schoolLogoData = getDefaultLogoB64();
+    }
+    
+    // 2. Verify all images are ready
+    console.log('🔍 Image preparation results:');
+    console.log('  - Student photo:', studentPhotoData ? '✅ Ready' : '❌ Failed');
+    console.log('  - School logo:', schoolLogoData ? '✅ Ready' : '❌ Failed');
+    
+    if (!studentPhotoData) {
+      console.log('🚨 Emergency: Creating emergency student photo');
+      studentPhotoData = getPersonalizedPhotoB64('Student');
+    }
+    
+    if (!schoolLogoData) {
+      console.log('🚨 Emergency: Creating emergency school logo');
       schoolLogoData = getDefaultLogoB64();
     }
     
