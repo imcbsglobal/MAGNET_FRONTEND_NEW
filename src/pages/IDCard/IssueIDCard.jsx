@@ -170,58 +170,72 @@ const IssueIDCard = () => {
     await Promise.all(imagePromises);
   };
 
-  // SIMPLE AND RELIABLE image conversion - no CORS issues
-  const convertImageToBase64 = async (url) => {
+  // DIRECT IMAGE EMBEDDING - No conversion needed, embed directly in HTML
+  const embedImageDirectly = async (url) => {
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     
-    console.log('Converting image:', url);
+    console.log('Directly embedding image:', url);
     
     try {
-      // Create a simple image element
+      // Method 1: Try fetch with blob
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Accept': 'image/*'
+        }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch (error) {
+      console.log('Fetch method failed, trying proxy method...');
+    }
+    
+    // Method 2: Create image element and draw to canvas immediately
+    return new Promise((resolve) => {
       const img = new Image();
       
-      return new Promise((resolve) => {
-        img.onload = () => {
-          try {
-            // Create canvas with exact image dimensions
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = img.width;
-            canvas.height = img.height;
-            
-            // Draw image to canvas
-            ctx.drawImage(img, 0, 0);
-            
-            // Convert to base64
-            const dataURL = canvas.toDataURL('image/png', 1.0);
-            console.log('Image converted successfully:', url);
-            resolve(dataURL);
-          } catch (error) {
-            console.warn('Canvas conversion failed:', error);
-            resolve(null);
-          }
-        };
-        
-        img.onerror = () => {
-          console.warn('Image load failed:', url);
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.naturalWidth || img.width || 200;
+          canvas.height = img.naturalHeight || img.height || 200;
+          ctx.drawImage(img, 0, 0);
+          const dataURL = canvas.toDataURL('image/png', 0.9);
+          console.log('Direct embedding successful:', url);
+          resolve(dataURL);
+        } catch (error) {
+          console.warn('Canvas drawing failed:', error);
           resolve(null);
-        };
-        
-        // Set source without CORS
-        img.src = url;
-        
-        // Timeout fallback
-        setTimeout(() => {
-          console.warn('Image conversion timeout:', url);
-          resolve(null);
-        }, 10000);
-      });
-    } catch (error) {
-      console.warn('Image conversion error:', error);
-      return null;
-    }
+        }
+      };
+      
+      img.onerror = () => {
+        console.warn('Direct image load failed:', url);
+        resolve(null);
+      };
+      
+      // Try without CORS first
+      img.crossOrigin = '';
+      img.src = url;
+      
+      // Fallback timeout
+      setTimeout(() => {
+        console.warn('Direct embedding timeout:', url);
+        resolve(null);
+      }, 8000);
+    });
   };
 
   // Fallback base64 images for when conversion fails
