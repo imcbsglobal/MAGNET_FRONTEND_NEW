@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { fetchIDCardFormStatus } from '../../services/api';
 import IDCardParentForm from './IDCardParentForm';
 import './IDCard.scss';
-import './MobileFriendlyForm.scss';
 
 const IDCardFormByClientId = () => {
   const { clientId } = useParams();

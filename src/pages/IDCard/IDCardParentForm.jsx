@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { lookupIDCardByPhone, submitIDCardByPhone } from '../../services/api';
 import './IDCard.scss';
-import './MobileFriendlyForm.scss';
 
 const EMPTY_FORM = {
   student_name: '', father_name: '', mother_name: '', dob: '',
@@ -9,51 +8,48 @@ const EMPTY_FORM = {
 };
 
 const FIELDS = [
-  { name: 'student_name', label: 'Student Name',  type: 'text',  icon: '👤', section: 'personal', required: true },
-  { name: 'father_name',  label: 'Father Name',   type: 'text',  icon: '👨', section: 'personal', required: true },
-  { name: 'mother_name',  label: 'Mother Name',   type: 'text',  icon: '👩', section: 'personal', required: true },
-  { name: 'dob',          label: 'Date of Birth', type: 'date',  icon: '📅', section: 'personal', required: true },
-  { name: 'phone',        label: 'Phone Number',  type: 'tel',   icon: '📱', section: 'contact',  required: true },
-  { name: 'email',        label: 'Email Address', type: 'email', icon: '📧', section: 'contact',  required: true },
-  { name: 'place',        label: 'Place',         type: 'text',  icon: '📍', section: 'address',  required: true },
-  { name: 'district',     label: 'District',      type: 'text',  icon: '🏙️', section: 'address',  required: true },
-  { name: 'city',         label: 'City',          type: 'text',  icon: '🌆', section: 'address',  required: true },
-  { name: 'state',        label: 'State',         type: 'text',  icon: '🗺️', section: 'address',  required: true },
-  { name: 'pin',          label: 'PIN Code',      type: 'text',  icon: '📮', section: 'address',  required: true },
+  { name: 'student_name', label: 'Student Name',  type: 'text',  icon: '🎓', section: 'personal' },
+  { name: 'father_name',  label: 'Father Name',   type: 'text',  icon: '👨', section: 'personal' },
+  { name: 'mother_name',  label: 'Mother Name',   type: 'text',  icon: '👩', section: 'personal' },
+  { name: 'dob',          label: 'Date of Birth', type: 'date',  icon: '📅', section: 'personal' },
+  { name: 'phone',        label: 'Phone Number',  type: 'tel',   icon: '📞', section: 'contact'  },
+  { name: 'email',        label: 'Email Address', type: 'email', icon: '✉️', section: 'contact'  },
+  { name: 'place',        label: 'Place',         type: 'text',  icon: '📍', section: 'address'  },
+  { name: 'district',     label: 'District',      type: 'text',  icon: '🏙️', section: 'address'  },
+  { name: 'city',         label: 'City',          type: 'text',  icon: '🌆', section: 'address'  },
+  { name: 'state',        label: 'State',         type: 'text',  icon: '🗺️', section: 'address'  },
+  { name: 'pin',          label: 'PIN Code',      type: 'text',  icon: '📮', section: 'address'  },
 ];
 
-// ── Enhanced Validation with better user feedback ────────────────────────────
+// ── Validation rules per field ────────────────────────────────────────────────
 const VALIDATORS = {
   student_name: (v) => {
     if (!v.trim()) return 'Student name is required.';
-    if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters, spaces, and dots allowed.';
-    if (v.trim().length < 2) return 'Name must be at least 2 characters.';
+    if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters and spaces allowed.';
+    if (v.trim().length < 2) return 'Name is too short.';
     return '';
   },
   father_name: (v) => {
     if (!v.trim()) return 'Father name is required.';
-    if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters, spaces, and dots allowed.';
+    if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters and spaces allowed.';
     return '';
   },
   mother_name: (v) => {
     if (!v.trim()) return 'Mother name is required.';
-    if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters, spaces, and dots allowed.';
+    if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters and spaces allowed.';
     return '';
   },
   dob: (v) => {
     if (!v) return 'Date of birth is required.';
     const d = new Date(v);
     if (isNaN(d.getTime())) return 'Enter a valid date.';
-    if (d >= new Date()) return 'Date must be in the past.';
-    const age = new Date().getFullYear() - d.getFullYear();
-    if (age > 25 || age < 3) return 'Please check the date of birth.';
+    if (d >= new Date()) return 'Date of birth must be in the past.';
     return '';
   },
   phone: (v) => {
     const digits = v.replace(/\D/g, '');
     if (!digits) return 'Phone number is required.';
-    if (digits.length !== 10) return 'Enter a valid 10-digit number.';
-    if (!digits.match(/^[6789]/)) return 'Enter a valid Indian mobile number.';
+    if (digits.length !== 10) return 'Phone must be exactly 10 digits.';
     return '';
   },
   email: (v) => {
@@ -84,71 +80,49 @@ const VALIDATORS = {
   pin: (v) => {
     const digits = v.replace(/\D/g, '');
     if (!digits) return 'PIN code is required.';
-    if (digits.length !== 6) return 'PIN must be 6 digits.';
+    if (digits.length !== 6) return 'PIN must be exactly 6 digits.';
     return '';
   },
 };
 
-// ── Enhanced Input filters ───────────────────────────────────────────────────
+// ── Input filter: block invalid keystrokes per field ─────────────────────────
 const INPUT_FILTERS = {
-  student_name: (v) => v.replace(/[^a-zA-Z\s.]/g, '').slice(0, 50),
-  father_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, '').slice(0, 50),
-  mother_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, '').slice(0, 50),
+  student_name: (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
+  father_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
+  mother_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
   phone:        (v) => v.replace(/\D/g, '').slice(0, 10),
-  place:        (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 30),
-  district:     (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 30),
-  city:         (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 30),
-  state:        (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 30),
+  place:        (v) => v.replace(/[^a-zA-Z\s]/g, ''),
+  district:     (v) => v.replace(/[^a-zA-Z\s]/g, ''),
+  city:         (v) => v.replace(/[^a-zA-Z\s]/g, ''),
+  state:        (v) => v.replace(/[^a-zA-Z\s]/g, ''),
   pin:          (v) => v.replace(/\D/g, '').slice(0, 6),
-  email:        (v) => v.slice(0, 50),
 };
 
-/* ── Modern Mobile-First Header ────────────────────────────────────────────── */
-const FormHeader = ({ title, subtitle, institutionInfo }) => (
-  <div className="mf-header">
-    <div className="mf-header-content">
-      <div className="mf-logo">
-        <div className="mf-logo-icon">🪪</div>
-        <div className="mf-logo-text">ID Card</div>
-      </div>
-      <div className="mf-header-text">
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
-        {institutionInfo && (
-          <div className="mf-institution-badge">
-            <span className="mf-badge-icon">🏫</span>
-            <span>{institutionInfo}</span>
-          </div>
-        )}
-      </div>
+/* ── Shared header ─────────────────────────────────────────────────────────── */
+const FormHeader = ({ title, subtitle }) => (
+  <div className="pf-header">
+    <div className="pf-logo">🪪</div>
+    <div>
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
     </div>
   </div>
 );
 
-/* ── Step 1: Enhanced Phone Verification ───────────────────────────────────── */
+/* ── Step 1: Phone lookup ──────────────────────────────────────────────────── */
 const PhoneStep = ({ onFound, institutionId }) => {
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone]   = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError]   = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    const cleanPhone = phone.replace(/\D/g, '');
-    if (!cleanPhone) { 
-      setError('Please enter your phone number.'); 
-      return; 
-    }
-    if (cleanPhone.length !== 10) { 
-      setError('Please enter a valid 10-digit mobile number.'); 
-      return; 
-    }
-    
+    if (!phone.trim()) { setError('Please enter your phone number.'); return; }
     setLoading(true);
     try {
-      const res = await lookupIDCardByPhone(cleanPhone, institutionId);
-      onFound(res.data.students, cleanPhone);
+      const res = await lookupIDCardByPhone(phone.trim(), institutionId);
+      onFound(res.data.students, phone.trim());
     } catch (err) {
       setError(err.response?.data?.message || 'No student found with this number. Please check and try again.');
     } finally {
@@ -156,80 +130,29 @@ const PhoneStep = ({ onFound, institutionId }) => {
     }
   };
 
-  const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 10) {
-      setPhone(value);
-      setError('');
-    }
-  };
-
   return (
-    <div className="mf-container">
-      <div className="mf-card mf-card--narrow">
-        <FormHeader 
-          title="Verify Your Number" 
-          subtitle="Enter your registered mobile number to get started."
-        />
-        
-        <form onSubmit={handleSubmit} className="mf-form">
-          <div className="mf-phone-section">
-            <div className="mf-phone-visual">
-              <div className="mf-phone-icon">📱</div>
-              <h2>Mobile Verification</h2>
-              <p>Enter the mobile number registered with the school</p>
-            </div>
-            
-            <div className="mf-input-group">
-              <label htmlFor="phone-input" className="mf-label">
-                <span className="mf-label-icon">📱</span>
-                <span>Mobile Number</span>
+    <div className="pf-wrapper">
+      <div className="pf-card pf-card--narrow">
+        <FormHeader title="ID Card Portal" subtitle="Enter your registered phone number to get started." />
+        <form onSubmit={handleSubmit} className="pf-form">
+          <div className="pf-phone-step">
+            <div className="pf-phone-icon">📱</div>
+            <h2>Verify Your Number</h2>
+            <p>Enter the mobile number registered with your child's school.</p>
+            <div className="pf-field pf-field--full">
+              <label htmlFor="phone-lookup">
+                <span className="pf-field-icon">📞</span> Phone Number
               </label>
-              <div className="mf-phone-input-wrapper">
-                <span className="mf-country-code">+91</span>
-                <input
-                  id="phone-input"
-                  type="tel"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  placeholder="Enter 10-digit number"
-                  className="mf-phone-input"
-                  autoFocus
-                  inputMode="numeric"
-                />
-              </div>
-              <div className="mf-input-hint">
-                {phone.length > 0 && (
-                  <span className={phone.length === 10 ? 'mf-hint-success' : 'mf-hint-neutral'}>
-                    {phone.length}/10 digits
-                  </span>
-                )}
-              </div>
+              <input
+                id="phone-lookup" type="tel" value={phone}
+                onChange={(e) => { setPhone(e.target.value); setError(''); }}
+                placeholder="Enter your 10-digit mobile number"
+                autoFocus autoComplete="tel"
+              />
             </div>
-            
-            {error && (
-              <div className="mf-alert mf-alert--error">
-                <span className="mf-alert-icon">⚠️</span>
-                <span>{error}</span>
-              </div>
-            )}
-            
-            <button 
-              type="submit" 
-              className="mf-btn mf-btn--primary mf-btn--full"
-              disabled={loading || phone.length !== 10}
-            >
-              {loading ? (
-                <>
-                  <span className="mf-spinner" />
-                  <span>Searching...</span>
-                </>
-              ) : (
-                <>
-                  <span>Find My Details</span>
-                  <span className="mf-btn-arrow">→</span>
-                </>
-              )}
+            {error && <div className="pf-alert pf-alert--error"><span>⚠️</span> {error}</div>}
+            <button type="submit" className="pf-submit-btn" disabled={loading}>
+              {loading ? <><span className="pf-btn-spinner" /> Searching...</> : 'Find My Details →'}
             </button>
           </div>
         </form>
@@ -238,81 +161,61 @@ const PhoneStep = ({ onFound, institutionId }) => {
   );
 };
 
-/* ── Step 2: Enhanced Student Selection ───────────────────────────────────── */
+/* ── Step 2 (multiple): Student selection ─────────────────────────────────── */
 const SelectStep = ({ students, onSelect, onBack }) => (
-  <div className="mf-container">
-    <div className="mf-card">
+  <div className="pf-wrapper">
+    <div className="pf-card pf-card--narrow">
       <FormHeader
         title="Select Your Child"
-        subtitle={`Found ${students.length} student${students.length > 1 ? 's' : ''} linked to this number.`}
+        subtitle="Multiple students are linked to this number. Please select the child you want to fill details for."
       />
-      
-      <div className="mf-form">
-        <div className="mf-selection-grid">
-          {students.map((student, index) => (
+      <div className="pf-form">
+        <div className="pf-select-list">
+          {students.map((s) => (
             <button
-              key={student.admno}
+              key={s.admno}
               type="button"
-              className="mf-student-card"
-              onClick={() => onSelect(student)}
+              className="pf-select-card"
+              onClick={() => onSelect(s)}
             >
-              <div className="mf-student-avatar">
-                <span>{student.student_name?.charAt(0)?.toUpperCase() || '?'}</span>
+              <div className="pf-select-avatar">
+                {s.student_name?.charAt(0)?.toUpperCase() || '?'}
               </div>
-              <div className="mf-student-info">
-                <div className="mf-student-name">{student.student_name}</div>
-                <div className="mf-student-details">
-                  <span>Class {student.student_class}-{student.div}</span>
-                  <span>•</span>
-                  <span>Adm: {student.admno}</span>
+              <div className="pf-select-info">
+                <div className="pf-select-name">{s.student_name}</div>
+                <div className="pf-select-meta">
+                  Class {s.student_class} – {s.div} &nbsp;|&nbsp; Adm: {s.admno}
                 </div>
               </div>
-              <div className="mf-student-status">
-                {student.already_submitted ? (
-                  <div className="mf-status-badge mf-status--completed">
-                    <span>✓</span>
-                    <span>Submitted</span>
-                  </div>
-                ) : (
-                  <div className="mf-status-badge mf-status--pending">
-                    <span>📝</span>
-                    <span>Fill Form</span>
-                  </div>
-                )}
-              </div>
+              {s.already_submitted
+                ? <span className="pf-select-badge pf-select-badge--done">✓ Submitted</span>
+                : <span className="pf-select-badge pf-select-badge--new">Fill Now</span>}
             </button>
           ))}
         </div>
-        
-        <button 
-          type="button" 
-          className="mf-btn mf-btn--ghost mf-btn--full"
-          onClick={onBack}
-          style={{ marginTop: '20px' }}
-        >
-          <span>←</span>
-          <span>Try Different Number</span>
+        <button type="button" className="pf-back-btn" style={{ marginTop: 16 }} onClick={onBack}>
+          ← Change Number
         </button>
       </div>
     </div>
   </div>
 );
 
-/* ── Step 3: Enhanced Details Form ─────────────────────────────────────────── */
+/* ── Step 3: Details form ─────────────────────────────────────────────────── */
 const DetailsStep = ({ studentInfo, onBack }) => {
   const isEdit = studentInfo.already_submitted;
-  const [form, setForm] = useState({ ...EMPTY_FORM, ...(studentInfo.existing || {}) });
+  const [form, setForm]           = useState({ ...EMPTY_FORM, ...(studentInfo.existing || {}) });
   const [fieldErrors, setFieldErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [activeSection, setActiveSection] = useState('personal');
+  const [submitting, setSubmitting]   = useState(false);
+  const [error, setError]             = useState('');
+  const [success, setSuccess]         = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Apply input filter (blocks invalid chars as you type)
     const filtered = INPUT_FILTERS[name] ? INPUT_FILTERS[name](value) : value;
     setForm((prev) => ({ ...prev, [name]: filtered }));
-    
+    // Clear field error on change
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -366,150 +269,78 @@ const DetailsStep = ({ studentInfo, onBack }) => {
 
   if (success) {
     return (
-      <div className="mf-container">
-        <div className="mf-success-screen">
-          <div className="mf-success-animation">
-            <div className="mf-checkmark">✓</div>
-          </div>
-          <div className="mf-success-content">
-            <h2>{isEdit ? 'Details Updated!' : 'Form Submitted!'}</h2>
-            <p>{success}</p>
-            <button 
-              className="mf-btn mf-btn--primary"
-              onClick={onBack}
-              style={{ marginTop: '24px' }}
-            >
-              <span>←</span>
-              <span>Back to Home</span>
-            </button>
-          </div>
+      <div className="pf-wrapper">
+        <div className="pf-success-card">
+          <div className="pf-success-icon">✅</div>
+          <h2>{isEdit ? 'Details Updated' : 'Details Submitted'}</h2>
+          <p>{success}</p>
+          <button className="pf-submit-btn" style={{ marginTop: 16, width: 'auto', padding: '12px 28px' }} onClick={onBack}>
+            ← Back
+          </button>
         </div>
       </div>
     );
   }
 
-  const sections = {
-    personal: FIELDS.filter(f => f.section === 'personal'),
-    contact: FIELDS.filter(f => f.section === 'contact'),
-    address: FIELDS.filter(f => f.section === 'address'),
-  };
+  const personal = FIELDS.filter((f) => f.section === 'personal');
+  const contact  = FIELDS.filter((f) => f.section === 'contact');
+  const address  = FIELDS.filter((f) => f.section === 'address');
 
-  const sectionTitles = {
-    personal: 'Personal Information',
-    contact: 'Contact Details', 
-    address: 'Address Information'
-  };
-
-  const renderField = ({ name, label, type, icon, required }) => (
-    <div className={`mf-field ${fieldErrors[name] ? 'mf-field--error' : ''}`} key={name}>
-      <label htmlFor={name} className="mf-field-label">
-        <span className="mf-field-icon">{icon}</span>
-        <span className="mf-field-text">
-          {label}
-          {required && <span className="mf-required">*</span>}
-        </span>
-      </label>
+  const renderField = ({ name, label, type, icon }) => (
+    <div className={`pf-field ${fieldErrors[name] ? 'pf-field--error' : ''}`} key={name}>
+      <label htmlFor={name}><span className="pf-field-icon">{icon}</span>{label}</label>
       <input
-        id={name}
-        type={type}
-        name={name}
-        value={form[name] || ''}
-        onChange={handleChange}
-        onBlur={handleBlur}
+        id={name} type={type} name={name} value={form[name]}
+        onChange={handleChange} onBlur={handleBlur}
         placeholder={type === 'date' ? '' : `Enter ${label.toLowerCase()}`}
-        className="mf-input"
         autoComplete="off"
         inputMode={name === 'phone' || name === 'pin' ? 'numeric' : undefined}
       />
-      {fieldErrors[name] && (
-        <div className="mf-field-error">
-          <span className="mf-error-icon">⚠️</span>
-          <span>{fieldErrors[name]}</span>
-        </div>
-      )}
+      {fieldErrors[name] && <span className="pf-field-err">{fieldErrors[name]}</span>}
     </div>
   );
 
   return (
-    <div className="mf-container">
-      <div className="mf-card mf-card--wide">
+    <div className="pf-wrapper">
+      <div className="pf-card">
         <FormHeader
           title={isEdit ? 'Update ID Card Details' : 'ID Card Information'}
-          subtitle={isEdit 
-            ? 'Update your previously submitted details below.'
-            : 'Please fill all fields accurately for the ID card.'}
+          subtitle={isEdit
+            ? 'You have already submitted details. You can update them below.'
+            : "Please fill in all fields accurately for your child's ID card."}
         />
 
-        <div className="mf-student-header">
-          <div className="mf-student-avatar">
-            <span>{studentInfo.student_name?.charAt(0)?.toUpperCase() || '?'}</span>
+        <div className="pf-student-banner">
+          <div className="pf-student-avatar">
+            {studentInfo.student_name?.charAt(0)?.toUpperCase() || '?'}
           </div>
-          <div className="mf-student-details">
-            <div className="mf-student-name">{studentInfo.student_name}</div>
-            <div className="mf-student-meta">
-              Class {studentInfo.student_class}-{studentInfo.div} • Adm: {studentInfo.admno}
+          <div>
+            <div className="pf-student-name">{studentInfo.student_name}</div>
+            <div className="pf-student-meta">
+              Class {studentInfo.student_class} – {studentInfo.div} &nbsp;|&nbsp; Adm: {studentInfo.admno}
             </div>
           </div>
-          {isEdit && (
-            <div className="mf-edit-indicator">
-              <span>✏️ Editing</span>
-            </div>
-          )}
+          {isEdit && <span className="pf-edit-badge">✏️ Editing</span>}
         </div>
 
-        {error && (
-          <div className="mf-alert mf-alert--error">
-            <span className="mf-alert-icon">⚠️</span>
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <div className="pf-alert pf-alert--error"><span>⚠️</span> {error}</div>}
 
-        <form onSubmit={handleSubmit} className="mf-form">
-          <div className="mf-section-tabs">
-            {Object.keys(sections).map((section) => (
-              <button
-                key={section}
-                type="button"
-                className={`mf-tab ${activeSection === section ? 'mf-tab--active' : ''}`}
-                onClick={() => setActiveSection(section)}
-              >
-                {sectionTitles[section]}
-              </button>
-            ))}
-          </div>
+        <form onSubmit={handleSubmit} className="pf-form">
+          <div className="pf-section-title">Personal Information</div>
+          <div className="pf-grid pf-grid--2">{personal.map(renderField)}</div>
 
-          <div className="mf-section-content">
-            <h3 className="mf-section-title">{sectionTitles[activeSection]}</h3>
-            <div className="mf-field-grid">
-              {sections[activeSection].map(renderField)}
-            </div>
-          </div>
+          <div className="pf-section-title">Contact Details</div>
+          <div className="pf-grid pf-grid--2">{contact.map(renderField)}</div>
 
-          <div className="mf-form-actions">
-            <button 
-              type="button" 
-              className="mf-btn mf-btn--ghost"
-              onClick={onBack} 
-              disabled={submitting}
-            >
-              <span>←</span>
-              <span>Back</span>
-            </button>
-            <button 
-              type="submit" 
-              className="mf-btn mf-btn--primary mf-btn--flex"
-              disabled={submitting}
-            >
-              {submitting ? (
-                <>
-                  <span className="mf-spinner" />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <span>{isEdit ? '💾 Update Details' : '✅ Submit Form'}</span>
-                </>
-              )}
+          <div className="pf-section-title">Address</div>
+          <div className="pf-grid pf-grid--3">{address.map(renderField)}</div>
+
+          <div className="pf-form-actions">
+            <button type="button" className="pf-back-btn" onClick={onBack} disabled={submitting}>← Back</button>
+            <button type="submit" className="pf-submit-btn" disabled={submitting}>
+              {submitting
+                ? <><span className="pf-btn-spinner" /> Saving...</>
+                : isEdit ? '💾 Update Details' : '✅ Submit Details'}
             </button>
           </div>
         </form>
@@ -553,28 +384,18 @@ const IDCardParentForm = ({ institutionId: propInstitutionId, isClientIdForm = f
   // No match step for client ID form
   if (step === 'no-match') {
     return (
-      <div className="mf-container">
-        <div className="mf-card mf-card--narrow">
+      <div className="pf-wrapper">
+        <div className="pf-card pf-card--narrow">
           <FormHeader title="No Match Found" subtitle="Your phone number is not registered with this institution." />
-          <div className="mf-form">
-            <div className="mf-alert mf-alert--error">
-              <span className="mf-alert-icon">⚠️</span> 
-              <div>
-                <strong>No student found</strong>
-                <br />
-                Your phone number is not registered with institution: <strong>{propInstitutionId}</strong>
-                <br />
-                <small>Please contact your school administration to verify your registered phone number.</small>
-              </div>
+          <div className="pf-form">
+            <div className="pf-alert pf-alert--error">
+              <span>⚠️</span> 
+              No student found for this phone number in the institution: <strong>{propInstitutionId}</strong>
+              <br />
+              Please contact your school administration to verify your registered phone number.
             </div>
-            <button 
-              type="button" 
-              className="mf-btn mf-btn--ghost mf-btn--full" 
-              onClick={() => setStep('phone')}
-              style={{ marginTop: '20px' }}
-            >
-              <span>←</span>
-              <span>Try Another Number</span>
+            <button type="button" className="pf-back-btn" style={{ marginTop: 16 }} onClick={() => setStep('phone')}>
+              ← Try Another Number
             </button>
           </div>
         </div>
