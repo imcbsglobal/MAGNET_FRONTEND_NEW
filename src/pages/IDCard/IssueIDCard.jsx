@@ -57,23 +57,29 @@ const IDCardFront = ({ student, school, photoUrl }) => {
 
   return (
     <div className="idt-card idt-front">
-      {/* White top strip: logo left, address box right */}
-      <div className="idt-top-strip">
-        <div className="idt-logo-area">
-          {school?.logo_url
-            ? <img src={school.logo_url} alt="logo" className="idt-logo" />
-            : <div className="idt-logo-placeholder">🏫</div>}
-          <div className="idt-school-name">{school?.school_name || 'School Name'}</div>
+      <div className="idt-grid-pattern" />
+      
+      {/* Header: logo + school name left, badge right */}
+      <div className="idt-header">
+        <div className="idt-header-left">
+          <div className="idt-logo-area">
+            {school?.logo_url
+              ? <img src={school.logo_url} alt="logo" className="idt-logo" />
+              : <div className="idt-logo-placeholder">🏫</div>}
+            <div className="idt-school-name">{school?.school_name || 'School Name'}</div>
+          </div>
         </div>
-        {school?.place && (
-          <div className="idt-address-box">{school.place}</div>
-        )}
+        <div className="idt-header-right">
+          {school?.place && (
+            <div className="idt-place-badge">{school.place}</div>
+          )}
+        </div>
       </div>
 
-      {/* Purple/blue blob with photo */}
-      <div className="idt-blob-area">
-        <div className="idt-blob" />
-        <div className="idt-photo-ring">
+      {/* Photo section with curve */}
+      <div className="idt-photo-area">
+        <div className="idt-purple-curve" />
+        <div className="idt-photo-circle">
           {photoUrl
             ? <img src={photoUrl} alt="student" className="idt-photo" />
             : <img 
@@ -89,9 +95,11 @@ const IDCardFront = ({ student, school, photoUrl }) => {
         <div className="idt-student-name">
           {(d.student_name || student?.student_name || '').toUpperCase()}
         </div>
-        <div className="idt-class">{student?.student_class} {student?.div}</div>
+        <div className="idt-class">
+          {student?.student_class} {student?.div}
+        </div>
 
-        <div className="idt-info-rows">
+        <div className="idt-info-table">
           <div className="idt-info-row">
             <span className="idt-info-label">Ad No</span>
             <span className="idt-info-sep">:</span>
@@ -108,9 +116,6 @@ const IDCardFront = ({ student, school, photoUrl }) => {
             <span className="idt-info-val">{address || ''}</span>
           </div>
         </div>
-
-        {/* Diamond pattern strip */}
-        <div className="idt-pattern" />
       </div>
     </div>
   );
@@ -119,14 +124,14 @@ const IDCardFront = ({ student, school, photoUrl }) => {
 // ── ID Card Template (back) ───────────────────────────────────────────────────
 const IDCardBack = ({ school }) => (
   <div className="idt-card idt-back">
-    {/* Two triangles top */}
-    <div className="idt-back-top">
-      <div className="idt-back-tri--purple" />
-      <div className="idt-back-tri--blue" />
+    {/* Curves at top */}
+    <div className="idt-back-header">
+      <div className="idt-back-curve-purple" />
+      <div className="idt-back-curve-navy" />
     </div>
 
     {/* Logo in white pill */}
-    <div className="idt-back-logo-wrap">
+    <div className="idt-back-logo-container">
       <div className="idt-back-logo-pill">
         {school?.logo_url
           ? <img src={school.logo_url} alt="logo" className="idt-back-logo" />
@@ -143,17 +148,38 @@ const IDCardBack = ({ school }) => (
         'In case of loss, inform issuing authority.',
         'If found, please post it to given address',
       ].map((r, i) => (
-        <p key={i}><span className="idt-bullet">●</span>{r}</p>
+        <div key={i} className="idt-rule-item">
+          <span className="idt-bullet">•</span>
+          <span className="idt-rule-text">{r}</span>
+        </div>
       ))}
     </div>
 
-    {/* School info */}
-    <div className="idt-back-school-info">
+    {/* School info footer */}
+    <div className="idt-back-footer">
       <div className="idt-back-school-name">{school?.school_name || 'School Name'}</div>
-      {school?.address && <div className="idt-back-affiliation">{school.address}</div>}
-      {school?.place   && <div className="idt-back-detail"><span className="idt-back-detail-icon">📍</span>{school.place}</div>}
-      {school?.phone   && <div className="idt-back-detail"><span className="idt-back-detail-icon">📞</span>{school.phone}</div>}
-      {school?.email   && <div className="idt-back-detail"><span className="idt-back-detail-icon">✉️</span>{school.email}</div>}
+      <div className="idt-back-sub-name">{school?.school_name || 'School Name'}</div>
+      
+      <div className="idt-back-contact">
+        {school?.place && (
+          <div className="idt-contact-row">
+            <span className="idt-contact-icon">📍</span>
+            <span className="idt-contact-val">{school.place}</span>
+          </div>
+        )}
+        {school?.phone && (
+          <div className="idt-contact-row">
+            <span className="idt-contact-icon">📞</span>
+            <span className="idt-contact-val">{school.phone}</span>
+          </div>
+        )}
+        {school?.email && (
+          <div className="idt-contact-row">
+            <span className="idt-contact-icon">✉️</span>
+            <span className="idt-contact-val">{school.email}</span>
+          </div>
+        )}
+      </div>
     </div>
   </div>
 );
