@@ -958,12 +958,13 @@ const IssueIDCard = () => {
           admno: selected.admno,
           mobile: selected.mobile,
           photo_url: selected.photo_url,
+          institution_id: institutionId,
         },
         school: school,
         details: selected.details || {},
       };
 
-      const response = await fetch('/api/id-card/generate-pdf/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}id-card/generate-pdf/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -1014,15 +1015,18 @@ const IssueIDCard = () => {
 
   // Bulk PDF download (using backend)
   const handleBulkDownloadPDF = async () => {
-    const submittedStudents = filtered.filter(s => s.parent_submitted);
-    if (submittedStudents.length === 0) return;
+    const submittedStudents = students.filter(s => s.parent_submitted);
+    if (submittedStudents.length === 0) {
+      setSaveMsg('⚠️ No submitted students found to download.');
+      return;
+    }
     setDownloadingPDF(true);
     setSaveMsg('');
     try {
       console.log('📥 Requesting bulk PDF from backend for', submittedStudents.length, 'students');
 
       const payload = {
-        institution_id: institution_id,
+        institution_id: institutionId,
         school: school,
         students: submittedStudents.map(s => ({
           student: {
@@ -1032,12 +1036,13 @@ const IssueIDCard = () => {
             admno: s.admno,
             mobile: s.mobile,
             photo_url: s.photo_url,
+            institution_id: institutionId,
           },
           details: s.details || {},
         })),
       };
 
-      const response = await fetch('/api/id-card/generate-bulk-pdf/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}id-card/generate-bulk-pdf/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -1114,7 +1119,7 @@ const IssueIDCard = () => {
                 type="button" 
                 className="secondary-btn" 
                 onClick={handleBulkDownloadPDF}
-                disabled={downloadingPDF || filtered.filter(s => s.parent_submitted).length === 0}
+                disabled={downloadingPDF || students.filter(s => s.parent_submitted).length === 0}
               >
                 {downloadingPDF ? '⏳ Generating...' : '📄 Download All PDFs'}
               </button>
