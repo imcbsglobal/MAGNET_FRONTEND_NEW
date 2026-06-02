@@ -626,3 +626,37 @@
   .modal-footer     { padding-left: 18px; padding-right: 18px; }
   .modal-edit-grid  { grid-template-columns: 1fr; }
 }
+
+/* ── Link Generation Modal Styles ── */
+.modal-card .modal-row .modal-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.link-display {
+  padding: 12px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  word-break: break-all;
+  color: #495057;
+  line-height: 1.4;
+}
+
+.usage-info {
+  margin-top: 15px;
+  padding: 12px;
+  background: #e7f3ff;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0066cc;
+  line-height: 1.5;
+}
+
+.usage-info strong {
+  color: #004499;
+}

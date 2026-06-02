@@ -121,6 +121,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
       { icon: <Icons.Students />, label: 'Student List', path: '/admin/students' },
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/admin/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/admin/paid-fee' },
+      { icon: <Icons.IDCard />, label: 'ID Card Details', path: '/admin/id-card/details' },
       { icon: <Icons.Calendar />, label: 'Academic Calendar', path: '/admin/calendar' },
       { icon: <Icons.SchoolInfo />, label: 'School Information', path: '/admin/school-info' },
     ],

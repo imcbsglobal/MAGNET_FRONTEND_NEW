@@ -110,7 +110,7 @@ const FormHeader = ({ title, subtitle }) => (
 );
 
 /* ── Step 1: Phone lookup ──────────────────────────────────────────────────── */
-const PhoneStep = ({ onFound }) => {
+const PhoneStep = ({ onFound, institutionId }) => {
   const [phone, setPhone]   = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState('');
@@ -121,7 +121,7 @@ const PhoneStep = ({ onFound }) => {
     if (!phone.trim()) { setError('Please enter your phone number.'); return; }
     setLoading(true);
     try {
-      const res = await lookupIDCardByPhone(phone.trim());
+      const res = await lookupIDCardByPhone(phone.trim(), institutionId);
       onFound(res.data.students, phone.trim());
     } catch (err) {
       setError(err.response?.data?.message || 'No student found with this number. Please check and try again.');
@@ -350,17 +350,28 @@ const DetailsStep = ({ studentInfo, onBack }) => {
 };
 
 /* ── Main ─────────────────────────────────────────────────────────────────── */
-const IDCardParentForm = () => {
+const IDCardParentForm = ({ institutionId: propInstitutionId, isClientIdForm = false }) => {
   const [step, setStep]           = useState('phone');   // phone | select | form
   const [students, setStudents]   = useState([]);
   const [selected, setSelected]   = useState(null);
 
   const handleFound = (studentList) => {
-    if (studentList.length === 1) {
-      setSelected(studentList[0]);
+    // If in client ID mode, filter students by the specified institution ID
+    let filteredStudents = studentList;
+    if (isClientIdForm && propInstitutionId) {
+      filteredStudents = studentList.filter(s => s.institution_id === propInstitutionId);
+      if (filteredStudents.length === 0) {
+        // If no students found for this institution, show error
+        setStep('no-match');
+        return;
+      }
+    }
+    
+    if (filteredStudents.length === 1) {
+      setSelected(filteredStudents[0]);
       setStep('form');
     } else {
-      setStudents(studentList);
+      setStudents(filteredStudents);
       setStep('select');
     }
   };
@@ -369,6 +380,28 @@ const IDCardParentForm = () => {
     setSelected(student);
     setStep('form');
   };
+
+  // No match step for client ID form
+  if (step === 'no-match') {
+    return (
+      <div className="pf-wrapper">
+        <div className="pf-card pf-card--narrow">
+          <FormHeader title="No Match Found" subtitle="Your phone number is not registered with this institution." />
+          <div className="pf-form">
+            <div className="pf-alert pf-alert--error">
+              <span>⚠️</span> 
+              No student found for this phone number in the institution: <strong>{propInstitutionId}</strong>
+              <br />
+              Please contact your school administration to verify your registered phone number.
+            </div>
+            <button type="button" className="pf-back-btn" style={{ marginTop: 16 }} onClick={() => setStep('phone')}>
+              ← Try Another Number
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (step === 'form' && selected) {
     return (
@@ -389,7 +422,7 @@ const IDCardParentForm = () => {
     );
   }
 
-  return <PhoneStep onFound={handleFound} />;
+  return <PhoneStep onFound={handleFound} institutionId={propInstitutionId} />;
 };
 
 export default IDCardParentForm;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchIDCardStudents, updateIDCardSubmission } from '../../services/api';
+import { fetchIDCardStudents, fetchAdminIDCardStudents, updateIDCardSubmission, toggleIDCardForm, fetchIDCardFormStatus } from '../../services/api';
 import './IDCard.scss';
 
 const EyeIcon = () => (
@@ -50,6 +50,7 @@ const IDCardDetails = () => {
   const institutionId    = localStorage.getItem('institutionId')    || '';
   const assignedClass    = localStorage.getItem('assignedClass')    || '';
   const assignedDivision = localStorage.getItem('assignedDivision') || '';
+  const userType         = localStorage.getItem('userType')         || '';
 
   const [students, setStudents]       = useState([]);
   const [loading, setLoading]         = useState(true);
@@ -60,6 +61,29 @@ const IDCardDetails = () => {
   const [editForm, setEditForm]       = useState({});
   const [saving, setSaving]           = useState(false);
   const [saveMsg, setSaveMsg]         = useState('');
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [formEnabled, setFormEnabled] = useState(true);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
+  // Determine if user is admin
+  const isAdmin = userType === 'admin' || userType === 'administration';
+
+  console.log('🔍 User Detection:', {
+    userType,
+    isAdmin,
+    institutionId,
+    assignedClass,
+    assignedDivision
+  });
+
+  console.log('🔑 LocalStorage Data:', {
+    token: localStorage.getItem('token') ? 'Present' : 'Missing',
+    userType: localStorage.getItem('userType'),
+    institutionId: localStorage.getItem('institutionId'),
+    assignedClass: localStorage.getItem('assignedClass'),
+    assignedDivision: localStorage.getItem('assignedDivision')
+  });
 
   const loadStudents = async () => {
     if (!institutionId) {
@@ -69,17 +93,49 @@ const IDCardDetails = () => {
     }
     setLoading(true);
     setError('');
+    
+    console.log('🔍 Loading students...', { 
+      institutionId, 
+      isAdmin, 
+      assignedClass, 
+      assignedDivision,
+      userType 
+    });
+    
     try {
-      const res = await fetchIDCardStudents(institutionId, assignedClass, assignedDivision);
+      // Load form status
+      if (isAdmin) {
+        const statusRes = await fetchIDCardFormStatus(institutionId);
+        setFormEnabled(statusRes.data.enabled);
+      }
+      
+      let res;
+      console.log('🧪 Testing basic API call first...');
+      
+      // Test with basic teacher mode first to verify API is working
+      res = await fetchIDCardStudents(institutionId, assignedClass, assignedDivision);
+      console.log('✅ Basic API test successful:', res.data);
+      
+      if (isAdmin) {
+        console.log('📋 Admin detected - fetching ALL submitted students');
+        // Admin: Get ALL submitted students from all classes
+        res = await fetchAdminIDCardStudents(institutionId);
+        console.log('✅ Admin API response:', res.data);
+      } else {
+        console.log('👨‍🏫 Teacher detected - using basic API response');
+        // Teacher: Already got the response above
+      }
       setStudents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
+      console.error('❌ API Error:', err);
+      console.error('Error response:', err.response);
       setError(err.response?.data?.message || err.message || 'Unable to load ID card student list.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadStudents(); }, [institutionId, assignedClass, assignedDivision]);
+  useEffect(() => { loadStudents(); }, [institutionId, assignedClass, assignedDivision, isAdmin]);
 
   const openEdit = (student) => {
     setEditStudent(student);
@@ -110,14 +166,57 @@ const IDCardDetails = () => {
     }
   };
 
+  const handleGenerateLink = () => {
+    const link = `https://magnetpro.in/id-card/form/${institutionId}`;
+    setGeneratedLink(link);
+    setShowLinkModal(true);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedLink);
+      alert('Link copied to clipboard!');
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedLink;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copied to clipboard!');
+    }
+  };
+
+  const handleToggleForm = async () => {
+    setToggleLoading(true);
+    try {
+      const res = await toggleIDCardForm(institutionId, !formEnabled);
+      setFormEnabled(!formEnabled);
+      alert(res.data.message);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update form status');
+    } finally {
+      setToggleLoading(false);
+    }
+  };
+
   const filtered = students.filter((s) =>
     (s.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
     (s.admno        || '').toLowerCase().includes(search.toLowerCase()) ||
     (s.fathername   || '').toLowerCase().includes(search.toLowerCase()) ||
-    (s.mobile       || '').includes(search)
+    (s.mobile       || '').includes(search) ||
+    (s.student_class || '').toLowerCase().includes(search.toLowerCase()) ||
+    (s.div          || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  const statusBadge = (status) => {
+  const statusBadge = (status, isAdminView) => {
+    if (isAdminView) {
+      // In admin view, all students shown are submitted (we filter them in backend)
+      return <span className="badge badge--green">Submitted</span>;
+    }
+    // Regular teacher view with all statuses
     if (status === 'used')    return <span className="badge badge--green">Submitted</span>;
     if (status === 'pending') return <span className="badge badge--yellow">Pending</span>;
     return <span className="badge badge--gray">Not sent</span>;
@@ -125,7 +224,7 @@ const IDCardDetails = () => {
 
   return (
     <div className="dashboard-wrapper">
-      <Sidebar userType="teacher" />
+      <Sidebar userType={isAdmin ? "admin" : "teacher"} />
       <main className="dashboard-main">
         <Navbar />
         <div className="idcard-page">
@@ -133,9 +232,52 @@ const IDCardDetails = () => {
           <div className="idcard-header">
             <div>
               <h1>ID Card Details</h1>
-              <p>View and edit submitted ID card information for each student.</p>
+              <p>
+                {isAdmin 
+                  ? "View and edit all submitted ID card information from all classes." 
+                  : "View and edit submitted ID card information for each student."}
+              </p>
+              {isAdmin && (
+                <div className="admin-badge" style={{marginTop: '8px', padding: '4px 12px', background: '#7c3aed', color: 'white', borderRadius: '12px', fontSize: '12px', display: 'inline-block', fontWeight: '600'}}>
+                  Admin View - All Classes ({students.length} submitted)
+                </div>
+              )}
+              {isAdmin && (
+                <div className={`form-status-badge ${formEnabled ? 'enabled' : 'disabled'}`} style={{
+                  marginTop: '8px', 
+                  marginLeft: isAdmin ? '10px' : '0',
+                  padding: '4px 12px', 
+                  background: formEnabled ? '#10b981' : '#ef4444', 
+                  color: 'white', 
+                  borderRadius: '12px', 
+                  fontSize: '12px', 
+                  display: 'inline-block', 
+                  fontWeight: '600'
+                }}>
+                  Form {formEnabled ? 'Enabled' : 'Disabled'}
+                </div>
+              )}
             </div>
             <div className="idcard-actions">
+              <button 
+                type="button" 
+                className="primary-btn"
+                onClick={handleGenerateLink}
+                style={{ marginRight: '10px' }}
+              >
+                🔗 Generate Form Link
+              </button>
+              {isAdmin && (
+                <button 
+                  type="button" 
+                  className={formEnabled ? "secondary-btn" : "primary-btn"}
+                  onClick={handleToggleForm}
+                  disabled={toggleLoading}
+                  style={{ marginRight: '10px' }}
+                >
+                  {toggleLoading ? 'Updating...' : (formEnabled ? '🚫 Disable Form' : '✅ Enable Form')}
+                </button>
+              )}
               <button type="button" className="secondary-btn" onClick={loadStudents} disabled={loading}>
                 Refresh List
               </button>
@@ -148,7 +290,7 @@ const IDCardDetails = () => {
             <input
               type="text"
               value={search}
-              placeholder="Search by student, adm no, father name, or mobile"
+              placeholder={isAdmin ? "Search by student, class, adm no, father name, or mobile" : "Search by student, adm no, father name, or mobile"}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
@@ -182,9 +324,9 @@ const IDCardDetails = () => {
                         <td>{student.student_class}</td>
                         <td>{student.div}</td>
                         <td>{student.mobile || '-'}</td>
-                        <td>{statusBadge(student.link_status)}</td>
+                        <td>{statusBadge(student.link_status, isAdmin)}</td>
                         <td>
-                          {student.parent_submitted && (
+                          {(student.parent_submitted || isAdmin) && (
                             <div className="idcard-actions-cell">
                               <button
                                 type="button"
@@ -287,6 +429,55 @@ const IDCardDetails = () => {
               </button>
               <button className="primary-btn" onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving...' : '💾 Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Link Generation Modal ── */}
+      {showLinkModal && (
+        <div className="modal-overlay" onClick={() => setShowLinkModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>ID Card Form Link Generated</h2>
+                <span className="modal-admno">Institution: {institutionId}</span>
+              </div>
+              <button className="modal-close" onClick={() => setShowLinkModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="modal-row">
+                <span className="modal-label">Generated Link:</span>
+                <div style={{ 
+                  padding: '12px', 
+                  background: '#f8f9fa', 
+                  border: '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  marginTop: '8px',
+                  fontFamily: 'monospace',
+                  fontSize: '14px',
+                  wordBreak: 'break-all',
+                  color: '#495057'
+                }}>
+                  {generatedLink}
+                </div>
+              </div>
+              <div style={{ marginTop: '15px', padding: '12px', background: '#e7f3ff', borderRadius: '8px', fontSize: '14px', color: '#0066cc' }}>
+                <strong>📋 How to use:</strong>
+                <br />• Share this link with parents to fill ID card forms
+                <br />• Parents enter their phone number to find their student
+                <br />• Works only for students registered in your institution
+                <br />• Link is permanent and can be reused multiple times
+                <br />• <strong style={{color: formEnabled ? '#10b981' : '#ef4444'}}>
+                  Form Status: {formEnabled ? 'Enabled ✅' : 'Disabled ❌'}
+                </strong>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="secondary-btn" onClick={() => setShowLinkModal(false)}>Close</button>
+              <button className="primary-btn" onClick={copyToClipboard}>
+                📋 Copy Link
               </button>
             </div>
           </div>

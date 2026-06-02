@@ -139,6 +139,15 @@ export const fetchIDCardStudents = (institutionId, studentClass, div) =>
     },
   });
 
+// Admin-only: fetch ALL submitted students from all classes (using modified endpoint)
+export const fetchAdminIDCardStudents = (institutionId) =>
+  api.get('id-card/students/', {
+    params: {
+      institution_id: institutionId,
+      admin_mode: true,
+    },
+  });
+
 export const sendIDCardLink = (data) =>
   api.post('id-card/send-link/', data);
 
@@ -151,8 +160,11 @@ export const fetchIDCardParentLink = (token) =>
 export const submitIDCardParentForm = (token, data) =>
   api.post('id-card/submit/', { token, ...data }, { skipAuth: true });
 
-export const lookupIDCardByPhone = (phone) =>
-  api.post('id-card/lookup-by-phone/', { phone }, { skipAuth: true });
+export const lookupIDCardByPhone = (phone, institutionId = null) =>
+  api.post('id-card/lookup-by-phone/', { 
+    phone,
+    ...(institutionId && { institution_id: institutionId })
+  }, { skipAuth: true });
 
 export const submitIDCardByPhone = (data) =>
   api.post('id-card/submit-by-phone/', data, { skipAuth: true });
@@ -168,3 +180,10 @@ export const uploadStudentPhoto = (formData) =>
 
 export const fetchIDCardSchoolInfo = (institutionId) =>
   api.get(`id-card/school-info/?institution_id=${encodeURIComponent(institutionId)}`);
+
+// Form status management
+export const fetchIDCardFormStatus = (institutionId) =>
+  api.get(`id-card/form-status/?institution_id=${encodeURIComponent(institutionId)}`, { skipAuth: true });
+
+export const toggleIDCardForm = (institutionId, enabled) =>
+  api.post('id-card/toggle-form/', { institution_id: institutionId, enabled });

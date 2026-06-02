@@ -23,6 +23,7 @@ import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
 import SchoolInfo from './pages/SchoolInfo/SchoolInfo';
 import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
+import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
 import IDCardParentForm from './pages/IDCard/IDCardParentForm';
 import './App.css';
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/admin/pending-fee" element={<AdminPendingFee />} />
           <Route path="/admin/paid-fee" element={<AdminPaidFee />} />
           <Route path="/admin/students" element={<AdminStudentList />} />
+          <Route path="/admin/id-card/details" element={<IDCardDetails />} />
           <Route path="/staff-dashboard" element={<StaffDashboard />} />
           <Route path="/staff/students" element={<StaffStudentList />} />
           <Route path="/staff/attendance" element={<Attendance />} />
@@ -45,6 +47,7 @@ function App() {
           <Route path="/staff/id-card/details" element={<IDCardDetails />} />
           <Route path="/staff/id-card/issue" element={<IssueIDCard />} />
           <Route path="/id-card/form" element={<IDCardParentForm />} />
+          <Route path="/id-card/form/:clientId" element={<IDCardFormByClientId />} />
           <Route path="/id-card/form/:token" element={<IDCardParentForm />} />
           <Route path="/admin/calendar" element={<CalendarSetup />} />
           <Route path="/parent-dashboard" element={<ParentDashboard />} />
