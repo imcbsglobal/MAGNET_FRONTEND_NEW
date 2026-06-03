@@ -74,19 +74,27 @@ const ChatPage = () => {
     notificationSocketRef.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'new_message') {
-        setContacts(prev => prev.map(contact => {
-          const isSender = contact.id === data.sender_id && contact.role === data.sender_role;
-          if (isSender) {
-            const isRoomActive = activeContact?.room_id === data.room_id;
-            return {
-              ...contact,
-              last_message: data.message,
-              unread_count: isRoomActive ? contact.unread_count : (contact.unread_count || 0) + 1,
-              room_id: data.room_id
-            };
-          }
-          return contact;
-        }));
+        setContacts(prev => {
+          const updatedContacts = prev.map(contact => {
+            const isSender = contact.id === data.sender_id && contact.role === data.sender_role;
+            if (isSender) {
+              const isRoomActive = activeContact?.room_id === data.room_id;
+              return {
+                ...contact,
+                last_message: data.message,
+                unread_count: isRoomActive ? contact.unread_count : (contact.unread_count || 0) + 1,
+                room_id: data.room_id,
+                last_message_time: data.created_at // Update time for sorting
+              };
+            }
+            return contact;
+          });
+          
+          // Sort by last_message_time descending
+          return [...updatedContacts].sort((a, b) => 
+            new Date(b.last_message_time || 0) - new Date(a.last_message_time || 0)
+          );
+        });
       }
     };
 
@@ -174,6 +182,24 @@ const ChatPage = () => {
             created_at: data.created_at,
             attachments: data.attachments || []
           }];
+        });
+
+        // Update contact last message in list and re-sort
+        setContacts(prev => {
+          const updatedContacts = prev.map(contact => {
+            if (contact.room_id === roomId) {
+              return { 
+                ...contact, 
+                last_message: data.message,
+                last_message_time: data.created_at 
+              };
+            }
+            return contact;
+          });
+          
+          return [...updatedContacts].sort((a, b) => 
+            new Date(b.last_message_time || 0) - new Date(a.last_message_time || 0)
+          );
         });
       } else if (data.type === 'typing') {
         if (data.sender_id !== parseInt(userId) || data.sender_role !== (userType === 'staff' ? 'teacher' : 'student')) {
@@ -523,76 +549,106 @@ const ChatPage = () => {
                 </div>
 
                 <div className="message-area">
-                  {messages.map((msg, idx) => (
-                    <div 
-                      key={msg.id || idx} 
-                      className={`message-row ${msg.sender_id === parseInt(userId) && msg.sender_role === (userType === 'staff' ? 'teacher' : 'student') ? 'sent' : 'received'}`}
-                    >
-                      <div className="message-bubble">
-                        {msg.content && <div className="content">{msg.content}</div>}
-                        {msg.attachments?.map((att, i) => (
-                          <div key={i} className="attachment-wrapper">
-                            {att.file_type.startsWith('audio/') ? (
-                              <div className="audio-message-container">
-                                <audio controls className="audio-player" preload="metadata">
-                                  <source src={att.file_url} type={att.file_type} />
-                                  Your browser does not support the audio element.
-                                </audio>
-                                <button 
-                                  onClick={() => handleDownload(att.file_url, att.file_name)} 
-                                  className={`audio-download-link ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
-                                  title="Download Audio"
-                                  disabled={downloadingUrl === att.file_url}
-                                >
-                                  {downloadingUrl === att.file_url ? (
-                                    <div className="button-spinner"></div>
-                                  ) : (
-                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                  )}
-                                </button>
-                              </div>
-                            ) : att.file_type.startsWith('image/') ? (
-                              <div className="image-message-container">
-                                <img src={att.file_url} alt={att.file_name} className="chat-image" onClick={() => window.open(att.file_url, '_blank')} />
-                                <button 
-                                  onClick={() => handleDownload(att.file_url, att.file_name)} 
-                                  className={`image-download-btn ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
-                                  title="Download Image"
-                                  disabled={downloadingUrl === att.file_url}
-                                >
-                                  {downloadingUrl === att.file_url ? (
-                                    <div className="button-spinner"></div>
-                                  ) : (
-                                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                  )}
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="file-attachment-container">
-                                <a href={att.file_url} target="_blank" rel="noopener noreferrer" className="file-attachment">
-                                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                                  <span className="file-name">{att.file_name}</span>
-                                </a>
-                                <button 
-                                  onClick={() => handleDownload(att.file_url, att.file_name)} 
-                                  className={`file-download-icon ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
-                                  title="Download File"
-                                  disabled={downloadingUrl === att.file_url}
-                                >
-                                  {downloadingUrl === att.file_url ? (
-                                    <div className="button-spinner"></div>
-                                  ) : (
-                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                  )}
-                                </button>
-                              </div>
-                            )}
+                  {messages.map((msg, idx) => {
+                    const msgDate = new Date(msg.created_at);
+                    const prevMsgDate = idx > 0 ? new Date(messages[idx - 1].created_at) : null;
+                    const showDateSeparator = !prevMsgDate || msgDate.toDateString() !== prevMsgDate.toDateString();
+                    
+                    const isToday = msgDate.toDateString() === new Date().toDateString();
+                    const isYesterday = msgDate.toDateString() === new Date(Date.now() - 86400000).toDateString();
+                    
+                    let dateStr = msgDate.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
+                    if (isToday) dateStr = 'Today';
+                    else if (isYesterday) dateStr = 'Yesterday';
+
+                    const isSentByMe = msg.sender_id === parseInt(userId) && msg.sender_role === (userType === 'staff' ? 'teacher' : 'student');
+
+                    return (
+                      <React.Fragment key={msg.id || idx}>
+                        {showDateSeparator && (
+                          <div className="date-separator">
+                            <span>{dateStr}</span>
                           </div>
-                        ))}
-                        <div className="time">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                      </div>
-                    </div>
-                  ))}
+                        )}
+                        <div className={`message-row ${isSentByMe ? 'sent' : 'received'}`}>
+                          <div className="message-bubble">
+                            {msg.content && <div className="content">{msg.content}</div>}
+                            {msg.attachments?.map((att, i) => (
+                              <div key={i} className="attachment-wrapper">
+                                {att.file_type.startsWith('audio/') ? (
+                                  <div className="audio-message-container">
+                                    <audio controls className="audio-player" preload="metadata">
+                                      <source src={att.file_url} type={att.file_type} />
+                                      Your browser does not support the audio element.
+                                    </audio>
+                                    <button 
+                                      onClick={() => handleDownload(att.file_url, att.file_name)} 
+                                      className={`audio-download-link ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
+                                      title="Download Audio"
+                                      disabled={downloadingUrl === att.file_url}
+                                    >
+                                      {downloadingUrl === att.file_url ? (
+                                        <div className="button-spinner"></div>
+                                      ) : (
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                      )}
+                                    </button>
+                                  </div>
+                                ) : att.file_type.startsWith('image/') ? (
+                                  <div className="image-message-container">
+                                    <img src={att.file_url} alt={att.file_name} className="chat-image" onClick={() => window.open(att.file_url, '_blank')} />
+                                    <button 
+                                      onClick={() => handleDownload(att.file_url, att.file_name)} 
+                                      className={`image-download-btn ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
+                                      title="Download Image"
+                                      disabled={downloadingUrl === att.file_url}
+                                    >
+                                      {downloadingUrl === att.file_url ? (
+                                        <div className="button-spinner"></div>
+                                      ) : (
+                                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                      )}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="file-attachment-container">
+                                    <a href={att.file_url} target="_blank" rel="noopener noreferrer" className="file-attachment">
+                                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                      <span className="file-name">{att.file_name}</span>
+                                    </a>
+                                    <button 
+                                      onClick={() => handleDownload(att.file_url, att.file_name)} 
+                                      className={`file-download-icon ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
+                                      title="Download File"
+                                      disabled={downloadingUrl === att.file_url}
+                                    >
+                                      {downloadingUrl === att.file_url ? (
+                                        <div className="button-spinner"></div>
+                                      ) : (
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                      )}
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            <div className="msg-meta">
+                              <span className="time">{msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              {isSentByMe && (
+                                <span className={`status ${msg.is_read ? 'read' : 'sent'}`}>
+                                  {msg.is_read ? (
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline><polyline points="20 12 9 23 4 18" style={{ transform: 'translateY(-6px)' }}></polyline></svg>
+                                  ) : (
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
 
