@@ -66,7 +66,7 @@ const ChatPage = () => {
     if (notificationSocketRef.current) return;
 
     const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const role = userType === 'staff' ? 'teacher' : 'parent';
+    const role = userType === 'staff' ? 'teacher' : 'student';
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const wsUrl = isLocalhost 
       ? `${wsScheme}://${window.location.hostname}:8000/ws/notifications/${role}/${userId}/`
@@ -179,8 +179,10 @@ const ChatPage = () => {
       const data = JSON.parse(e.data);
       if (data.type === 'chat_message') {
         setMessages(prev => {
-          if (prev.find(m => m.id === data.id)) return prev;
-          return [...prev, {
+          // Remove any temporary message with the same content if it exists
+          const filtered = prev.filter(m => !m.isTemp || m.content !== data.message);
+          if (filtered.find(m => m.id === data.id)) return filtered;
+          return [...filtered, {
             id: data.id,
             sender_id: data.sender_id,
             sender_role: data.sender_role,
@@ -218,11 +220,33 @@ const ChatPage = () => {
   const sendMessage = () => {
     if (!newMessage.trim() || !socketRef.current) return;
 
+    if (socketRef.current.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket is not open. Trying to reconnect...");
+      connectWebSocket(activeContact.room_id);
+      return;
+    }
+
     const role = userType === 'staff' ? 'teacher' : 'student';
+    const sId = parseInt(userId);
+    
+    // Optimistic UI update
+    const tempId = 'temp-' + Date.now();
+    const tempMsg = {
+      id: tempId,
+      sender_id: sId,
+      sender_role: role,
+      content: newMessage,
+      created_at: new Date().toISOString(),
+      attachments: [],
+      isTemp: true
+    };
+    
+    setMessages(prev => [...prev, tempMsg]);
+
     socketRef.current.send(JSON.stringify({
       type: 'chat_message',
       message: newMessage,
-      sender_id: parseInt(userId),
+      sender_id: sId,
       sender_role: role
     }));
 

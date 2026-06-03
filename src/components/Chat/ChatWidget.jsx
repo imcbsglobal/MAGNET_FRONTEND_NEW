@@ -61,7 +61,7 @@ const ChatWidget = () => {
     if (notificationSocketRef.current) return;
 
     const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const role = userType === 'staff' ? 'teacher' : 'parent';
+    const role = userType === 'staff' ? 'teacher' : 'student';
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const wsUrl = isLocalhost 
       ? `${wsScheme}://${window.location.hostname}:8000/ws/notifications/${role}/${userId}/`
