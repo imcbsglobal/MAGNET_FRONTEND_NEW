@@ -62,7 +62,10 @@ const ChatWidget = () => {
 
     const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const role = userType === 'staff' ? 'teacher' : 'parent';
-    const wsUrl = `${wsScheme}://${window.location.hostname}:8000/ws/notifications/${role}/${userId}/`;
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const wsUrl = isLocalhost 
+      ? `${wsScheme}://${window.location.hostname}:8000/ws/notifications/${role}/${userId}/`
+      : `${wsScheme}://${window.location.hostname}/ws/notifications/${role}/${userId}/`;
     
     notificationSocketRef.current = new WebSocket(wsUrl);
 
@@ -164,8 +167,10 @@ const ChatWidget = () => {
     }
 
     const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    // Using current hostname and port 8000 for backend
-    const wsUrl = `${wsScheme}://${window.location.hostname}:8000/ws/chat/${roomId}/`;
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const wsUrl = isLocalhost 
+      ? `${wsScheme}://${window.location.hostname}:8000/ws/chat/${roomId}/`
+      : `${wsScheme}://${window.location.hostname}/ws/chat/${roomId}/`;
     
     socketRef.current = new WebSocket(wsUrl);
 
