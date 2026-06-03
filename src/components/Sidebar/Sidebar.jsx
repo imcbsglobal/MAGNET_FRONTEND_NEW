@@ -107,6 +107,11 @@ const Sidebar = ({ userType = 'superuser' }) => {
         <path d="M9 16l2 2 4-4"></path>
       </svg>
     ),
+    Chat: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    ),
   };
 
   const menuConfigs = {
@@ -137,11 +142,13 @@ const Sidebar = ({ userType = 'superuser' }) => {
           { label: 'Issue ID Card', path: '/staff/id-card/issue' },
         ],
       },
+      { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
     parent: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/parent-dashboard' },
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/parent/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/parent/paid-fee' },
+      { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
   };
 
@@ -181,6 +188,9 @@ const Sidebar = ({ userType = 'superuser' }) => {
                   onClick={(e) => {
                     if (hasChildren) {
                       handleToggleMenu(index);
+                    } else if (item.isAction) {
+                      window.dispatchEvent(new CustomEvent(item.action));
+                      if (isMobileOpen) setIsMobileOpen(false);
                     } else if (item.path) {
                       handleNavClick(e, item.path, index);
                     }

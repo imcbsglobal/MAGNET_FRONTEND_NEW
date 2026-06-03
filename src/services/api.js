@@ -187,3 +187,12 @@ export const fetchIDCardFormStatus = (institutionId) =>
 
 export const toggleIDCardForm = (institutionId, enabled) =>
   api.post('id-card/toggle-form/', { institution_id: institutionId, enabled });
+
+// Chat
+export const fetchChatContacts = (params) => api.get('chat/contacts/', { params });
+export const getOrCreateChatRoom = (data) => api.post('chat/get-room/', data);
+export const fetchChatHistory = (roomId, role) => api.get(`chat/history/${roomId}/`, { params: { role } });
+export const uploadChatFile = (formData) => api.post('chat/upload/', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const sendBulkMessage = (data) => api.post('chat/send-bulk/', data);

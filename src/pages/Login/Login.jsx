@@ -48,6 +48,7 @@ const Login = () => {
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
     } else if (userType === 'staff') {
+      localStorage.setItem('userId', data.id);
       localStorage.setItem('institutionId', data.institution_id);
       localStorage.setItem('username', data.username);
       localStorage.setItem('assignedClass', data.assigned_class || '');
@@ -55,6 +56,7 @@ const Login = () => {
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
     } else if (userType === 'parent') {
+      localStorage.setItem('userId', data.id);
       localStorage.setItem('institutionId', data.institution_id);
       localStorage.setItem('admno', data.admno);
       localStorage.setItem('studentName', data.student_name);

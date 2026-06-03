@@ -25,6 +25,8 @@ import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
 import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
 import IDCardParentForm from './pages/IDCard/IDCardParentForm';
+import ChatWidget from './components/Chat/ChatWidget';
+import ChatPage from './pages/ChatPage/ChatPage';
 import './App.css';
 
 function App() {
@@ -63,7 +65,9 @@ function App() {
           <Route path="/administrators" element={<AdministratorsList />} />
           <Route path="/administrators/add" element={<AdministratorForm />} />
           <Route path="/administrators/edit/:id" element={<AdministratorForm />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Routes>
+        <ChatWidget />
       </div>
     </Router>
   );
