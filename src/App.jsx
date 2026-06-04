@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/Login/Login';
 import SuperUserDashboard from './pages/SuperUserDashboard/SuperUserDashboard';
 import AdministratorsList from './pages/Administrators/AdministratorsList';
@@ -29,46 +29,55 @@ import ChatWidget from './components/Chat/ChatWidget';
 import ChatPage from './pages/ChatPage/ChatPage';
 import './App.css';
 
+function AppContent() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/' || location.pathname === '/login';
+
+  return (
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/superuser-dashboard" element={<SuperUserDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/pending-fee" element={<AdminPendingFee />} />
+        <Route path="/admin/paid-fee" element={<AdminPaidFee />} />
+        <Route path="/admin/students" element={<AdminStudentList />} />
+        <Route path="/admin/id-card/details" element={<IDCardDetails />} />
+        <Route path="/staff-dashboard" element={<StaffDashboard />} />
+        <Route path="/staff/students" element={<StaffStudentList />} />
+        <Route path="/staff/attendance" element={<Attendance />} />
+        <Route path="/staff/attendance/student/:admno" element={<StudentAttendance />} />
+        <Route path="/staff/id-card/details" element={<IDCardDetails />} />
+        <Route path="/staff/id-card/issue" element={<IssueIDCard />} />
+        <Route path="/id-card/form" element={<IDCardParentForm />} />
+        <Route path="/id-card/form/:clientId" element={<IDCardFormByClientId />} />
+        <Route path="/id-card/form/:token" element={<IDCardParentForm />} />
+        <Route path="/admin/calendar" element={<CalendarSetup />} />
+        <Route path="/parent-dashboard" element={<ParentDashboard />} />
+        <Route path="/parent/pending-fee" element={<ParentPendingFee />} />
+        <Route path="/parent/paid-fee" element={<ParentPaidFee />} />
+        <Route path="/admin/school-info" element={<SchoolInfo />} />
+        <Route path="/admin/job-categories" element={<JobCategoriesList />} />
+        <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
+        <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />
+        <Route path="/admin/staff" element={<StaffList />} />
+        <Route path="/admin/staff/add" element={<StaffForm />} />
+        <Route path="/admin/staff/edit/:id" element={<StaffForm />} />
+        <Route path="/administrators" element={<AdministratorsList />} />
+        <Route path="/administrators/add" element={<AdministratorForm />} />
+        <Route path="/administrators/edit/:id" element={<AdministratorForm />} />
+        <Route path="/chat" element={<ChatPage />} />
+      </Routes>
+      {!isLoginPage && <ChatWidget />}
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/superuser-dashboard" element={<SuperUserDashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/pending-fee" element={<AdminPendingFee />} />
-          <Route path="/admin/paid-fee" element={<AdminPaidFee />} />
-          <Route path="/admin/students" element={<AdminStudentList />} />
-          <Route path="/admin/id-card/details" element={<IDCardDetails />} />
-          <Route path="/staff-dashboard" element={<StaffDashboard />} />
-          <Route path="/staff/students" element={<StaffStudentList />} />
-          <Route path="/staff/attendance" element={<Attendance />} />
-          <Route path="/staff/attendance/student/:admno" element={<StudentAttendance />} />
-          <Route path="/staff/id-card/details" element={<IDCardDetails />} />
-          <Route path="/staff/id-card/issue" element={<IssueIDCard />} />
-          <Route path="/id-card/form" element={<IDCardParentForm />} />
-          <Route path="/id-card/form/:clientId" element={<IDCardFormByClientId />} />
-          <Route path="/id-card/form/:token" element={<IDCardParentForm />} />
-          <Route path="/admin/calendar" element={<CalendarSetup />} />
-          <Route path="/parent-dashboard" element={<ParentDashboard />} />
-          <Route path="/parent/pending-fee" element={<ParentPendingFee />} />
-          <Route path="/parent/paid-fee" element={<ParentPaidFee />} />
-          <Route path="/admin/school-info" element={<SchoolInfo />} />
-          <Route path="/admin/job-categories" element={<JobCategoriesList />} />
-          <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
-          <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />
-          <Route path="/admin/staff" element={<StaffList />} />
-          <Route path="/admin/staff/add" element={<StaffForm />} />
-          <Route path="/admin/staff/edit/:id" element={<StaffForm />} />
-          <Route path="/administrators" element={<AdministratorsList />} />
-          <Route path="/administrators/add" element={<AdministratorForm />} />
-          <Route path="/administrators/edit/:id" element={<AdministratorForm />} />
-          <Route path="/chat" element={<ChatPage />} />
-        </Routes>
-        <ChatWidget />
-      </div>
+      <AppContent />
     </Router>
   );
 }

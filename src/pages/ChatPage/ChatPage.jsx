@@ -167,12 +167,25 @@ const ChatPage = () => {
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onopen = () => {
+      console.log("WebSocket connected to room:", roomId);
       const role = userType === 'staff' ? 'teacher' : 'student';
       socketRef.current.send(JSON.stringify({
         type: 'init',
         user_id: parseInt(userId),
         role: role
       }));
+    };
+
+    socketRef.current.onerror = (err) => {
+      console.error("WebSocket Error:", err);
+    };
+
+    socketRef.current.onclose = (e) => {
+      console.log("WebSocket closed:", e.code, e.reason);
+      if (activeContact && activeContact.room_id === roomId) {
+        console.log("Attempting to reconnect...");
+        setTimeout(() => connectWebSocket(roomId), 3000);
+      }
     };
 
     socketRef.current.onmessage = (e) => {
@@ -243,12 +256,17 @@ const ChatPage = () => {
     
     setMessages(prev => [...prev, tempMsg]);
 
-    socketRef.current.send(JSON.stringify({
-      type: 'chat_message',
-      message: newMessage,
-      sender_id: sId,
-      sender_role: role
-    }));
+    try {
+      socketRef.current.send(JSON.stringify({
+        type: 'chat_message',
+        message: newMessage,
+        sender_id: sId,
+        sender_role: role
+      }));
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, isTemp: false, isFailed: true } : m));
+    }
 
     setNewMessage('');
     sendTypingStatus(false);
@@ -601,8 +619,9 @@ const ChatPage = () => {
                           </div>
                         )}
                         <div className={`message-row ${isSentByMe ? 'sent' : 'received'}`}>
-                          <div className="message-bubble">
+                          <div className={`message-bubble ${msg.isTemp ? 'temp' : ''} ${msg.isFailed ? 'failed' : ''}`}>
                             {msg.content && <div className="content">{msg.content}</div>}
+                            {msg.isFailed && <div className="error-icon" title="Failed to send">!</div>}
                             {msg.attachments?.map((att, i) => (
                               <div key={i} className="attachment-wrapper">
                                 {att.file_type.startsWith('audio/') ? (

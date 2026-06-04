@@ -17,12 +17,10 @@ const STUDENT_BASE_URL = ((import.meta.env.VITE_STUDENT_BASE_URL || DEFAULT_STUD
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 export const studentApi = axios.create({
   baseURL: STUDENT_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 const authInterceptor = (config) => {
@@ -125,9 +123,7 @@ export const fetchSchoolInfo = (institutionId) =>
   api.get(`school-info/?institution_id=${encodeURIComponent(institutionId)}`);
 
 export const saveSchoolInfo = (formData) =>
-  api.post('school-info/save/', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  api.post('school-info/save/', formData);
 
 // ID Card
 export const fetchIDCardStudents = (institutionId, studentClass, div) =>
@@ -176,7 +172,7 @@ export const updateIDCardSubmission = (id, data) =>
   api.put(`id-card/submission/${id}/`, data);
 
 export const uploadStudentPhoto = (formData) =>
-  api.post('id-card/upload-photo/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  api.post('id-card/upload-photo/', formData);
 
 export const fetchIDCardSchoolInfo = (institutionId) =>
   api.get(`id-card/school-info/?institution_id=${encodeURIComponent(institutionId)}`);
@@ -192,7 +188,5 @@ export const toggleIDCardForm = (institutionId, enabled) =>
 export const fetchChatContacts = (params) => api.get('chat/contacts/', { params });
 export const getOrCreateChatRoom = (data) => api.post('chat/get-room/', data);
 export const fetchChatHistory = (roomId, role) => api.get(`chat/history/${roomId}/`, { params: { role } });
-export const uploadChatFile = (formData) => api.post('chat/upload/', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' }
-});
+export const uploadChatFile = (formData) => api.post('chat/upload/', formData);
 export const sendBulkMessage = (data) => api.post('chat/send-bulk/', data);
