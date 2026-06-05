@@ -202,6 +202,8 @@ const DetailsStep = ({ studentInfo, onBack }) => {
     student_name: studentInfo.student_name || '',
     father_name: studentInfo.father_name || '',
     mother_name: studentInfo.mother_name || '',
+    phone: studentInfo.mobile || studentInfo.phone || '',
+    place: studentInfo.place || '',
     ...(studentInfo.existing || {})
   });
   const [fieldErrors, setFieldErrors] = useState({});
@@ -354,11 +356,12 @@ const IDCardParentForm = ({ institutionId: propInstitutionId, isClientIdForm = f
   const [students, setStudents]   = useState([]);
   const [selected, setSelected]   = useState(null);
 
-  const handleFound = (studentList) => {
+  const handleFound = (studentList, searchedPhone) => {
     // If in client ID mode, filter students by the specified institution ID
-    let filteredStudents = studentList;
+    // Add searched phone to student details if not already present
+    let filteredStudents = studentList.map(s => ({ ...s, phone: s.phone || searchedPhone }));
     if (isClientIdForm && propInstitutionId) {
-      filteredStudents = studentList.filter(s => s.institution_id === propInstitutionId);
+      filteredStudents = filteredStudents.filter(s => s.institution_id === propInstitutionId);
       if (filteredStudents.length === 0) {
         // If no students found for this institution, show error
         setStep('no-match');
