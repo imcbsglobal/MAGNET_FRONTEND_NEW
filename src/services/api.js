@@ -68,7 +68,7 @@ export const fetchAllPaidFees = (institutionId) => {
   return api.get(`feepaid/all-paid/?institution_id=${encodeURIComponent(institutionId)}`);
 };
 
-// Administrator CRUD
+// Administrator CRUDD
 export const fetchAdministrators = () => api.get('admins/');
 export const createAdministrator = (data) => api.post('admins/', data);
 export const updateAdministrator = (id, data) => api.put(`admins/${id}/`, data);
