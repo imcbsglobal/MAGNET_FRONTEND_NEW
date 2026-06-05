@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchAllPaidFees, fetchAllPendingFees, fetchAllStudents, getAttendance, fetchCalendarEvents } from '../../services/api';
+import { fetchAllPaidFees, fetchAllPendingFees, fetchAllStudents, getAttendance, fetchCalendarEvents, fetchSchoolInfo } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './AdminDashboard.scss';
 
@@ -33,6 +33,7 @@ const AdminDashboard = () => {
   const [paidFees, setPaidFees] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [schoolLogo, setSchoolLogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const year = today.getFullYear();
@@ -50,18 +51,25 @@ const AdminDashboard = () => {
       setLoading(true);
       setError('');
 
-      const [studentsRes, pendingRes, paidRes, attendanceRes, eventsRes] = await Promise.allSettled([
+      const [studentsRes, pendingRes, paidRes, attendanceRes, eventsRes, schoolRes] = await Promise.allSettled([
         fetchAllStudents(institutionId),
         fetchAllPendingFees(institutionId),
         fetchAllPaidFees(institutionId),
         getAttendance(institutionId, year, month),
         fetchCalendarEvents(institutionId, year, month),
+        fetchSchoolInfo(institutionId),
       ]);
 
       if (studentsRes.status === 'fulfilled') {
         setStudents(Array.isArray(studentsRes.value.data) ? studentsRes.value.data : []);
       } else {
         setStudents([]);
+      }
+
+      if (schoolRes.status === 'fulfilled') {
+        setSchoolLogo(schoolRes.value.data?.logo_url || null);
+      } else {
+        setSchoolLogo(null);
       }
 
       if (pendingRes.status === 'fulfilled') {
@@ -236,10 +244,18 @@ const AdminDashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="admin-client-card">
-              <span>Client ID</span>
-              <strong>{institutionId || '-'}</strong>
-              <p>{students.length} active student records</p>
+            <div className={`admin-client-card ${schoolLogo ? 'has-logo' : ''}`}>
+              {schoolLogo ? (
+                <div className="admin-logo-display">
+                  <img src={schoolLogo} alt="School Logo" />
+                </div>
+              ) : (
+                <>
+                  <span>Client ID</span>
+                  <strong>{institutionId || '-'}</strong>
+                </>
+              )}
+              {!schoolLogo && <p>{students.length} active student records</p>}
             </div>
           </section>
 
