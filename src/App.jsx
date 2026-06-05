@@ -32,6 +32,8 @@ import './App.css';
 function AppContent() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/' || location.pathname === '/login';
+  const isIDCardForm = location.pathname.startsWith('/id-card/form');
+  const hideChat = isLoginPage || isIDCardForm;
 
   return (
     <div className="App">
@@ -51,7 +53,7 @@ function AppContent() {
         <Route path="/staff/id-card/details" element={<IDCardDetails />} />
         <Route path="/staff/id-card/issue" element={<IssueIDCard />} />
         <Route path="/id-card/form" element={<IDCardParentForm />} />
-        <Route path="/id-card/form/:clientId" element={<IDCardFormByClientId />} />
+        <Route path="/id-card/form/:clientId" element={<IDCardParentForm isClientIdForm={true} institutionId={location.pathname.split('/').pop()} />} />
         <Route path="/id-card/form/:token" element={<IDCardParentForm />} />
         <Route path="/admin/calendar" element={<CalendarSetup />} />
         <Route path="/parent-dashboard" element={<ParentDashboard />} />
@@ -69,7 +71,7 @@ function AppContent() {
         <Route path="/administrators/edit/:id" element={<AdministratorForm />} />
         <Route path="/chat" element={<ChatPage />} />
       </Routes>
-      {!isLoginPage && <ChatWidget />}
+      {!hideChat && <ChatWidget />}
     </div>
   );
 }

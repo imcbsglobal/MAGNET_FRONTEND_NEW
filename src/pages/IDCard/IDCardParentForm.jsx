@@ -4,7 +4,7 @@ import './IDCard.scss';
 
 const EMPTY_FORM = {
   student_name: '', father_name: '', mother_name: '', dob: '',
-  phone: '', email: '', place: '', district: '', city: '', state: '', pin: '',
+  phone: '', email: '', house_name: '', place: '', city: '', pin: '',
 };
 
 const FIELDS = [
@@ -14,71 +14,64 @@ const FIELDS = [
   { name: 'dob',          label: 'Date of Birth', type: 'date',  icon: '📅', section: 'personal' },
   { name: 'phone',        label: 'Phone Number',  type: 'tel',   icon: '📞', section: 'contact'  },
   { name: 'email',        label: 'Email Address', type: 'email', icon: '✉️', section: 'contact'  },
+  { name: 'house_name',   label: 'House Name',    type: 'text',  icon: '🏠', section: 'address'  },
   { name: 'place',        label: 'Place',         type: 'text',  icon: '📍', section: 'address'  },
-  { name: 'district',     label: 'District',      type: 'text',  icon: '🏙️', section: 'address'  },
   { name: 'city',         label: 'City',          type: 'text',  icon: '🌆', section: 'address'  },
-  { name: 'state',        label: 'State',         type: 'text',  icon: '🗺️', section: 'address'  },
   { name: 'pin',          label: 'PIN Code',      type: 'text',  icon: '📮', section: 'address'  },
 ];
 
 // ── Validation rules per field ────────────────────────────────────────────────
 const VALIDATORS = {
   student_name: (v) => {
-    if (!v.trim()) return 'Student name is required.';
+    if (!v || !v.trim()) return 'Student name is required.';
     if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters and spaces allowed.';
     if (v.trim().length < 2) return 'Name is too short.';
     return '';
   },
   father_name: (v) => {
-    if (!v.trim()) return 'Father name is required.';
+    if (!v || !v.trim()) return '';
     if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters and spaces allowed.';
     return '';
   },
   mother_name: (v) => {
-    if (!v.trim()) return 'Mother name is required.';
+    if (!v || !v.trim()) return '';
     if (!/^[a-zA-Z\s.]+$/.test(v)) return 'Only letters and spaces allowed.';
     return '';
   },
   dob: (v) => {
-    if (!v) return 'Date of birth is required.';
+    if (!v) return '';
     const d = new Date(v);
     if (isNaN(d.getTime())) return 'Enter a valid date.';
     if (d >= new Date()) return 'Date of birth must be in the past.';
     return '';
   },
   phone: (v) => {
-    const digits = v.replace(/\D/g, '');
+    const digits = v ? v.replace(/\D/g, '') : '';
     if (!digits) return 'Phone number is required.';
     if (digits.length !== 10) return 'Phone must be exactly 10 digits.';
     return '';
   },
   email: (v) => {
-    if (!v.trim()) return 'Email address is required.';
+    if (!v || !v.trim()) return '';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Enter a valid email address.';
     return '';
   },
-  place: (v) => {
-    if (!v.trim()) return 'Place is required.';
-    if (!/^[a-zA-Z\s]+$/.test(v)) return 'Only letters and spaces allowed.';
+  house_name: (v) => {
+    if (!v || !v.trim()) return 'House name is required.';
     return '';
   },
-  district: (v) => {
-    if (!v.trim()) return 'District is required.';
+  place: (v) => {
+    if (!v || !v.trim()) return 'Place is required.';
     if (!/^[a-zA-Z\s]+$/.test(v)) return 'Only letters and spaces allowed.';
     return '';
   },
   city: (v) => {
-    if (!v.trim()) return 'City is required.';
-    if (!/^[a-zA-Z\s]+$/.test(v)) return 'Only letters and spaces allowed.';
-    return '';
-  },
-  state: (v) => {
-    if (!v.trim()) return 'State is required.';
+    if (!v || !v.trim()) return 'City is required.';
     if (!/^[a-zA-Z\s]+$/.test(v)) return 'Only letters and spaces allowed.';
     return '';
   },
   pin: (v) => {
-    const digits = v.replace(/\D/g, '');
+    const digits = v ? v.replace(/\D/g, '') : '';
     if (!digits) return 'PIN code is required.';
     if (digits.length !== 6) return 'PIN must be exactly 6 digits.';
     return '';
@@ -92,9 +85,7 @@ const INPUT_FILTERS = {
   mother_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
   phone:        (v) => v.replace(/\D/g, '').slice(0, 10),
   place:        (v) => v.replace(/[^a-zA-Z\s]/g, ''),
-  district:     (v) => v.replace(/[^a-zA-Z\s]/g, ''),
   city:         (v) => v.replace(/[^a-zA-Z\s]/g, ''),
-  state:        (v) => v.replace(/[^a-zA-Z\s]/g, ''),
   pin:          (v) => v.replace(/\D/g, '').slice(0, 6),
 };
 
@@ -204,7 +195,15 @@ const SelectStep = ({ students, onSelect, onBack }) => (
 /* ── Step 3: Details form ─────────────────────────────────────────────────── */
 const DetailsStep = ({ studentInfo, onBack }) => {
   const isEdit = studentInfo.already_submitted;
-  const [form, setForm]           = useState({ ...EMPTY_FORM, ...(studentInfo.existing || {}) });
+  
+  // Initialize form with existing data OR defaults from student data
+  const [form, setForm] = useState({
+    ...EMPTY_FORM,
+    student_name: studentInfo.student_name || '',
+    father_name: studentInfo.father_name || '',
+    mother_name: studentInfo.mother_name || '',
+    ...(studentInfo.existing || {})
+  });
   const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting]   = useState(false);
   const [error, setError]             = useState('');

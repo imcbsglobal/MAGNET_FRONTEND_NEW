@@ -53,7 +53,7 @@ const generateInitialsPhoto = (studentName) => {
 // ── ID Card Template (front) ──────────────────────────────────────────────────
 const IDCardFront = ({ student, school, photoUrl }) => {
   const d = student?.details || {};
-  const address = [d.place, d.district, d.city, d.state, d.pin].filter(Boolean).join(', ');
+  const address = [d.house_name, d.place, d.city, d.pin].filter(Boolean).join(', ');
 
   return (
     <div className="idt-card idt-front">
@@ -192,10 +192,9 @@ const EDIT_FIELDS = [
   { name: 'dob',          label: 'Date of Birth', type: 'date'  },
   { name: 'phone',        label: 'Phone',         type: 'tel'   },
   { name: 'email',        label: 'Email',         type: 'email' },
+  { name: 'house_name',   label: 'House Name',    type: 'text'  },
   { name: 'place',        label: 'Place',         type: 'text'  },
-  { name: 'district',     label: 'District',      type: 'text'  },
   { name: 'city',         label: 'City',          type: 'text'  },
-  { name: 'state',        label: 'State',         type: 'text'  },
   { name: 'pin',          label: 'PIN Code',      type: 'text'  },
 ];
 
@@ -737,7 +736,7 @@ const IssueIDCard = () => {
     console.log('  - Student photo:', studentPhotoData ? '✅ LOADED' : '❌ NOT AVAILABLE');
     console.log('  - School logo:', schoolLogoData ? '✅ LOADED' : '❌ NOT AVAILABLE');
     const d = student?.details || {};
-    const fullAddress = [d.place, d.district, d.city, d.state, d.pin].filter(Boolean).join(', ');
+    const fullAddress = [d.house_name, d.place, d.city, d.pin].filter(Boolean).join(', ');
     const studentName = (d.student_name || student?.student_name || '').toUpperCase();
     
     console.log('Student info - Name:', studentName, ', Address:', fullAddress);

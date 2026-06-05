@@ -25,10 +25,9 @@ const DETAIL_LABELS = {
   dob:          'Date of Birth',
   phone:        'Phone',
   email:        'Email',
+  house_name:   'House Name',
   place:        'Place',
-  district:     'District',
   city:         'City',
-  state:        'State',
   pin:          'PIN Code',
 };
 
@@ -39,10 +38,9 @@ const EDIT_FIELDS = [
   { name: 'dob',          label: 'Date of Birth', type: 'date'  },
   { name: 'phone',        label: 'Phone',         type: 'tel'   },
   { name: 'email',        label: 'Email',         type: 'email' },
+  { name: 'house_name',   label: 'House Name',    type: 'text'  },
   { name: 'place',        label: 'Place',         type: 'text'  },
-  { name: 'district',     label: 'District',      type: 'text'  },
   { name: 'city',         label: 'City',          type: 'text'  },
-  { name: 'state',        label: 'State',         type: 'text'  },
   { name: 'pin',          label: 'PIN Code',      type: 'text'  },
 ];
 
