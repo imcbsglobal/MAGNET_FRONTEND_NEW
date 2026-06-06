@@ -184,6 +184,16 @@ export const fetchIDCardFormStatus = (institutionId) =>
 export const toggleIDCardForm = (institutionId, enabled) =>
   api.post('id-card/toggle-form/', { institution_id: institutionId, enabled });
 
+// House Group Master
+export const fetchHouseGroups = (institutionId) =>
+  api.get(`id-card/house-groups/${encodeURIComponent(institutionId)}/`);
+
+export const saveHouseGroup = (data) =>
+  api.post('id-card/house-groups-add/', data);
+
+export const deleteHouseGroup = (groupId) =>
+  api.delete(`id-card/house-groups-delete/${groupId}/`);
+
 // Chat
 export const fetchChatContacts = (params) => api.get('chat/contacts/', { params });
 export const getOrCreateChatRoom = (data) => api.post('chat/get-room/', data);

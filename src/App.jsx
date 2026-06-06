@@ -21,6 +21,7 @@ import ParentDashboard from './pages/ParentDashboard/ParentDashboard';
 import ParentPendingFee from './pages/ParentDashboard/ParentPendingFee';
 import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
 import SchoolInfo from './pages/SchoolInfo/SchoolInfo';
+import HouseGroupMaster from './pages/Masters/HouseGroupMaster';
 import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
 import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
@@ -60,6 +61,7 @@ function AppContent() {
         <Route path="/parent/pending-fee" element={<ParentPendingFee />} />
         <Route path="/parent/paid-fee" element={<ParentPaidFee />} />
         <Route path="/admin/school-info" element={<SchoolInfo />} />
+        <Route path="/admin/masters/house-groups" element={<HouseGroupMaster />} />
         <Route path="/admin/job-categories" element={<JobCategoriesList />} />
         <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
         <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />

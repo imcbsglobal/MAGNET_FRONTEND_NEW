@@ -29,9 +29,9 @@ const Sidebar = ({ userType = 'superuser' }) => {
     Dashboard: () => (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1"></rect>
-        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
-        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
         <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
       </svg>
     ),
     Teachers: () => (
@@ -129,6 +129,13 @@ const Sidebar = ({ userType = 'superuser' }) => {
       { icon: <Icons.IDCard />, label: 'ID Card Details', path: '/admin/id-card/details' },
       { icon: <Icons.Calendar />, label: 'Academic Calendar', path: '/admin/calendar' },
       { icon: <Icons.SchoolInfo />, label: 'School Information', path: '/admin/school-info' },
+      {
+        icon: <Icons.Folder />,
+        label: 'Masters',
+        children: [
+          { label: 'House Groups', path: '/admin/masters/house-groups' },
+        ],
+      },
     ],
     teacher: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },
@@ -248,7 +255,6 @@ const Sidebar = ({ userType = 'superuser' }) => {
           confirmText="Yes, Logout"
           type="danger"
         />
-
       </aside>
     </>
   );

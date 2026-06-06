@@ -29,7 +29,7 @@ $surface: rgba(255,255,255,0.95);
     transform-origin: center;
     animation: modalPop 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 
-    .modal-icon {
+    .confirm-modal-icon {
       width: 84px;
       height: 84px;
       border-radius: 24px;
@@ -59,7 +59,7 @@ $surface: rgba(255,255,255,0.95);
       }
     }
 
-    .modal-content {
+    .confirm-modal-content {
       h3 {
         color: $dark-blue;
         font-size: 1.6rem;
@@ -78,7 +78,7 @@ $surface: rgba(255,255,255,0.95);
       }
     }
 
-    .modal-actions {
+    .confirm-modal-actions {
       display: flex;
       gap: 14px;
       justify-content: center;
@@ -97,13 +97,12 @@ $surface: rgba(255,255,255,0.95);
         border: 1px solid transparent;
         white-space: nowrap;
 
-        &.cancel-btn {
-          background: rgba(241, 245, 249, 0.95);
-          border-color: rgba(148, 163, 184, 0.3);
-          color: $dark-blue;
-
+        &.confirm-cancel-btn {
+          background: #f1f5f9;
+          color: $text-muted;
           &:hover {
-            background: rgba(226, 232, 240, 0.95);
+            background: #e2e8f0;
+            color: $dark-blue;
           }
         }
 

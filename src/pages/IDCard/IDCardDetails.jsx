@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchIDCardStudents, fetchAdminIDCardStudents, updateIDCardSubmission, toggleIDCardForm, fetchIDCardFormStatus } from '../../services/api';
+import { fetchIDCardStudents, fetchAdminIDCardStudents, updateIDCardSubmission, toggleIDCardForm, fetchIDCardFormStatus, uploadStudentPhoto, fetchHouseGroups } from '../../services/api';
 import './IDCard.scss';
+
+const CameraIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+    <circle cx="12" cy="13" r="4" />
+  </svg>
+);
 
 const EyeIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -26,6 +33,7 @@ const DETAIL_LABELS = {
   phone:        'Phone',
   email:        'Email',
   house_name:   'House Name',
+  house_group:  'House Group',
   place:        'Place',
   city:         'City',
   pin:          'PIN Code',
@@ -39,6 +47,7 @@ const EDIT_FIELDS = [
   { name: 'phone',        label: 'Phone',         type: 'tel'   },
   { name: 'email',        label: 'Email',         type: 'email' },
   { name: 'house_name',   label: 'House Name',    type: 'text'  },
+  { name: 'house_group',  label: 'House Group',   type: 'select' },
   { name: 'place',        label: 'Place',         type: 'text'  },
   { name: 'city',         label: 'City',          type: 'text'  },
   { name: 'pin',          label: 'PIN Code',      type: 'text'  },
@@ -54,15 +63,19 @@ const IDCardDetails = () => {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
   const [search, setSearch]           = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [viewStudent, setViewStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
   const [editForm, setEditForm]       = useState({});
   const [saving, setSaving]           = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saveMsg, setSaveMsg]         = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [formEnabled, setFormEnabled] = useState(true);
   const [toggleLoading, setToggleLoading] = useState(false);
+  const [houseGroups, setHouseGroups] = useState([]);
+  const photoInputRef = React.useRef(null);
 
   // Determine if user is admin
   const isAdmin = userType === 'admin' || userType === 'administration';
@@ -101,6 +114,10 @@ const IDCardDetails = () => {
     });
     
     try {
+      // Load house groups for the dropdown
+      const hgRes = await fetchHouseGroups(institutionId);
+      setHouseGroups(hgRes.data);
+
       // Load form status
       if (isAdmin) {
         const statusRes = await fetchIDCardFormStatus(institutionId);
@@ -164,6 +181,41 @@ const IDCardDetails = () => {
     }
   };
 
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !editStudent) return;
+    if (!file.type.startsWith('image/')) { setSaveMsg('❌ Only image files allowed.'); return; }
+    if (file.size > 5 * 1024 * 1024) { setSaveMsg('❌ Photo must be under 5MB.'); return; }
+
+    setUploadingPhoto(true);
+    setSaveMsg('');
+    const fd = new FormData();
+    fd.append('institution_id', institutionId);
+    fd.append('admno', editStudent.admno);
+    fd.append('photo', file);
+    try {
+      await uploadStudentPhoto(fd);
+      setSaveMsg('✅ Photo uploaded successfully.');
+      await loadStudents();
+      
+      // Update local editStudent so photo reflects in modal
+      let res;
+      if (isAdmin) {
+        res = await fetchAdminIDCardStudents(institutionId);
+      } else {
+        res = await fetchIDCardStudents(institutionId, assignedClass, assignedDivision);
+      }
+      
+      const updatedList = Array.isArray(res.data) ? res.data : [];
+      const updated = updatedList.find(s => s.admno === editStudent.admno);
+      if (updated) setEditStudent(updated);
+    } catch (err) {
+      setSaveMsg('❌ ' + (err.response?.data?.message || 'Upload failed.'));
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const handleGenerateLink = () => {
     const link = `https://magnetpro.in/id-card/form/${institutionId}`;
     setGeneratedLink(link);
@@ -200,14 +252,22 @@ const IDCardDetails = () => {
     }
   };
 
-  const filtered = students.filter((s) =>
-    (s.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (s.admno        || '').toLowerCase().includes(search.toLowerCase()) ||
-    (s.fathername   || '').toLowerCase().includes(search.toLowerCase()) ||
-    (s.mobile       || '').includes(search) ||
-    (s.student_class || '').toLowerCase().includes(search.toLowerCase()) ||
-    (s.div          || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = students.filter((s) => {
+    const searchMatch = (s.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.admno        || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.fathername   || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.mobile       || '').includes(search) ||
+      (s.student_class || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.div          || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.details?.house_group || '').toLowerCase().includes(search.toLowerCase());
+
+    const statusMatch = statusFilter === 'all' || 
+      (statusFilter === 'submitted' && s.link_status === 'used') ||
+      (statusFilter === 'pending' && s.link_status === 'pending') ||
+      (statusFilter === 'not_sent' && (s.link_status === 'none' || !s.link_status));
+
+    return searchMatch && statusMatch;
+  });
 
   const statusBadge = (status, isAdminView) => {
     if (isAdminView) {
@@ -285,12 +345,28 @@ const IDCardDetails = () => {
           {error && <div className="idcard-error">{error}</div>}
 
           <div className="idcard-search-bar">
-            <input
-              type="text"
-              value={search}
-              placeholder={isAdmin ? "Search by student, class, adm no, father name, or mobile" : "Search by student, adm no, father name, or mobile"}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="search-input-wrapper">
+              <input
+                type="text"
+                value={search}
+                placeholder={isAdmin ? "Search by student, class, adm no, father name, or mobile" : "Search by student, adm no, father name, or mobile"}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            {!isAdmin && (
+              <div className="status-filter-wrapper">
+                <select 
+                  value={statusFilter} 
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="status-select"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="pending">Pending</option>
+                  <option value="not_sent">Not sent</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="idcard-table-card">
@@ -308,6 +384,7 @@ const IDCardDetails = () => {
                       <th>Student</th>
                       <th>Class</th>
                       <th>Div</th>
+                      <th>House Group</th>
                       <th>Mobile</th>
                       <th>Status</th>
                       <th>Actions</th>
@@ -321,6 +398,7 @@ const IDCardDetails = () => {
                         <td>{student.student_name}</td>
                         <td>{student.student_class}</td>
                         <td>{student.div}</td>
+                        <td>{student.details?.house_group || '-'}</td>
                         <td>{student.mobile || '-'}</td>
                         <td>{statusBadge(student.link_status, isAdmin)}</td>
                         <td>
@@ -391,9 +469,35 @@ const IDCardDetails = () => {
         <div className="modal-overlay" onClick={() => !saving && setEditStudent(null)}>
           <div className="modal-card modal-card--wide" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div>
-                <h2>Edit — {editStudent.student_name}</h2>
-                <span className="modal-admno">{editStudent.admno}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div className="modal-edit-photo-section">
+                  <div className="modal-edit-photo-container">
+                    {editStudent.photo_url ? (
+                      <img src={editStudent.photo_url} alt="Student" />
+                    ) : (
+                      <div className="photo-placeholder">🎓</div>
+                    )}
+                    <button 
+                      type="button" 
+                      className="photo-edit-btn" 
+                      onClick={() => photoInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                    >
+                      {uploadingPhoto ? '...' : <CameraIcon />}
+                    </button>
+                    <input
+                      type="file"
+                      ref={photoInputRef}
+                      onChange={handlePhotoChange}
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h2>Edit — {editStudent.student_name}</h2>
+                  <span className="modal-admno">{editStudent.admno}</span>
+                </div>
               </div>
               <button className="modal-close" onClick={() => setEditStudent(null)} disabled={saving}>✕</button>
             </div>
@@ -408,14 +512,30 @@ const IDCardDetails = () => {
                 {EDIT_FIELDS.map(({ name, label, type }) => (
                   <div className="modal-edit-field" key={name}>
                     <label htmlFor={`edit-${name}`}>{label}</label>
-                    <input
-                      id={`edit-${name}`}
-                      type={type}
-                      name={name}
-                      value={editForm[name] || ''}
-                      onChange={handleEditChange}
-                      disabled={saving}
-                    />
+                    {type === 'select' ? (
+                      <select
+                        id={`edit-${name}`}
+                        name={name}
+                        value={editForm[name] || ''}
+                        onChange={handleEditChange}
+                        disabled={saving}
+                        className="modal-select"
+                      >
+                        <option value="">Select {label}</option>
+                        {houseGroups.map((g) => (
+                          <option key={g.id || g.name} value={g.name}>{g.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        id={`edit-${name}`}
+                        type={type}
+                        name={name}
+                        value={editForm[name] || ''}
+                        onChange={handleEditChange}
+                        disabled={saving}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
