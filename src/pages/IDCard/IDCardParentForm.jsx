@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { lookupIDCardByPhone, submitIDCardByPhone, fetchHouseGroups } from '../../services/api';
+import React, { useState } from 'react';
+import { lookupIDCardByPhone, submitIDCardByPhone } from '../../services/api';
 import './IDCard.scss';
 
 const EMPTY_FORM = {
   student_name: '', father_name: '', mother_name: '', dob: '',
-  phone: '', email: '', house_name: '', house_group: '', place: '', city: '', pin: '',
+  phone: '', email: '', house_name: '', place: '', city: '', pin: '',
 };
 
 const FIELDS = [
@@ -15,7 +15,6 @@ const FIELDS = [
   { name: 'phone',        label: 'Phone Number',  type: 'tel',   icon: '📞', section: 'contact'  },
   { name: 'email',        label: 'Email Address', type: 'email', icon: '✉️', section: 'contact'  },
   { name: 'house_name',   label: 'House Name',    type: 'text',  icon: '🏠', section: 'address'  },
-  { name: 'house_group',  label: 'House Group',   type: 'select', icon: '🏘️', section: 'address'  },
   { name: 'place',        label: 'Place',         type: 'text',  icon: '📍', section: 'address'  },
   { name: 'city',         label: 'City',          type: 'text',  icon: '🌆', section: 'address'  },
   { name: 'pin',          label: 'PIN Code',      type: 'text',  icon: '📮', section: 'address'  },
@@ -59,10 +58,6 @@ const VALIDATORS = {
   },
   house_name: (v) => {
     if (!v || !v.trim()) return 'House name is required.';
-    return '';
-  },
-  house_group: (v) => {
-    if (!v || !v.trim()) return 'House group is required.';
     return '';
   },
   place: (v) => {
@@ -215,19 +210,6 @@ const DetailsStep = ({ studentInfo, onBack }) => {
   const [submitting, setSubmitting]   = useState(false);
   const [error, setError]             = useState('');
   const [success, setSuccess]         = useState('');
-  const [houseGroups, setHouseGroups] = useState([]);
-
-  useEffect(() => {
-    const loadHouseGroups = async () => {
-      try {
-        const res = await fetchHouseGroups(studentInfo.institution_id);
-        setHouseGroups(res.data);
-      } catch (err) {
-        console.error('Failed to load house groups:', err);
-      }
-    };
-    loadHouseGroups();
-  }, [studentInfo.institution_id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -308,26 +290,13 @@ const DetailsStep = ({ studentInfo, onBack }) => {
   const renderField = ({ name, label, type, icon }) => (
     <div className={`pf-field ${fieldErrors[name] ? 'pf-field--error' : ''}`} key={name}>
       <label htmlFor={name}><span className="pf-field-icon">{icon}</span>{label}</label>
-      {type === 'select' ? (
-        <select
-          id={name} name={name} value={form[name]}
-          onChange={handleChange} onBlur={handleBlur}
-          className="pf-select-input"
-        >
-          <option value="">Select {label}</option>
-          {houseGroups.map((g) => (
-            <option key={g.id} value={g.name}>{g.name}</option>
-          ))}
-        </select>
-      ) : (
-        <input
-          id={name} type={type} name={name} value={form[name]}
-          onChange={handleChange} onBlur={handleBlur}
-          placeholder={type === 'date' ? '' : `Enter ${label.toLowerCase()}`}
-          autoComplete="off"
-          inputMode={name === 'phone' || name === 'pin' ? 'numeric' : undefined}
-        />
-      )}
+      <input
+        id={name} type={type} name={name} value={form[name]}
+        onChange={handleChange} onBlur={handleBlur}
+        placeholder={type === 'date' ? '' : `Enter ${label.toLowerCase()}`}
+        autoComplete="off"
+        inputMode={name === 'phone' || name === 'pin' ? 'numeric' : undefined}
+      />
       {fieldErrors[name] && <span className="pf-field-err">{fieldErrors[name]}</span>}
     </div>
   );
