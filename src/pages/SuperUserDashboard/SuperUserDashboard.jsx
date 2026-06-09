@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAdministrators } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
+import logo from '../../assets/logo.png';
 import './SuperUserDashboard.scss';
 
 const SuperUserDashboard = () => {
@@ -10,6 +11,7 @@ const SuperUserDashboard = () => {
   const [administrators, setAdministrators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showLogo, setShowLogo] = useState(true); // Default to showing logo for superuser
 
   useEffect(() => {
     const loadAdministrators = async () => {
@@ -54,10 +56,18 @@ const SuperUserDashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="superuser-status-card">
-              <span>Activity summary</span>
-              <strong>{loading ? '...' : totalAdmins}</strong>
-              <p>{loading ? '...' : `${totalAdmins} administrators across ${totalClients} clients.`}</p>
+            <div className={`superuser-status-card ${showLogo ? 'has-logo' : ''}`}>
+              {showLogo ? (
+                <div className="superuser-logo-display">
+                  <img src={logo} alt="MAGNET Logo" />
+                </div>
+              ) : (
+                <>
+                  <span>Activity summary</span>
+                  <strong>{loading ? '...' : totalAdmins}</strong>
+                  <p>{loading ? '...' : `${totalAdmins} administrators across ${totalClients} clients.`}</p>
+                </>
+              )}
             </div>
           </section>
         </div>

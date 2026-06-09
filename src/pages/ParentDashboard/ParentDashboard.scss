@@ -4,7 +4,7 @@
 
 .parent-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) 280px;
+  grid-template-columns: minmax(0, 1.8fr) 300px;
   gap: 24px;
   align-items: stretch;
   background: #ffffff;
@@ -12,6 +12,19 @@
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 18px 45px rgba(19, 35, 79, 0.07);
+}
+
+.parent-kicker {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(61, 90, 241, 0.1);
+  color: #3d5af1;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .parent-hero h2 {
@@ -31,6 +44,15 @@
   background: linear-gradient(135deg, #111827, #25345f);
   color: #ffffff;
   min-width: 0;
+
+  &.has-logo {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .parent-profile-card span {
@@ -43,6 +65,20 @@
   font-size: 2rem;
   line-height: 1.1;
   word-break: break-word;
+}
+
+.parent-logo-display {
+  width: 100%;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 }
 
 .parent-profile-card p {

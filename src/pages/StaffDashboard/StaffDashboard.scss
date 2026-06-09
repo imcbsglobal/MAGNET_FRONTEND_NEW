@@ -4,7 +4,7 @@
 
 .staff-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) 280px;
+  grid-template-columns: minmax(0, 1.8fr) 300px;
   gap: 24px;
   align-items: stretch;
   background: #ffffff;
@@ -84,6 +84,16 @@
   border-radius: 16px;
   background: linear-gradient(135deg, #111827, #25345f);
   color: #ffffff;
+  min-width: 0;
+
+  &.has-logo {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .staff-class-card span {
@@ -95,6 +105,20 @@
 .staff-class-card strong {
   font-size: 2.5rem;
   line-height: 1;
+}
+
+.staff-logo-display {
+  width: 100%;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 }
 
 .staff-class-card p {

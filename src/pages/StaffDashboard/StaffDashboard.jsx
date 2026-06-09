@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchStudentsByClassDivision, getAttendance, fetchCalendarEvents } from '../../services/api';
+import { fetchStudentsByClassDivision, getAttendance, fetchCalendarEvents, fetchSchoolInfo } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './StaffDashboard.scss';
 
@@ -29,6 +29,7 @@ const StaffDashboard = () => {
   const [students, setStudents] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [schoolLogo, setSchoolLogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -48,16 +49,23 @@ const StaffDashboard = () => {
       setLoading(true);
       setError('');
 
-      const [studentRes, attendanceRes, eventsRes] = await Promise.allSettled([
+      const [studentRes, attendanceRes, eventsRes, schoolRes] = await Promise.allSettled([
         fetchStudentsByClassDivision(institutionId, assignedClass, assignedDivision),
         getAttendance(institutionId, year, month),
         fetchCalendarEvents(institutionId, year, month),
+        fetchSchoolInfo(institutionId),
       ]);
 
       if (studentRes.status === 'fulfilled') {
         setStudents(Array.isArray(studentRes.value.data) ? studentRes.value.data : []);
       } else {
         setStudents([]);
+      }
+
+      if (schoolRes.status === 'fulfilled') {
+        setSchoolLogo(schoolRes.value.data?.logo_url || null);
+      } else {
+        setSchoolLogo(null);
       }
 
       if (attendanceRes.status === 'fulfilled') {
@@ -195,10 +203,18 @@ const StaffDashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="staff-class-card">
-              <span>Assigned Class</span>
-              <strong>{assignedClass || '-'} {assignedDivision || ''}</strong>
-              <p>{students.length} students enrolled</p>
+            <div className={`staff-class-card ${schoolLogo ? 'has-logo' : ''}`}>
+              {schoolLogo ? (
+                <div className="staff-logo-display">
+                  <img src={schoolLogo} alt="School Logo" />
+                </div>
+              ) : (
+                <>
+                  <span>Assigned Class</span>
+                  <strong>{assignedClass || '-'} {assignedDivision || ''}</strong>
+                </>
+              )}
+              {!schoolLogo && <p>{students.length} students enrolled</p>}
             </div>
           </section>
 

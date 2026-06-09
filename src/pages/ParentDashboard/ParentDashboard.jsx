@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchPaidFees, fetchPendingFees, getAttendance, fetchCalendarEvents } from '../../services/api';
+import { fetchPaidFees, fetchPendingFees, getAttendance, fetchCalendarEvents, fetchSchoolInfo } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './ParentDashboard.scss';
 
@@ -37,6 +37,7 @@ const ParentDashboard = () => {
   const [paidFees, setPaidFees] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [schoolLogo, setSchoolLogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -51,17 +52,24 @@ const ParentDashboard = () => {
       setLoading(true);
       setError('');
 
-      const [pendingRes, paidRes, attendanceRes, eventsRes] = await Promise.allSettled([
+      const [pendingRes, paidRes, attendanceRes, eventsRes, schoolRes] = await Promise.allSettled([
         fetchPendingFees(institutionId, admno),
         fetchPaidFees(institutionId, admno),
         getAttendance(institutionId, year, month),
         fetchCalendarEvents(institutionId, year, month),
+        fetchSchoolInfo(institutionId),
       ]);
 
       setPendingFees(pendingRes.status === 'fulfilled' ? pendingRes.value.data?.fees || [] : []);
       setPaidFees(paidRes.status === 'fulfilled' ? paidRes.value.data?.fees || [] : []);
       setAttendanceRecords(attendanceRes.status === 'fulfilled' ? attendanceRes.value.data?.records || [] : []);
       setCalendarEvents(eventsRes.status === 'fulfilled' ? (Array.isArray(eventsRes.value.data) ? eventsRes.value.data : []) : []);
+
+      if (schoolRes.status === 'fulfilled') {
+        setSchoolLogo(schoolRes.value.data?.logo_url || null);
+      } else {
+        setSchoolLogo(null);
+      }
 
       const loadErrors = [
         getErrorMessage(pendingRes, 'pending fees'),
@@ -149,7 +157,7 @@ const ParentDashboard = () => {
         <div className="dashboard-content parent-dashboard-content">
           <section className="parent-hero">
             <div className="welcome-copy">
-              <span className="dashboard-label">Parent Dashboard</span>
+              <span className="parent-kicker">Parent Dashboard</span>
               <h2>{studentName}</h2>
               <p>Track attendance, pending fees, paid fees, and important student account details from one clean parent dashboard.</p>
               <div className="welcome-actions">
@@ -161,10 +169,18 @@ const ParentDashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="parent-profile-card">
-              <span>Admission No.</span>
-              <strong>{admno || '-'}</strong>
-              <p>Institution ID {institutionId || '-'}</p>
+            <div className={`parent-profile-card ${schoolLogo ? 'has-logo' : ''}`}>
+              {schoolLogo ? (
+                <div className="parent-logo-display">
+                  <img src={schoolLogo} alt="School Logo" />
+                </div>
+              ) : (
+                <>
+                  <span>Admission No.</span>
+                  <strong>{admno || '-'}</strong>
+                </>
+              )}
+              {!schoolLogo && <p>Institution ID {institutionId || '-'}</p>}
             </div>
           </section>
 
