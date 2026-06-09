@@ -160,7 +160,9 @@ const IDCardDetails = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({ ...prev, [name]: value }));
+    // Apply uppercase to everything except email
+    const finalValue = name === 'email' ? value : value.toUpperCase();
+    setEditForm((prev) => ({ ...prev, [name]: finalValue }));
   };
 
   const handleSave = async () => {
@@ -395,10 +397,10 @@ const IDCardDetails = () => {
                       <tr key={`${student.admno}-${index}`}>
                         <td>{index + 1}</td>
                         <td>{student.admno}</td>
-                        <td>{student.student_name}</td>
-                        <td>{student.student_class}</td>
-                        <td>{student.div}</td>
-                        <td>{student.details?.house_group || '-'}</td>
+                        <td>{(student.student_name || '').toUpperCase()}</td>
+                        <td>{(student.student_class || '').toUpperCase()}</td>
+                        <td>{(student.div || '').toUpperCase()}</td>
+                        <td>{(student.details?.house_group || '-').toUpperCase()}</td>
                         <td>{student.mobile || '-'}</td>
                         <td>{statusBadge(student.link_status, isAdmin)}</td>
                         <td>
@@ -439,7 +441,7 @@ const IDCardDetails = () => {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2>{viewStudent.student_name}</h2>
+                <h2>{(viewStudent.student_name || '').toUpperCase()}</h2>
                 <span className="modal-admno">{viewStudent.admno}</span>
               </div>
               <button className="modal-close" onClick={() => setViewStudent(null)}>✕</button>
@@ -449,7 +451,9 @@ const IDCardDetails = () => {
                 viewStudent.details?.[key] ? (
                   <div className="modal-row" key={key}>
                     <span className="modal-label">{label}</span>
-                    <span className="modal-value">{viewStudent.details[key]}</span>
+                    <span className="modal-value">
+                      {key === 'email' ? viewStudent.details[key] : String(viewStudent.details[key]).toUpperCase()}
+                    </span>
                   </div>
                 ) : null
               )}
@@ -495,7 +499,7 @@ const IDCardDetails = () => {
                   </div>
                 </div>
                 <div>
-                  <h2>Edit — {editStudent.student_name}</h2>
+                  <h2>Edit — {(editStudent.student_name || '').toUpperCase()}</h2>
                   <span className="modal-admno">{editStudent.admno}</span>
                 </div>
               </div>

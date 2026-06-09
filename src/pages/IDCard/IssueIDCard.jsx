@@ -96,24 +96,24 @@ const IDCardFront = ({ student, school, photoUrl }) => {
           {(d.student_name || student?.student_name || '').toUpperCase()}
         </div>
         <div className="idt-class">
-          {student?.student_class} {student?.div}
+          {(student?.student_class || '')} {(student?.div || '')}
         </div>
 
         <div className="idt-info-table">
           <div className="idt-info-row">
             <span className="idt-info-label">Ad No</span>
             <span className="idt-info-sep">:</span>
-            <span className="idt-info-val">{student?.admno}</span>
+            <span className="idt-info-val">{(student?.admno || '').toUpperCase()}</span>
           </div>
           <div className="idt-info-row">
             <span className="idt-info-label">Phone</span>
             <span className="idt-info-sep">:</span>
-            <span className="idt-info-val">{d.phone || student?.mobile || '-'}</span>
+            <span className="idt-info-val">{(d.phone || student?.mobile || '-').toUpperCase()}</span>
           </div>
           <div className="idt-info-row">
             <span className="idt-info-label">Address</span>
             <span className="idt-info-sep">:</span>
-            <span className="idt-info-val">{address || ''}</span>
+            <span className="idt-info-val">{(address || '').toUpperCase()}</span>
           </div>
         </div>
       </div>
@@ -164,13 +164,13 @@ const IDCardBack = ({ school }) => (
         {school?.place && (
           <div className="idt-contact-row">
             <span className="idt-contact-icon">📍</span>
-            <span className="idt-contact-val">{school.place}</span>
+            <span className="idt-contact-val">{school.place.toUpperCase()}</span>
           </div>
         )}
         {school?.phone && (
           <div className="idt-contact-row">
             <span className="idt-contact-icon">📞</span>
-            <span className="idt-contact-val">{school.phone}</span>
+            <span className="idt-contact-val">{school.phone.toUpperCase()}</span>
           </div>
         )}
         {school?.email && (
@@ -755,11 +755,11 @@ const IssueIDCard = () => {
                 ${schoolLogoData ? `<img src="${schoolLogoData}" style="width:100%;height:100%;object-fit:contain;" alt="logo" />` : '<div style="width:100%;height:100%;background:#4a5568;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">LOGO</div>'}
               </div>
               <div style="font-size:13px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;line-height:1.3;max-width:140px;">
-                ${school?.school_name || 'IMCB SOLUTIONS LLP'}
+                ${(school?.school_name || 'IMCB SOLUTIONS LLP').toUpperCase()}
               </div>
             </div>
             <div style="background:#4a5568;color:#ffffff;font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;text-align:center;min-width:70px;">
-              ${school?.place || 'WAYANAD'}
+              ${(school?.place || 'WAYANAD').toUpperCase()}
             </div>
           </div>
 
@@ -780,24 +780,24 @@ const IssueIDCard = () => {
             <div style="font-size:18px;font-weight:900;color:#1f2937;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px;">${studentName}</div>
             
             <!-- Class -->
-            <div style="font-size:16px;font-weight:700;color:#7c3aed;margin-bottom:18px;">${student?.student_class || '1'}${student?.div || 'A'}</div>
+            <div style="font-size:16px;font-weight:700;color:#7c3aed;margin-bottom:18px;">${(student?.student_class || '1').toUpperCase()}${(student?.div || 'A').toUpperCase()}</div>
             
             <!-- Information rows -->
             <div style="text-align:left;display:flex;flex-direction:column;gap:10px;">
               <div style="display:flex;align-items:flex-start;font-size:13px;">
                 <span style="color:#374151;font-weight:700;min-width:65px;">Ad No</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
-                <span style="color:#1f2937;font-weight:600;">${student?.admno || 'S/7058'}</span>
+                <span style="color:#1f2937;font-weight:600;">${(student?.admno || 'S/7058').toUpperCase()}</span>
               </div>
               <div style="display:flex;align-items:flex-start;font-size:13px;">
                 <span style="color:#374151;font-weight:700;min-width:65px;">Phone</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
-                <span style="color:#1f2937;font-weight:600;">${d.phone || student?.mobile || '9061947005'}</span>
+                <span style="color:#1f2937;font-weight:600;">${(d.phone || student?.mobile || '9061947005').toUpperCase()}</span>
               </div>
               <div style="display:flex;align-items:flex-start;font-size:13px;">
                 <span style="color:#374151;font-weight:700;min-width:65px;">Address</span>
                 <span style="color:#6b7280;margin:0 8px;">:</span>
-                <span style="color:#1f2937;font-weight:600;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;max-width:170px;">${fullAddress || 'Wayanad, Wayanad, Kunhome, Kerala, 670731'}</span>
+                <span style="color:#1f2937;font-weight:600;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;max-width:170px;">${(fullAddress || 'Wayanad, Wayanad, Kunhome, Kerala, 670731').toUpperCase()}</span>
               </div>
             </div>
 
@@ -848,16 +848,16 @@ const IssueIDCard = () => {
 
           <!-- School information footer -->
           <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;background:linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0.8));border-top:1px solid rgba(107,114,128,0.2);">
-            <div style="font-size:14px;font-weight:900;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${school?.school_name || 'IMCB SOLUTIONS LLP'}</div>
-            <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">${school?.address || 'IMCB SOLUTIONS LLP'}</div>
+            <div style="font-size:14px;font-weight:900;color:#1f2937;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${(school?.school_name || 'IMCB SOLUTIONS LLP').toUpperCase()}</div>
+            <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">${(school?.address || 'IMCB SOLUTIONS LLP').toUpperCase()}</div>
             <div style="display:flex;flex-direction:column;gap:3px;">
               <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4b5563;">
                 <span style="color:#ef4444;font-size:10px;">📍</span>
-                <span>${school?.place || 'WAYANAD'}</span>
+                <span>${(school?.place || 'WAYANAD').toUpperCase()}</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4b5563;">
                 <span style="color:#3b82f6;font-size:10px;">📞</span>
-                <span>${school?.phone || '9061947005'}</span>
+                <span>${(school?.phone || '9061947005').toUpperCase()}</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4b5563;">
                 <span style="color:#6b7280;font-size:10px;">✉️</span>

@@ -80,13 +80,14 @@ const VALIDATORS = {
 
 // ── Input filter: block invalid keystrokes per field ─────────────────────────
 const INPUT_FILTERS = {
-  student_name: (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
-  father_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
-  mother_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, ''),
+  student_name: (v) => v.replace(/[^a-zA-Z\s.]/g, '').toUpperCase(),
+  father_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, '').toUpperCase(),
+  mother_name:  (v) => v.replace(/[^a-zA-Z\s.]/g, '').toUpperCase(),
   phone:        (v) => v.replace(/\D/g, '').slice(0, 10),
-  place:        (v) => v.replace(/[^a-zA-Z\s]/g, ''),
-  city:         (v) => v.replace(/[^a-zA-Z\s]/g, ''),
+  place:        (v) => v.replace(/[^a-zA-Z\s]/g, '').toUpperCase(),
+  city:         (v) => v.replace(/[^a-zA-Z\s]/g, '').toUpperCase(),
   pin:          (v) => v.replace(/\D/g, '').slice(0, 6),
+  house_name:   (v) => v.toUpperCase(),
 };
 
 /* ── Shared header ─────────────────────────────────────────────────────────── */
@@ -173,7 +174,7 @@ const SelectStep = ({ students, onSelect, onBack }) => (
                 {s.student_name?.charAt(0)?.toUpperCase() || '?'}
               </div>
               <div className="pf-select-info">
-                <div className="pf-select-name">{s.student_name}</div>
+                <div className="pf-select-name">{(s.student_name || '').toUpperCase()}</div>
                 <div className="pf-select-meta">
                   Class {s.student_class} – {s.div} &nbsp;|&nbsp; Adm: {s.admno}
                 </div>
