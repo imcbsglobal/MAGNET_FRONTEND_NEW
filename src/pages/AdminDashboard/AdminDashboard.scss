@@ -112,14 +112,25 @@
   width: 100%;
   height: 170px; // Match card min-height
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center; // Center the logo
+  justify-content: center; // Center the logo and name
+  gap: 12px;
 
   img {
     max-width: 100%;
-    max-height: 100%;
+    max-height: 100px;
     object-fit: contain;
   }
+}
+
+.admin-school-name {
+  color: #111827 !important;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 0 !important;
 }
 
 .admin-client-card p {

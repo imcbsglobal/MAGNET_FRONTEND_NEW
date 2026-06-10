@@ -30,6 +30,7 @@ const StaffDashboard = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [schoolLogo, setSchoolLogo] = useState(null);
+  const [schoolInfoName, setSchoolInfoName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -64,8 +65,10 @@ const StaffDashboard = () => {
 
       if (schoolRes.status === 'fulfilled') {
         setSchoolLogo(schoolRes.value.data?.logo_url || null);
+        setSchoolInfoName(schoolRes.value.data?.school_name || '');
       } else {
         setSchoolLogo(null);
+        setSchoolInfoName('');
       }
 
       if (attendanceRes.status === 'fulfilled') {
@@ -207,6 +210,7 @@ const StaffDashboard = () => {
               {schoolLogo ? (
                 <div className="staff-logo-display">
                   <img src={schoolLogo} alt="School Logo" />
+                  {schoolInfoName && <p className="staff-school-name">{schoolInfoName}</p>}
                 </div>
               ) : (
                 <>

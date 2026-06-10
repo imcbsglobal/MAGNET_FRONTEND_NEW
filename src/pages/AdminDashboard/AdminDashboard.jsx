@@ -34,6 +34,7 @@ const AdminDashboard = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [schoolLogo, setSchoolLogo] = useState(null);
+  const [schoolInfoName, setSchoolInfoName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const year = today.getFullYear();
@@ -68,8 +69,10 @@ const AdminDashboard = () => {
 
       if (schoolRes.status === 'fulfilled') {
         setSchoolLogo(schoolRes.value.data?.logo_url || null);
+        setSchoolInfoName(schoolRes.value.data?.school_name || '');
       } else {
         setSchoolLogo(null);
+        setSchoolInfoName('');
       }
 
       if (pendingRes.status === 'fulfilled') {
@@ -248,6 +251,7 @@ const AdminDashboard = () => {
               {schoolLogo ? (
                 <div className="admin-logo-display">
                   <img src={schoolLogo} alt="School Logo" />
+                  {schoolInfoName && <p className="admin-school-name">{schoolInfoName}</p>}
                 </div>
               ) : (
                 <>
