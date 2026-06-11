@@ -470,6 +470,11 @@ const AdminDashboard = () => {
                   <strong>Staff Management</strong>
                   <small>Add or update staff accounts</small>
                 </button>
+                <button type="button" onClick={() => navigate('/admin/evaluations')}>
+                  <span>E</span>
+                  <strong>Evaluations</strong>
+                  <small>View teacher evaluations</small>
+                </button>
               </div>
             </section>
           </div>

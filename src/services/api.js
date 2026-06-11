@@ -200,3 +200,9 @@ export const getOrCreateChatRoom = (data) => api.post('chat/get-room/', data);
 export const fetchChatHistory = (roomId, role) => api.get(`chat/history/${roomId}/`, { params: { role } });
 export const uploadChatFile = (formData) => api.post('chat/upload/', formData);
 export const sendBulkMessage = (data) => api.post('chat/send-bulk/', data);
+
+// Evaluation System
+export const fetchAllEvaluations = (institutionId) => api.get(`evaluation/evaluations/?institution_id=${institutionId}`);
+export const fetchTeacherEvaluations = (teacherId) => api.get(`evaluation/evaluations/teacher/${teacherId}/`);
+export const fetchTeacherMonthEvaluation = (teacherId, month) => api.get(`evaluation/evaluations/teacher/${teacherId}/${month}/`);
+export const saveEvaluation = (data) => api.put('evaluation/evaluations/save/', data);

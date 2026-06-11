@@ -53,8 +53,16 @@ const Login = () => {
       localStorage.setItem('username', data.username);
       localStorage.setItem('assignedClass', data.assigned_class || '');
       localStorage.setItem('assignedDivision', data.assigned_division || '');
+      localStorage.setItem('jobCategory', data.job_category || '');
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
+      
+      // Navigate to appropriate dashboard based on job category
+      if (data.job_category === 'Teacher') {
+        targetPath = '/teacher/evaluation';
+      } else if (data.job_category === 'HOD') {
+        targetPath = '/hod/evaluation';
+      }
     } else if (userType === 'parent') {
       localStorage.setItem('userId', data.id);
       localStorage.setItem('institutionId', data.institution_id);

@@ -28,6 +28,9 @@ import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
 import IDCardParentForm from './pages/IDCard/IDCardParentForm';
 import ChatWidget from './components/Chat/ChatWidget';
 import ChatPage from './pages/ChatPage/ChatPage';
+import TeacherEvaluation from './pages/Evaluations/TeacherEvaluation';
+import HODEvaluation from './pages/Evaluations/HODEvaluation';
+import AdminEvaluation from './pages/Evaluations/AdminEvaluation';
 import './App.css';
 
 function AppContent() {
@@ -72,6 +75,9 @@ function AppContent() {
         <Route path="/administrators/add" element={<AdministratorForm />} />
         <Route path="/administrators/edit/:id" element={<AdministratorForm />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/teacher/evaluation" element={<TeacherEvaluation />} />
+        <Route path="/hod/evaluation" element={<HODEvaluation />} />
+        <Route path="/admin/evaluations" element={<AdminEvaluation />} />
       </Routes>
       {!hideChat && <ChatWidget />}
     </div>

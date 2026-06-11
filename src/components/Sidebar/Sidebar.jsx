@@ -11,6 +11,8 @@ const Sidebar = ({ userType = 'superuser' }) => {
   const [openMenus, setOpenMenus] = React.useState({});
   const [ripple, setRipple] = React.useState({ id: null, x: 0, y: 0 });
 
+  const jobCategory = localStorage.getItem('jobCategory') || '';
+
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   const handleNavClick = (e, path, index) => {
@@ -136,6 +138,11 @@ const Sidebar = ({ userType = 'superuser' }) => {
           { label: 'House Groups', path: '/admin/masters/house-groups' },
         ],
       },
+      {
+        icon: <Icons.Teachers />,
+        label: 'Evaluations',
+        path: '/admin/evaluations',
+      },
     ],
     teacher: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },
@@ -149,6 +156,30 @@ const Sidebar = ({ userType = 'superuser' }) => {
           { label: 'Issue ID Card', path: '/staff/id-card/issue' },
         ],
       },
+      {
+        icon: <Icons.Teachers />,
+        label: 'My Evaluation',
+        path: '/teacher/evaluation',
+      },
+      { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
+    ],
+    hod: [
+      { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },
+      { icon: <Icons.Students />, label: 'Student List', path: '/staff/students' },
+      { icon: <Icons.Attendance />, label: 'Attendance', path: '/staff/attendance' },
+      {
+        icon: <Icons.IDCard />,
+        label: 'ID Card',
+        children: [
+          { label: 'ID Card Details', path: '/staff/id-card/details' },
+          { label: 'Issue ID Card', path: '/staff/id-card/issue' },
+        ],
+      },
+      {
+        icon: <Icons.Teachers />,
+        label: 'Evaluations',
+        path: '/hod/evaluation',
+      },
       { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
     parent: [
@@ -159,7 +190,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
     ],
   };
 
-  const menuItems = menuConfigs[userType] || [];
+  const menuItems = menuConfigs[jobCategory.toLowerCase()] || menuConfigs[userType] || [];
 
   return (
     <>
