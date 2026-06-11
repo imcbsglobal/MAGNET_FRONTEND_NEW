@@ -362,12 +362,19 @@ $text-muted: #a3aed0;
 .form-section {
   margin-bottom: 24px;
 
-  h3 {
-    font-size: 0.78rem;
-    color: $primary-blue;
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 14px;
     padding-bottom: 8px;
     border-bottom: 2px solid #eef2ff;
+  }
+
+  h3 {
+    font-size: 0.78rem;
+    color: $primary-blue;
+    margin: 0;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;

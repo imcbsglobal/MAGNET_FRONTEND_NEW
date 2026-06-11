@@ -9,6 +9,7 @@ const JobCategoryAdd = () => {
   const { id } = useParams();
   const isEdit = !!id;
   const [name, setName] = useState('');
+  const [isDefault, setIsDefault] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const institutionId = localStorage.getItem('institutionId');
@@ -23,6 +24,7 @@ const JobCategoryAdd = () => {
     try {
       const response = await fetchJobCategoryById(id);
       setName(response.data.name);
+      setIsDefault(response.data.is_default);
     } catch (err) {
       console.error('Failed to fetch category:', err);
     }
@@ -34,6 +36,11 @@ const JobCategoryAdd = () => {
 
     if (!institutionId) {
       alert('Session error: No Institution ID found. Please log in again.');
+      return;
+    }
+
+    if (isDefault && isEdit) {
+      alert('Default categories cannot be edited');
       return;
     }
 
@@ -79,14 +86,20 @@ const JobCategoryAdd = () => {
                 <input 
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter category name (e.g. Teaching, Maintenance)"
+                  placeholder="Enter category name (e.g., Teaching, Maintenance)"
                   required
                   autoFocus
+                  disabled={isDefault && isEdit}
                 />
+                {isDefault && isEdit && (
+                  <p style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '4px' }}>
+                    This is a default category and cannot be edited
+                  </p>
+                )}
               </div>
 
               <div className="form-actions" style={{ marginTop: '30px' }}>
-                <button type="submit" className="save-btn" disabled={loading}>
+                <button type="submit" className="save-btn" disabled={loading || (isDefault && isEdit)}>
                   {loading ? 'Saving...' : (isEdit ? 'Update Category' : 'Save Category')}
                 </button>
               </div>

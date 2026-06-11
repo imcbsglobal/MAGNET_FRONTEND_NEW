@@ -76,12 +76,15 @@ const JobCategoriesList = () => {
                         <tr key={cat.id}>
                           <td>{firstIndex + index + 1}</td>
                           <td>{new Date(cat.created_at).toLocaleDateString()}</td>
-                          <td style={{ fontWeight: 600 }}>{cat.name}</td>
+                          <td style={{ fontWeight: 600 }}>
+                            {cat.name}
+                            {cat.is_default && <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '8px' }}>(Default)</span>}
+                          </td>
                           <td><span className="badge">{cat.institution_id}</span></td>
                           <td>
                             <div className="action-btns">
-                              <button className="edit-btn" onClick={() => navigate(`/admin/job-categories/edit/${cat.id}`)}>Edit</button>
-                              <button className="delete-btn" onClick={() => handleDeleteClick(cat.id)}>Delete</button>
+                              <button className="edit-btn" onClick={() => navigate(`/admin/job-categories/edit/${cat.id}`)} disabled={cat.is_default} style={{ opacity: cat.is_default ? 0.5 : 1, cursor: cat.is_default ? 'not-allowed' : 'pointer' }}>Edit</button>
+                              <button className="delete-btn" onClick={() => handleDeleteClick(cat.id)} disabled={cat.is_default} style={{ opacity: cat.is_default ? 0.5 : 1, cursor: cat.is_default ? 'not-allowed' : 'pointer' }}>Delete</button>
                             </div>
                           </td>
                         </tr>

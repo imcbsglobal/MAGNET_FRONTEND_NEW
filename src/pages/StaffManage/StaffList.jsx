@@ -59,6 +59,17 @@ const StaffList = () => {
     } catch (err) { alert('Failed to delete'); }
   };
 
+  const renderAdditionalAssignments = (assignments) => {
+    if (!assignments || assignments.length === 0) return '-';
+    return (
+      <div style={{ fontSize: '0.85rem' }}>
+        {assignments.map((a, i) => (
+          <div key={i}>{a.class} - {a.division}</div>
+        ))}
+      </div>
+    );
+  };
+
   const totalPages = Math.max(1, Math.ceil(staff.length / pageSize));
   const firstIndex = (currentPage - 1) * pageSize;
   const paginated = staff.slice(firstIndex, firstIndex + pageSize);
@@ -89,14 +100,14 @@ const StaffList = () => {
                         <th>Username</th>
                         <th>Password</th>
                         <th>Job Category</th>
-                        <th>Class</th>
-                        <th>Division</th>
+                        <th>Primary Class</th>
+                        <th>Primary Division</th>
+                        <th>Additional Assignments</th>
                         <th>Reg Number</th>
                         <th>School Reg No</th>
                         <th>Address</th>
                         <th>Pincode</th>
                         <th>Nationality</th>
-                        <th>Institution ID</th>
                         <th>Created Date</th>
                         <th>Actions</th>
                       </tr>
@@ -127,12 +138,12 @@ const StaffList = () => {
                           <td><span className="badge secondary">{member.job_category || 'N/A'}</span></td>
                           <td>{member.assigned_class || '-'}</td>
                           <td>{member.assigned_division || '-'}</td>
+                          <td>{renderAdditionalAssignments(member.additional_class_assignments)}</td>
                           <td>{member.reg_number || '-'}</td>
                           <td>{member.school_reg_number || '-'}</td>
                           <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.address || '-'}</td>
                           <td>{member.pincode || '-'}</td>
                           <td>{member.nationality || '-'}</td>
-                          <td><span className="badge">{member.institution_id}</span></td>
                           <td>{new Date(member.created_at).toLocaleDateString()}</td>
                           <td>
                             <div className="action-btns">

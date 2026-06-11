@@ -22,6 +22,7 @@ const StaffForm = () => {
     nationality: '',
     assigned_class: '',
     assigned_division: '',
+    additional_class_assignments: [],
   });
   const [categories, setCategories] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -68,6 +69,7 @@ const StaffForm = () => {
         nationality: d.nationality || '',
         assigned_class: d.assigned_class || '',
         assigned_division: d.assigned_division || '',
+        additional_class_assignments: d.additional_class_assignments || [],
       });
     } catch (err) {
       console.error('Failed to fetch staff:', err);
@@ -76,6 +78,29 @@ const StaffForm = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAddAdditionalClass = () => {
+    setFormData({
+      ...formData,
+      additional_class_assignments: [
+        ...formData.additional_class_assignments,
+        { class: '', division: '' },
+      ],
+    });
+  };
+
+  const handleRemoveAdditionalClass = (index) => {
+    setFormData({
+      ...formData,
+      additional_class_assignments: formData.additional_class_assignments.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleAdditionalClassChange = (index, field, value) => {
+    const updated = [...formData.additional_class_assignments];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({ ...formData, additional_class_assignments: updated });
   };
 
   const handleSubmit = async (e) => {
@@ -155,7 +180,7 @@ const StaffForm = () => {
               </div>
 
               <div className="form-section">
-                <h3>Class & Division</h3>
+                <h3>Primary Class & Division</h3>
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Class</label>
@@ -176,6 +201,58 @@ const StaffForm = () => {
                     </select>
                   </div>
                 </div>
+              </div>
+
+              <div className="form-section">
+                <div className="section-header">
+                  <h3>Additional Class Assignments</h3>
+                  <button 
+                    type="button" 
+                    className="add-btn" 
+                    onClick={handleAddAdditionalClass}
+                    style={{ fontSize: '0.9rem', padding: '8px 16px' }}
+                  >
+                    + Add Assignment
+                  </button>
+                </div>
+                {formData.additional_class_assignments.map((assignment, index) => (
+                  <div key={index} className="form-grid" style={{ marginBottom: '12px' }}>
+                    <div className="form-group">
+                      <label>Class {index + 1}</label>
+                      <select
+                        value={assignment.class}
+                        onChange={(e) => handleAdditionalClassChange(index, 'class', e.target.value)}
+                      >
+                        <option value="">Select Class</option>
+                        {classes.map((cls, i) => (
+                          <option key={i} value={cls}>{cls}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Division {index + 1}</label>
+                      <select
+                        value={assignment.division}
+                        onChange={(e) => handleAdditionalClassChange(index, 'division', e.target.value)}
+                      >
+                        <option value="">Select Division</option>
+                        {divisions.map((div, i) => (
+                          <option key={i} value={div}>{div}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ alignSelf: 'flex-end' }}>
+                      <button
+                        type="button"
+                        className="delete-btn"
+                        onClick={() => handleRemoveAdditionalClass(index)}
+                        style={{ padding: '10px 16px' }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="form-section">
