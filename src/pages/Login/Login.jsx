@@ -57,14 +57,6 @@ const Login = () => {
       localStorage.setItem('jobCategory', data.job_category || '');
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
-      
-      // Navigate to appropriate dashboard based on job category (case-insensitive)
-      const category = data.job_category?.toLowerCase() || '';
-      if (category === 'teacher') {
-        targetPath = '/teacher/evaluation';
-      } else if (category === 'hod') {
-        targetPath = '/hod/evaluation';
-      }
     } else if (userType === 'parent') {
       localStorage.setItem('userId', data.id);
       localStorage.setItem('institutionId', data.institution_id);
