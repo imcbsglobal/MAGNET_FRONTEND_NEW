@@ -44,6 +44,7 @@ const Login = () => {
       localStorage.setItem('refreshToken', data.refresh);
     } else if (userType === 'admin') {
       localStorage.setItem('schoolName', data.school_name);
+      localStorage.setItem('username', data.username);
       localStorage.setItem('institutionId', formData.institutionId);
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
@@ -57,10 +58,11 @@ const Login = () => {
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
       
-      // Navigate to appropriate dashboard based on job category
-      if (data.job_category === 'Teacher') {
+      // Navigate to appropriate dashboard based on job category (case-insensitive)
+      const category = data.job_category?.toLowerCase() || '';
+      if (category === 'teacher') {
         targetPath = '/teacher/evaluation';
-      } else if (data.job_category === 'HOD') {
+      } else if (category === 'hod') {
         targetPath = '/hod/evaluation';
       }
     } else if (userType === 'parent') {

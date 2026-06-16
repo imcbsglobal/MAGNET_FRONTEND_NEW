@@ -22,6 +22,7 @@ import ParentPendingFee from './pages/ParentDashboard/ParentPendingFee';
 import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
 import SchoolInfo from './pages/SchoolInfo/SchoolInfo';
 import HouseGroupMaster from './pages/Masters/HouseGroupMaster';
+import TeacherHoursMaster from './pages/Masters/TeacherHoursMaster';
 import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
 import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
@@ -31,6 +32,7 @@ import ChatPage from './pages/ChatPage/ChatPage';
 import TeacherEvaluation from './pages/Evaluations/TeacherEvaluation';
 import HODEvaluation from './pages/Evaluations/HODEvaluation';
 import AdminEvaluation from './pages/Evaluations/AdminEvaluation';
+import AdminEvaluationTeachers from './pages/Evaluations/AdminEvaluationTeachers';
 import './App.css';
 
 function AppContent() {
@@ -65,6 +67,7 @@ function AppContent() {
         <Route path="/parent/paid-fee" element={<ParentPaidFee />} />
         <Route path="/admin/school-info" element={<SchoolInfo />} />
         <Route path="/admin/masters/house-groups" element={<HouseGroupMaster />} />
+        <Route path="/admin/masters/teacher-hours" element={<TeacherHoursMaster />} />
         <Route path="/admin/job-categories" element={<JobCategoriesList />} />
         <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
         <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />
@@ -78,6 +81,7 @@ function AppContent() {
         <Route path="/teacher/evaluation" element={<TeacherEvaluation />} />
         <Route path="/hod/evaluation" element={<HODEvaluation />} />
         <Route path="/admin/evaluations" element={<AdminEvaluation />} />
+        <Route path="/admin/evaluations/teachers" element={<AdminEvaluationTeachers />} />
       </Routes>
       {!hideChat && <ChatWidget />}
     </div>
