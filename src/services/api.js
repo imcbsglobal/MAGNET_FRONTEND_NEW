@@ -206,3 +206,6 @@ export const fetchAllEvaluations = (institutionId) => api.get(`evaluation/evalua
 export const fetchTeacherEvaluations = (teacherId) => api.get(`evaluation/evaluations/teacher/${teacherId}/`);
 export const fetchTeacherMonthEvaluation = (teacherId, month) => api.get(`evaluation/evaluations/teacher/${teacherId}/${month}/`);
 export const saveEvaluation = (data) => api.put('evaluation/evaluations/save/', data);
+
+export const initiatePayment = (data) =>
+  api.post("payments/initiate/", data);

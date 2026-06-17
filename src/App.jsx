@@ -31,6 +31,8 @@ import ChatPage from './pages/ChatPage/ChatPage';
 import TeacherEvaluation from './pages/Evaluations/TeacherEvaluation';
 import HODEvaluation from './pages/Evaluations/HODEvaluation';
 import AdminEvaluation from './pages/Evaluations/AdminEvaluation';
+import PaymentSuccess from "./components/Payment/PaymentSuccess";
+import PaymentFailure from "./components/Payment/PaymentFailure";
 import './App.css';
 
 function AppContent() {
@@ -78,6 +80,8 @@ function AppContent() {
         <Route path="/teacher/evaluation" element={<TeacherEvaluation />} />
         <Route path="/hod/evaluation" element={<HODEvaluation />} />
         <Route path="/admin/evaluations" element={<AdminEvaluation />} />
+        <Route path="/payment-success"element={<PaymentSuccess />}/>
+        <Route path="/payment-failed"element={<PaymentFailure />}/>
       </Routes>
       {!hideChat && <ChatWidget />}
     </div>

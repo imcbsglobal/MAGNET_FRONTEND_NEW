@@ -36,11 +36,19 @@ const ParentPaidFee = () => {
     return sortedFees.filter((fee) =>
       (fee.particulars || '').toLowerCase().includes(search.toLowerCase()) ||
       (fee.refno || '').toLowerCase().includes(search.toLowerCase()) ||
+      (fee.month || '').toLowerCase().includes(search.toLowerCase()) ||
+      (fee.txnid || '').toLowerCase().includes(search.toLowerCase()) ||
       (fee.remark || '').toLowerCase().includes(search.toLowerCase())
     );
   }, [search, sortedFees]);
 
-  const totalPaid = filteredFees.reduce((sum, f) => sum + parseFloat(f.amount), 0);
+  const totalPaid = filteredFees.reduce(
+    (sum, f) =>
+      sum +
+      Number(f.amount || 0) +
+      Number(f.fine || 0),
+    0
+  );
   const totalPages = Math.max(1, Math.ceil(filteredFees.length / pageSize));
   const firstIndex = (currentPage - 1) * pageSize;
   const lastIndex = Math.min(filteredFees.length, firstIndex + pageSize);
@@ -119,10 +127,15 @@ const ParentPaidFee = () => {
                     <thead>
                       <tr>
                         <th>No</th>
+                        <th>Month</th>
                         <th>Particulars</th>
-                        <th>Date</th>
                         <th>Ref No</th>
                         <th>Amount</th>
+                        <th>Fine</th>
+                        <th>Total</th>
+                        <th>Txn ID</th>
+                        <th>Payment Date</th>
+                        <th>Status</th>
                         <th>Remark</th>
                       </tr>
                     </thead>
@@ -130,10 +143,55 @@ const ParentPaidFee = () => {
                       {paginatedFees.map((fee, index) => (
                         <tr key={fee.id}>
                           <td>{firstIndex + index + 1}</td>
+
+                          <td>{fee.month || '-'}</td>
+
                           <td>{fee.particulars || '-'}</td>
-                          <td>{formatDate(fee.date)}</td>
-                          <td>{fee.refno}</td>
-                          <td className="paid-amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+
+                          <td>{fee.refno || '-'}</td>
+
+                          <td className="paid-amount-cell">
+                            ₹{Number(fee.amount || 0).toFixed(2)}
+                          </td>
+
+                          <td>
+                            ₹{Number(fee.fine || 0).toFixed(2)}
+                          </td>
+
+                          <td>
+                            ₹{(
+                              Number(fee.amount || 0) +
+                              Number(fee.fine || 0)
+                            ).toFixed(2)}
+                          </td>
+
+                          <td
+                            style={{
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            {fee.txnid || '-'}
+                          </td>
+
+                          <td>
+                            {formatDate(fee.payment_date)}
+                          </td>
+
+                          <td>
+                            <span
+                              style={{
+                                color:
+                                  fee.payment_status === 'SUCCESS'
+                                    ? 'green'
+                                    : 'red',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              {fee.payment_status || '-'}
+                            </span>
+                          </td>
+
                           <td>{fee.remark || '-'}</td>
                         </tr>
                       ))}
