@@ -4,13 +4,15 @@ const DEFAULT_API_BASE_URL =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://127.0.0.1:8000/api/'
-    : 'https://magnetpro.in/api/';
+    // : 'https://magnetpro.in/api/';
+    : 'demo.magnetpro.in/student_data/';
 
 const DEFAULT_STUDENT_BASE_URL =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://127.0.0.1:8000/student_data/'
-    : 'https://magnetpro.in/student_data/';
+    // : 'https://magnetpro.in/student_data/';
+    : 'demo.magnetpro.in/student_data/';
 
 const API_BASE_URL = ((import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')) + '/';
 const STUDENT_BASE_URL = ((import.meta.env.VITE_STUDENT_BASE_URL || DEFAULT_STUDENT_BASE_URL).replace(/\/+$/, '')) + '/';
