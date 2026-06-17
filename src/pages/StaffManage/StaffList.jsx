@@ -40,7 +40,10 @@ const StaffList = () => {
 
   const loadStaff = async () => {
     try {
+      console.log("Loading staff with institutionId:", institutionId);
       const response = await fetchTeachers(institutionId);
+      console.log("Staff API response:", response);
+      console.log("Staff API data:", response.data);
       setStaff(response.data);
     } catch (err) {
       console.error('Failed to fetch staff:', err);
@@ -97,6 +100,7 @@ const StaffList = () => {
                       <tr>
                         <th>No.</th>
                         <th>Staff ID</th>
+                        <th>Name</th>
                         <th>Username</th>
                         <th>Password</th>
                         <th>Job Category</th>
@@ -117,6 +121,7 @@ const StaffList = () => {
                         <tr key={member.id}>
                           <td>{firstIndex + index + 1}</td>
                           <td><span className="badge">{member.staff_id || '-'}</span></td>
+                          <td style={{ fontWeight: 600 }}>{member.name || '-'}</td>
                           <td style={{ fontWeight: 600 }}>{member.username}</td>
                           <td className="password-column">
                             {member.password ? (

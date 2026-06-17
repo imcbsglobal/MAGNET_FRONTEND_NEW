@@ -136,6 +136,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
         label: 'Masters',
         children: [
           { label: 'House Groups', path: '/admin/masters/house-groups' },
+          { label: 'Teacher Hours', path: '/admin/masters/teacher-hours' },
         ],
       },
       {

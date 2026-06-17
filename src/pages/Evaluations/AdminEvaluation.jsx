@@ -27,7 +27,8 @@ const AdminEvaluationDashboard = () => {
         fetchTeachers(institutionId)
       ]);
       setEvaluations(evalsRes.data);
-      setTeachers(teachersRes.data);
+      const teacherOnly = teachersRes.data.filter(teacher => teacher.job_category && teacher.job_category.toLowerCase() === 'Teacher'.toLowerCase());
+      setTeachers(teacherOnly);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
@@ -46,7 +47,15 @@ const AdminEvaluationDashboard = () => {
     }
     const exam = examBase + examPerf;
 
-    const notebookEntry = e.notebook_entry;
+    // Calculate notebook entry from checkboxes (fallback to notebook_entry for old data)
+    let notebookEntry = 0;
+    if (e.notebook_check1 && e.notebook_check2) {
+      notebookEntry = 6;
+    } else if (e.notebook_check1 || e.notebook_check2) {
+      notebookEntry = 3;
+    } else {
+      notebookEntry = e.notebook_entry;
+    }
     const notebookTotalStudents = e.notebook_excellent + e.notebook_good + e.notebook_average + e.notebook_below_average;
     let notebookPerf = 0;
     if (notebookTotalStudents > 0) {
@@ -132,212 +141,221 @@ const AdminEvaluationDashboard = () => {
       <main className="dashboard-main">
         <Navbar placeholder="Search evaluations..." />
         <div className="admins-page-container">
-          <header className="page-header">
-            <div className="header-left">
-              <h1>Evaluation Dashboard</h1>
-              <p>View all teacher evaluations</p>
+          <div className="evaluation-page">
+            <header className="page-header">
+              <div className="header-left">
+                <h1>Evaluation Dashboard</h1>
+                <p>View all teacher evaluations</p>
+              </div>
+              <button className="save-btn" onClick={() => navigate('/admin/evaluations/teachers')} style={{ background: '#6b7280' }}>
+                View Teachers Entry Details
+              </button>
+            </header>
+
+            <div className="form-card">
+              <div className="pf-row">
+                <label>View:</label>
+                <select value={selectedTeacherId} onChange={(e) => setSelectedTeacherId(e.target.value)}>
+                  <option value="">All Teachers</option>
+                  {teachers.map(t => (
+                    <option key={t.id} value={t.id}>{t.username}</option>
+                  ))}
+                </select>
+                <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+                  <option value="">All Months</option>
+                  {[...new Set(evaluations.map(e => e.month))].sort().reverse().map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              {loading ? (
+                <div className="loader">
+                  <div className="loading-spinner" style={{width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px'}}></div>
+                  <div>Loading evaluations...</div>
+                </div>
+              ) : filteredEvaluations().length === 0 ? (
+                <div style={{ padding: '60px', textAlign: 'center', color: '#6b7280', fontSize: '16px' }}>
+                  No entries yet.
+                </div>
+              ) : (
+                filteredEvaluations().map(evaluation => {
+                  const scores = calculateTotal(evaluation);
+                  const teacher = teachers.find(t => t.id === evaluation.teacher_id);
+                  return (
+                    <div key={evaluation.id} className="tcard">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>
+                          {teacher?.username || 'Unknown Teacher'}
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: '#6b7280' }}>{evaluation.month}</span>
+                        </div>
+                      </div>
+
+                      <div className="mrow">
+                        <div className="mc">
+                          <div className="mv">{scores.total} / 100</div>
+                          <div className="ml">Total</div>
+                        </div>
+                        <div className="mc">
+                          <div className="mv">{scores.percentage}%</div>
+                          <div className="ml">Percentage</div>
+                        </div>
+                        <div className="mc">
+                          <div className="mv">{scores.academics} / 50</div>
+                          <div className="ml">Academics</div>
+                        </div>
+                        <div className="mc">
+                          <div className="mv">{scores.english} / 30</div>
+                          <div className="ml">English</div>
+                        </div>
+                        <div className="mc">
+                          <div className="mv">{scores.cocurricular} / 10</div>
+                          <div className="ml">Co-curricular</div>
+                        </div>
+                        <div className="mc">
+                          <div className="mv">{scores.moral} / 10</div>
+                          <div className="ml">Moral</div>
+                        </div>
+                      </div>
+
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="ptable">
+                          <thead>
+                            <tr>
+                              <th style={{ width: '44%' }}>Criterion</th>
+                              <th style={{ width: '16%' }}>By</th>
+                              <th style={{ width: '20%', textAlign: 'center' }}>Score</th>
+                              <th style={{ width: '20%', textAlign: 'center' }}>Max</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="cat-row">
+                              <td colSpan={4}>Academics (50)</td>
+                            </tr>
+                            <tr>
+                              <td>Lesson Plan</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.lessonPlan.replace('.00', '')}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+                            <tr>
+                              <td>Subject Knowledge</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.subjectKnowledge.replace('.00', '')}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+                            <tr>
+                              <td>Classroom Management</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.classroomManagement}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+                            <tr>
+                              <td>Activity Based Classroom</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.activityBasedClass}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+                            <tr>
+                              <td>Training</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.training}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+                            <tr>
+                              <td>Exam</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>Teacher</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.exam.replace('.00', '')}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                            </tr>
+                            <tr>
+                              <td>Notebook</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>Teacher</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.notebook.replace('.00', '')}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                            </tr>
+                            <tr>
+                              <td>Smart Room</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>Teacher</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.smartRoom.replace('.00', '')}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+
+                            <tr className="cat-row">
+                              <td colSpan={4}>English (30)</td>
+                            </tr>
+                            <tr>
+                              <td>Classroom Comm.</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_classroom}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                            </tr>
+                            <tr>
+                              <td>Informal Comm.</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_informal}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                            </tr>
+                            <tr>
+                              <td>Fluency & Vocab.</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_fluency}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                            </tr>
+
+                            <tr className="cat-row">
+                              <td colSpan={4}>Co-curricular (10)</td>
+                            </tr>
+                            <tr>
+                              <td>Extra Activity</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_extra}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+                            <tr>
+                              <td>Reward</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_reward}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                            </tr>
+
+                            <tr className="cat-row">
+                              <td colSpan={4}>Moral (10)</td>
+                            </tr>
+                            <tr>
+                              <td>Discipline</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_discipline}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>4</td>
+                            </tr>
+                            <tr>
+                              <td>Uniform</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_uniform}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
+                            </tr>
+                            <tr>
+                              <td>Good Deeds</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_good_deeds}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
+                            </tr>
+
+                            <tr className="tot-row">
+                              <td colSpan={2} style={{ fontWeight: 600 }}>Total</td>
+                              <td style={{ textAlign: 'center', fontWeight: 600 }}>{scores.total}</td>
+                              <td style={{ textAlign: 'center', color: '#6b7280' }}>100</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
-          </header>
-
-          <div className="form-card">
-            <div className="pf-row">
-              <label>View:</label>
-              <select value={selectedTeacherId} onChange={(e) => setSelectedTeacherId(e.target.value)}>
-                <option value="">All Teachers</option>
-                {teachers.map(t => (
-                  <option key={t.id} value={t.id}>{t.username}</option>
-                ))}
-              </select>
-              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-                <option value="">All Months</option>
-                {[...new Set(evaluations.map(e => e.month))].sort().reverse().map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-            </div>
-
-            {loading ? (
-              <div className="loader" style={{ padding: '40px' }}>Loading...</div>
-            ) : filteredEvaluations().length === 0 ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>No entries yet.</div>
-            ) : (
-              filteredEvaluations().map(evaluation => {
-                const scores = calculateTotal(evaluation);
-                const teacher = teachers.find(t => t.id === evaluation.teacher_id);
-                return (
-                  <div key={evaluation.id} className="tcard">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <div style={{ fontSize: '15px', fontWeight: 500, color: '#111827' }}>
-                        {teacher?.username || 'Unknown Teacher'}
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span style={{ fontSize: '12px', color: '#6b7280' }}>{evaluation.month}</span>
-                        <span className={`badge ${scores.gradeClass}`}>{scores.grade}</span>
-                      </div>
-                    </div>
-
-                    <div className="mrow">
-                      <div className="mc">
-                        <div className="mv">{scores.total} / 100</div>
-                        <div className="ml">Total</div>
-                      </div>
-                      <div className="mc">
-                        <div className="mv">{scores.percentage}%</div>
-                        <div className="ml">Percentage</div>
-                      </div>
-                      <div className="mc">
-                        <div className="mv">{scores.academics} / 50</div>
-                        <div className="ml">Academics</div>
-                      </div>
-                      <div className="mc">
-                        <div className="mv">{scores.english} / 30</div>
-                        <div className="ml">English</div>
-                      </div>
-                      <div className="mc">
-                        <div className="mv">{scores.cocurricular} / 10</div>
-                        <div className="ml">Co-curricular</div>
-                      </div>
-                      <div className="mc">
-                        <div className="mv">{scores.moral} / 10</div>
-                        <div className="ml">Moral</div>
-                      </div>
-                    </div>
-
-                    <div style={{ overflowX: 'auto' }}>
-                      <table className="ptable">
-                        <thead>
-                          <tr>
-                            <th style={{ width: '44%' }}>Criterion</th>
-                            <th style={{ width: '16%' }}>By</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>Score</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>Max</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="cat-row">
-                            <td colSpan={4}>Academics (50)</td>
-                          </tr>
-                          <tr>
-                            <td>Lesson Plan</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.lessonPlan.replace('.00', '')}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-                          <tr>
-                            <td>Subject Knowledge</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.subjectKnowledge.replace('.00', '')}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-                          <tr>
-                            <td>Classroom Management</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.classroomManagement}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-                          <tr>
-                            <td>Activity Based Classroom</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.activityBasedClass}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-                          <tr>
-                            <td>Training</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.training}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-                          <tr>
-                            <td>Exam</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>Teacher</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.exam.replace('.00', '')}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                          </tr>
-                          <tr>
-                            <td>Notebook</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>Teacher</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.notebook.replace('.00', '')}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                          </tr>
-                          <tr>
-                            <td>Smart Room</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>Teacher</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.smartRoom.replace('.00', '')}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-
-                          <tr className="cat-row">
-                            <td colSpan={4}>English (30)</td>
-                          </tr>
-                          <tr>
-                            <td>Classroom Comm.</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_classroom}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                          </tr>
-                          <tr>
-                            <td>Informal Comm.</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_informal}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                          </tr>
-                          <tr>
-                            <td>Fluency & Vocab.</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_fluency}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                          </tr>
-
-                          <tr className="cat-row">
-                            <td colSpan={4}>Co-curricular (10)</td>
-                          </tr>
-                          <tr>
-                            <td>Extra Activity</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_extra}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-                          <tr>
-                            <td>Reward</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_reward}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                          </tr>
-
-                          <tr className="cat-row">
-                            <td colSpan={4}>Moral (10)</td>
-                          </tr>
-                          <tr>
-                            <td>Discipline</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_discipline}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>4</td>
-                          </tr>
-                          <tr>
-                            <td>Uniform</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_uniform}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
-                          </tr>
-                          <tr>
-                            <td>Good Deeds</td>
-                            <td style={{ fontSize: '11px', color: '#6b7280' }}>HOD</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_good_deeds}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
-                          </tr>
-
-                          <tr className="tot-row">
-                            <td colSpan={2} style={{ fontWeight: 500 }}>Total</td>
-                            <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.total}</td>
-                            <td style={{ textAlign: 'center', color: '#6b7280' }}>100</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              })
-            )}
           </div>
         </div>
       </main>
