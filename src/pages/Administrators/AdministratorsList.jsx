@@ -47,16 +47,21 @@ const AdministratorsList = () => {
   // Open payment modal pre-filled with existing data
   const handlePaymentClick = async (administrator) => {
     try {
-      const response = await api.get(`admins/${administrator.id}/`);
+      const response = await api.get(
+        `payments/config/${administrator.institution_id}/`
+      );
+
       const data = response.data;
+
       setPaymentModal({
         id: administrator.id,
-        payment_gateway: data.payment_gateway || 'easebuzz',
-        gateway_key: data.gateway_key || '',
-        gateway_secret: data.gateway_secret || '',
+        institution_id: administrator.institution_id,
+        payment_gateway: data.payment_gateway || "easebuzz",
+        gateway_key: data.gateway_key || "",
+        gateway_secret: data.gateway_secret || "",
       });
     } catch (err) {
-      alert('Failed to load payment details');
+      alert("Failed to load payment details");
     }
   };
 
@@ -66,22 +71,19 @@ const AdministratorsList = () => {
 
   const handlePaymentSave = async () => {
     setPaymentLoading(true);
+
     try {
-      await api.patch(`admins/${paymentModal.id}/`, {
+      await api.post("payments/config/save/", {
+        institution_id: paymentModal.institution_id,
         payment_gateway: paymentModal.payment_gateway,
         gateway_key: paymentModal.gateway_key,
         gateway_secret: paymentModal.gateway_secret,
       });
-      // Update local state so table reflects changes without reload
-      setAdministrators(prev =>
-        prev.map(a => a.id === paymentModal.id
-          ? { ...a, ...paymentModal }
-          : a
-        )
-      );
+
+      alert("Payment configuration saved successfully");
       setPaymentModal(null);
     } catch (err) {
-      alert('Failed to save payment details: ' + (err.response?.data?.message || 'Check fields'));
+      alert("Failed to save payment configuration");
     } finally {
       setPaymentLoading(false);
     }
