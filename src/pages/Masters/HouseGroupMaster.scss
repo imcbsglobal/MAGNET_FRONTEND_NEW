@@ -1,3 +1,26 @@
+/* =========================================================
+   House Group Master – modal (existing, recolored to match
+   the Inter / navy / indigo system) + new page-level styles
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$ink:           #0F1E3D;
+$navy:          #1B2A4E;
+$subtext:       #6B7B96;
+$border:        #E5E9F0;
+$bg:            #F6F8FB;
+$head-bg:       #F8FAFC;
+$accent:        #4F46E5;
+$accent-light:  #EEF2FF;
+$red:           #E11D48;
+$red-light:     #FDEAEE;
+
+$radius-sm: 8px;
+$shadow-card-lg: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+$shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
+
+/* ── Modal overlay (existing) ─────────────────────────── */
 .hgm-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -10,19 +33,21 @@
 }
 
 .hgm-modal-content {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: white;
   padding: 2.5rem;
-  border-radius: 24px;
+  border-radius: 20px;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 25px 50px -12px rgba(27, 37, 75, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(15, 30, 62, 0.25);
   animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   h3 { 
     margin: 0 0 1.5rem; 
-    color: #1b254b;
-    font-size: 1.5rem;
+    color: $ink;
+    font-size: 1.32rem;
     font-weight: 800;
+    letter-spacing: -0.015em;
   }
 
   .hgm-form-group {
@@ -30,28 +55,30 @@
     label { 
       display: block; 
       margin-bottom: 0.6rem; 
-      font-weight: 600; 
-      color: #1b254b;
-      font-size: 0.9rem;
+      font-weight: 700; 
+      color: $navy;
+      font-size: 0.82rem;
     }
     input {
       width: 100%;
-      padding: 0.9rem 1.2rem;
-      border: 2px solid #eef2ff;
-      border-radius: 14px;
-      font-size: 1rem;
-      color: #1b254b;
-      background-color: #ffffff;
-      transition: all 0.2s;
+      padding: 0.78rem 1rem;
+      border: 1.5px solid $border;
+      border-radius: $radius-sm;
+      font-size: 0.9rem;
+      color: $ink;
+      background-color: $head-bg;
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
       
       &:focus { 
         outline: none; 
-        border-color: #3d5af1; 
-        background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(61, 90, 241, 0.1); 
+        border-color: $accent; 
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba($accent, 0.12); 
       }
 
-      &::placeholder { color: #a3aed0; }
+      &::placeholder { color: #A4AEC2; }
     }
   }
 
@@ -59,49 +86,53 @@
     display: flex;
     gap: 12px;
     justify-content: flex-end;
-    margin-top: 2rem;
+    margin-top: 1.6rem;
 
     button {
-      padding: 0.8rem 1.5rem;
-      border-radius: 12px;
+      padding: 0.7rem 1.4rem;
+      border-radius: 10px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.9rem;
+      transition: all 0.18s ease;
+      font-size: 0.86rem;
+      font-family: inherit;
     }
 
     .hgm-cancel-btn { 
-      background: #f4f7fe; 
-      border: none; 
-      color: #64748b; 
-      &:hover { background: #eef2ff; color: #1b254b; } 
+      background: $bg; 
+      border: 1px solid $border; 
+      color: $subtext; 
+      &:hover { background: $accent-light; color: $navy; border-color: rgba($accent, 0.3); } 
     }
     
     .hgm-save-btn { 
-      background: linear-gradient(135deg, #3d5af1 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #818CF8 0%, #6366F1 45%, #4338CA 100%);
       border: none; 
       color: white; 
-      box-shadow: 0 4px 12px rgba(61, 90, 241, 0.2);
-      &:hover { 
+      box-shadow: 0 4px 14px rgba(67, 56, 202, 0.38);
+      &:hover:not(:disabled) { 
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(61, 90, 241, 0.3); 
+        filter: brightness(1.06);
+        box-shadow: 0 8px 20px rgba(67, 56, 202, 0.46); 
       }
-      &:disabled { opacity: 0.7; transform: none; }
+      &:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
     }
   }
 }
 
+/* ── Error alert (existing) ───────────────────────────── */
 .error-alert {
-  background: #fff1f2;
-  color: #e11d48;
+  background: $red-light;
+  color: $red;
   padding: 1rem 1.25rem;
-  border-radius: 14px;
-  border: 1px solid #ffe4e6;
+  border-radius: $radius-sm;
+  border: 1px solid rgba($red, 0.25);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 10px;
+  font-family: 'Inter', sans-serif;
 
   &::before { content: '⚠️'; }
 }
@@ -109,4 +140,153 @@
 @keyframes modalPop {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* =========================================================
+   Page-level styles
+   ========================================================= */
+
+.house-group-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: $bg;
+  min-height: 100%;
+
+  .hgm-header {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: $shadow-card-lg;
+    flex-wrap: wrap;
+    padding: 22px 28px;
+
+    h1 { margin: 0 0 3px; font-size: 1.32rem; font-weight: 800; color: $ink; letter-spacing: -0.015em; }
+    p  { margin: 0; font-size: 0.86rem; color: $subtext; }
+  }
+
+  .hgm-header-main { display: flex; align-items: center; gap: 16px; }
+
+  .hgm-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366F1, #4338CA);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba($accent, 0.38);
+
+    svg { width: 22px; height: 22px; stroke-width: 1.8; }
+  }
+
+  .hgm-header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .hgm-stat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: $accent-light;
+    border: 1px solid #C7D2FE;
+
+    span { font-size: 0.66rem; font-weight: 700; color: $accent; text-transform: uppercase; letter-spacing: 0.05em; }
+    strong { font-size: 1.2rem; font-weight: 800; color: $navy; line-height: 1.2; }
+  }
+
+  .hgm-add-btn {
+    background: linear-gradient(135deg, #818CF8 0%, #6366F1 45%, #4338CA 100%);
+    border: none;
+    color: #fff;
+    border-radius: 11px;
+    padding: 11px 22px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(67, 56, 202, 0.38), inset 0 1px 0 rgba(255,255,255,0.35);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, filter 0.18s ease;
+
+    &:hover { filter: brightness(1.06); box-shadow: 0 8px 20px rgba(67, 56, 202, 0.46), inset 0 1px 0 rgba(255,255,255,0.4); transform: translateY(-2px); }
+    &:active { transform: translateY(0); filter: brightness(0.97); }
+  }
+
+  .hgm-table-card {
+    border-radius: 12px;
+    border: 1px solid $border;
+    box-shadow: $shadow-raised;
+    overflow: hidden;
+  }
+
+  .hgm-loader { text-align: center; padding: 20px; color: #A4AEC2; font-size: 0.88rem; font-weight: 500; background: #fff; }
+
+  .hgm-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th, td {
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid $border;
+      border-right: 1px solid $border;
+      font-size: 0.84rem;
+      color: $ink;
+      vertical-align: middle;
+    }
+
+    th:last-child, td:last-child { border-right: none; }
+
+    th {
+      font-weight: 800;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: $navy;
+      background: $head-bg;
+      white-space: nowrap;
+      border-bottom: 2px solid darken($border, 10%);
+    }
+
+    tbody tr {
+      transition: background 0.1s;
+      &:nth-child(even) { background: #FAFBFD; }
+      &:nth-child(odd)  { background: #fff; }
+      &:hover           { background: $accent-light !important; }
+      &:last-child td   { border-bottom: none; }
+    }
+  }
+
+  .hgm-no-cell { color: $subtext; font-weight: 600; }
+  .hgm-name-cell { font-weight: 600; color: $ink; }
+  .hgm-empty-cell { text-align: center; padding: 40px 20px; color: #A4AEC2; font-size: 0.88rem; }
+
+  .hgm-action-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .hgm-edit-btn, .hgm-delete-btn {
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+
+    &:hover { transform: translateY(-1px); }
+  }
+
+  .hgm-edit-btn { background: $accent-light; color: $accent; border-color: rgba($accent, 0.25); &:hover { background: rgba($accent, 0.16); } }
+  .hgm-delete-btn { background: $red-light; color: $red; border-color: rgba($red, 0.25); &:hover { background: rgba($red, 0.16); } }
+
+  @media (max-width: 640px) {
+    .hgm-header { flex-direction: column; align-items: flex-start; }
+    .hgm-header-right { width: 100%; justify-content: space-between; }
+  }
 }

@@ -1,0 +1,787 @@
+/* =========================================================
+   Issue ID Card Page — Design matches IDCardDetails.scss
+   ========================================================= */
+
+$jira-blue:         #0052CC;
+$jira-blue-light:   #DEEBFF;
+$jira-text:         #172B4D;
+$jira-subtext:      #6B778C;
+$jira-border:       #DFE1E6;
+$jira-bg:           #F4F5F7;
+$jira-green:        #36B37E;
+$jira-green-light:  #E3FCEF;
+$jira-red:          #FF5630;
+$jira-red-light:    #FFEBE6;
+$jira-grey:         #97A0AF;
+$jira-grey-light:   #EBECF0;
+$jira-purple:       #6554C0;
+$jira-purple-light: #EAE6FF;
+
+$radius-sm:   6px;
+$radius-md:   8px;
+$radius-lg:   12px;
+$radius-pill: 100px;
+
+$shadow-card:   0 1px 2px rgba(9, 30, 66, 0.06), 0 1px 1px rgba(9, 30, 66, 0.04);
+$shadow-raised: 0 4px 10px rgba(9, 30, 66, 0.08);
+$shadow-modal:  0 12px 36px rgba(9, 30, 66, 0.22);
+
+$jira-surface: mix($jira-blue-light, #ffffff, 38%);
+
+/* ─── Shared Buttons ─────────────────────────────────────────────────────── */
+.primary-btn,
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.primary-btn {
+  background: $jira-blue;
+  color: #fff;
+  border-color: darken($jira-blue, 8%);
+  box-shadow: 0 1px 2px rgba($jira-blue, 0.32);
+  &:hover    { background: darken($jira-blue, 8%); box-shadow: 0 2px 6px rgba($jira-blue, 0.4); transform: translateY(-1px); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+}
+.secondary-btn {
+  background: #fff;
+  color: $jira-text;
+  border-color: $jira-border;
+  &:hover    { background: $jira-bg; border-color: $jira-grey; }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+}
+
+/* ─── Page wrapper ───────────────────────────────────────────────────────── */
+.idcard-page {
+  padding: 16px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: $jira-bg;
+  min-height: 100%;
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────── */
+.idcard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #ffffff 0%, $jira-blue-light 120%);
+  border: 1px solid $jira-border;
+  border-radius: $radius-md;
+  border-left: 4px solid $jira-blue;
+  box-shadow: $shadow-card;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 2px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: $jira-text;
+    letter-spacing: -0.01em;
+  }
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: $jira-subtext;
+  }
+}
+
+.idcard-header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.idcard-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: $radius-sm;
+  background: $jira-blue;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba($jira-blue, 0.35);
+
+  svg { width: 22px; height: 22px; stroke-width: 1.75; }
+}
+
+.idcard-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ─── Header info pills ──────────────────────────────────────────────────── */
+.idcard-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.idcard-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+
+.idcard-pill--info {
+  background: $jira-purple-light;
+  color: darken($jira-purple, 8%);
+  border-color: rgba($jira-purple, 0.35);
+  &::before { background: $jira-purple; }
+}
+
+/* ─── Status / Error banners ─────────────────────────────────────────────── */
+.idcard-status,
+.idcard-error {
+  padding: 9px 16px;
+  border-radius: $radius-sm;
+  font-weight: 600;
+  font-size: 0.82rem;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.idcard-status {
+  background: $jira-green-light;
+  color: darken($jira-green, 14%);
+  border-color: $jira-green;
+}
+.idcard-error {
+  background: $jira-red-light;
+  color: darken($jira-red, 10%);
+  border-color: $jira-red;
+}
+
+/* ─── Search bar ─────────────────────────────────────────────────────────── */
+.idcard-search-bar {
+  background: linear-gradient(135deg, $jira-surface 0%, #ffffff 75%);
+  border: 1px solid $jira-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  padding: 14px 16px;
+
+  input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    border-radius: $radius-sm;
+    border: 1px solid $jira-border;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B778C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;
+    color: $jira-text;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+    box-sizing: border-box;
+
+    &::placeholder { color: $jira-grey; }
+    &:focus {
+      border-color: $jira-blue;
+      box-shadow: 0 0 0 2px rgba($jira-blue, 0.2);
+    }
+  }
+}
+
+/* ─── Empty state ─────────────────────────────────────────────────────────── */
+.idcard-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: $jira-grey;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* ─── Badges ─────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+.badge--green { background: $jira-green-light; color: darken($jira-green, 14%); border: 1px solid $jira-green; &::before { background: $jira-green; } }
+.badge--gray  { background: $jira-grey-light;  color: $jira-subtext;            border: 1px solid $jira-grey;  &::before { background: $jira-grey; } }
+
+/* ─── Action buttons (icon-only circle) ──────────────────────────────────── */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid $jira-border;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+  color: $jira-subtext;
+  flex-shrink: 0;
+
+  &:hover    { background: $jira-blue-light; border-color: $jira-blue; color: $jira-blue; box-shadow: $shadow-card; transform: translateY(-1px); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+}
+.camera-btn { color: $jira-purple; }
+
+/* ─── Issue page layout ──────────────────────────────────────────────────── */
+.issue-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* ── Left panel ─────────────────────────────────────────────────────────── */
+.issue-list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 16px;
+}
+
+.issue-list-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  border: 1px solid $jira-border;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.issue-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  background: linear-gradient(90deg, #162040 0%, #1e2f5a 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.issue-list-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.issue-list-count {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  background: rgba(79,110,247,0.2);
+  border: 1px solid rgba(79,110,247,0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.issue-student-list {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 320px);
+  overflow-y: auto;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: #f1f5f9; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+}
+
+.issue-student-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+
+  &:last-child     { border-bottom: none; }
+  &:hover          { background: #f8fafc; }
+  &--active        { background: $jira-blue-light; border-left-color: $jira-blue; }
+}
+
+.issue-student-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f6ef7, #6366f1);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(79,110,247,0.2);
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.issue-student-info { flex: 1; min-width: 0; }
+.issue-student-name { font-weight: 700; color: #111827; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.issue-student-meta { font-size: 0.7rem; color: $jira-subtext; margin-top: 1px; }
+
+.issue-student-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.issue-download-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: $jira-blue;
+  color: #fff;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 4px rgba($jira-blue, 0.3);
+
+  svg { width: 14px; height: 14px; }
+
+  &:hover:not(:disabled) { background: darken($jira-blue, 8%); transform: translateY(-1px); box-shadow: 0 3px 8px rgba($jira-blue, 0.4); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+}
+
+/* ── Right panel ─────────────────────────────────────────────────────────── */
+.issue-preview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* No-selection placeholder */
+.issue-no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 24px;
+  background: #fff;
+  border-radius: $radius-lg;
+  border: 2px dashed $jira-border;
+  color: $jira-grey;
+  text-align: center;
+  font-size: 0.9rem;
+
+  p { margin: 0; color: $jira-subtext; }
+}
+
+.issue-no-selection-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: $radius-md;
+  background: $jira-bg;
+  border: 1px solid $jira-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $jira-grey;
+
+  svg { width: 28px; height: 28px; }
+}
+
+/* Selected student banner */
+.issue-selected-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #ffffff 0%, $jira-blue-light 150%);
+  border: 1px solid $jira-border;
+  border-radius: $radius-md;
+  border-left: 4px solid $jira-blue;
+  box-shadow: $shadow-card;
+  flex-wrap: wrap;
+}
+
+.issue-selected-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid $jira-border;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: $shadow-card;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.issue-selected-info { flex: 1; min-width: 0; }
+.issue-selected-name {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: $jira-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.issue-selected-meta {
+  font-size: 0.75rem;
+  color: $jira-subtext;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.issue-selected-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Card preview wrapper */
+.issue-preview-card {
+  background: #fff;
+  border: 1px solid $jira-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  padding: 20px;
+}
+
+.issue-preview-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: $jira-subtext;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.idt-preview-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+/* ─── Edit panel ─────────────────────────────────────────────────────────── */
+.idcard-edit-panel {
+  padding: 18px 20px;
+  border-radius: $radius-md;
+  background: #fff;
+  border: 1px solid $jira-border;
+  box-shadow: $shadow-card;
+}
+
+.idcard-edit-panel-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: $jira-text;
+    font-weight: 800;
+  }
+}
+
+.idcard-edit-panel-sub {
+  font-size: 0.78rem;
+  color: $jira-subtext;
+  font-weight: 600;
+}
+
+.idcard-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.idcard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    color: $jira-subtext;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input {
+    padding: 7px 10px;
+    border-radius: $radius-sm;
+    border: 1.5px solid $jira-border;
+    background: #fff;
+    color: $jira-text;
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+
+    &:focus    { border-color: $jira-blue; box-shadow: 0 0 0 2px rgba($jira-blue, 0.2); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; background: $jira-bg; }
+  }
+}
+
+.idcard-edit-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ID CARD TEMPLATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.idt-card {
+  width: 240px;
+  height: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(15,23,42,0.22), 0 2px 8px rgba(15,23,42,0.1);
+  position: relative;
+  flex-shrink: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #ffffff;
+}
+
+/* ── FRONT ─────────────────────────────────────────────────────────────────── */
+.idt-front { display: flex; flex-direction: column; }
+
+.idt-grid-pattern {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  opacity: 0.1;
+  background-image:
+    linear-gradient(45deg, #1a237e 25%, transparent 25%),
+    linear-gradient(-45deg, #1a237e 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1a237e 75%),
+    linear-gradient(-45deg, transparent 75%, #1a237e 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px 8px, 8px 0;
+  z-index: 1;
+}
+
+.idt-header {
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  height: 60px;
+}
+
+.idt-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.idt-logo { width: 34px; height: 34px; object-fit: contain; }
+.idt-logo-placeholder { width: 34px; height: 34px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+.idt-school-name {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #1a237e;
+  text-transform: uppercase;
+  line-height: 1.2;
+  max-width: 90px;
+}
+
+.idt-place-badge {
+  background: #283593;
+  color: #ffffff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.idt-photo-area {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.idt-purple-curve {
+  position: absolute;
+  top: 0; left: -40px;
+  width: 220px; height: 220px;
+  background: #4527a0;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.idt-photo-circle {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  border: 6px solid #ffffff;
+  background: #ffffff;
+  z-index: 3;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.idt-photo { width: 100%; height: 100%; object-fit: cover; }
+
+.idt-body {
+  padding: 8px 16px;
+  text-align: center;
+  z-index: 5;
+  flex: 1;
+}
+
+.idt-student-name {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #1a237e;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.idt-class { font-size: 0.85rem; font-weight: 800; color: #7e57c2; margin-bottom: 12px; }
+
+.idt-info-table { text-align: left; display: flex; flex-direction: column; gap: 4px; }
+
+.idt-info-row { display: flex; align-items: flex-start; font-size: 0.68rem; }
+
+.idt-info-label { color: #283593; font-weight: 700; min-width: 50px; }
+.idt-info-sep   { color: #283593; margin: 0 4px; }
+.idt-info-val   { color: #334155; font-weight: 600; line-height: 1.3; }
+
+/* ── BACK ──────────────────────────────────────────────────────────────────── */
+.idt-back { background: #f8fafc; display: flex; flex-direction: column; }
+
+.idt-back-header { height: 80px; position: relative; overflow: hidden; flex-shrink: 0; }
+
+.idt-back-curve-purple {
+  position: absolute;
+  top: -60px; left: -60px;
+  width: 160px; height: 160px;
+  background: #7e57c2;
+  border-radius: 50%;
+}
+
+.idt-back-curve-navy {
+  position: absolute;
+  top: -100px; right: -40px;
+  width: 200px; height: 200px;
+  background: #1a237e;
+  border-radius: 50%;
+}
+
+.idt-back-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-top: -30px;
+  margin-bottom: 15px;
+  z-index: 10;
+  position: relative;
+}
+
+.idt-back-logo-pill {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+}
+
+.idt-back-logo { height: 24px; max-width: 80px; object-fit: contain; }
+.idt-back-logo-placeholder { font-size: 1.4rem; line-height: 1; }
+
+.idt-back-rules { padding: 0 20px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+.idt-rule-item { display: flex; gap: 8px; align-items: flex-start; }
+.idt-bullet    { color: #283593; font-weight: 900; font-size: 0.8rem; line-height: 1; }
+.idt-rule-text { font-size: 0.65rem; color: #475569; line-height: 1.4; }
+
+.idt-back-footer {
+  padding: 12px 20px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.idt-back-school-name { font-size: 0.75rem; font-weight: 900; color: #1a237e; text-transform: uppercase; margin-bottom: 2px; }
+.idt-back-sub-name    { font-size: 0.55rem; color: #64748b; margin-bottom: 8px; }
+
+.idt-back-contact { display: flex; flex-direction: column; gap: 3px; }
+
+.idt-contact-row  { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; }
+.idt-contact-icon { font-size: 0.7rem; }
+.idt-contact-val  { color: #334155; }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .issue-layout { grid-template-columns: 260px 1fr; }
+}
+
+@media (max-width: 900px) {
+  .issue-layout { grid-template-columns: 1fr; }
+  .issue-list-panel { position: static; }
+  .issue-student-list { max-height: 280px; }
+  .idt-preview-row { justify-content: center; }
+  .idcard-edit-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .idcard-header    { flex-direction: column; align-items: flex-start; }
+  .idcard-edit-grid { grid-template-columns: 1fr; }
+  .issue-selected-banner { gap: 10px; }
+  .issue-selected-actions { width: 100%; justify-content: flex-end; }
+  .idcard-header-actions { width: 100%; }
+  .idcard-header-actions .secondary-btn { flex: 1; justify-content: center; }
+}

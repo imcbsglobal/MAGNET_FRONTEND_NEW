@@ -3,7 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { createTeacher, fetchTeacherById, updateTeacher, fetchJobCategories, fetchClassesDivisions } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import '../Administrators/Administrators.scss';
+import './StaffForm.scss';
+
+const StaffIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
 
 const StaffForm = () => {
   const { id } = useParams();
@@ -131,16 +140,21 @@ const StaffForm = () => {
       <Sidebar userType="admin" />
       <main className="dashboard-main">
         <Navbar placeholder="Search settings..." />
-        <div className="admin-form-container">
-          <header className="page-header">
-            <div className="header-left">
-              <h1>{isEdit ? 'Edit Staff' : 'Add Staff'}</h1>
-              <p>{isEdit ? 'Update staff details' : 'Create a new staff account for your school'}</p>
+        <div className="staff-form-page">
+
+          {/* ── Header ── */}
+          <div className="form-header">
+            <div className="form-header-main">
+              <div className="form-header-icon"><StaffIcon /></div>
+              <div>
+                <h1>{isEdit ? 'Edit Staff' : 'Add Staff'}</h1>
+                <p>{isEdit ? 'Update staff details' : 'Create a new staff account for your school'}</p>
+              </div>
             </div>
             <button className="back-btn" onClick={() => navigate('/admin/staff')}>
               Back to List
             </button>
-          </header>
+          </div>
 
           <div className="form-card">
             <form onSubmit={handleSubmit}>

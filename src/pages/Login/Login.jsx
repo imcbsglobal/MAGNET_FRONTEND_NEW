@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superadminLogin, administratorLogin, teacherLogin, parentLogin } from '../../services/api';
-import logo from '../../assets/logo.png';
+import loginImage from '../../assets/loginpage.png';
 import './Login.scss';
 
 const Login = () => {
@@ -44,7 +44,6 @@ const Login = () => {
       localStorage.setItem('refreshToken', data.refresh);
     } else if (userType === 'admin') {
       localStorage.setItem('schoolName', data.school_name);
-      localStorage.setItem('username', data.username);
       localStorage.setItem('institutionId', formData.institutionId);
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
@@ -57,6 +56,13 @@ const Login = () => {
       localStorage.setItem('jobCategory', data.job_category || '');
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
+
+      // Navigate to appropriate dashboard based on job category
+      if (data.job_category === 'Teacher') {
+        targetPath = '/teacher/evaluation';
+      } else if (data.job_category === 'HOD') {
+        targetPath = '/hod/evaluation';
+      }
     } else if (userType === 'parent') {
       localStorage.setItem('userId', data.id);
       localStorage.setItem('institutionId', data.institution_id);
@@ -65,7 +71,7 @@ const Login = () => {
       localStorage.setItem('token', data.access);
       localStorage.setItem('refreshToken', data.refresh);
     }
-    
+
     setTimeout(() => {
       navigate(targetPath);
     }, 1500);
@@ -74,10 +80,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLoading || isSuccess) return;
-    
+
     setError('');
     setIsLoading(true);
-    
+
     try {
       let response;
       if (role === 'superadmin') {
@@ -126,6 +132,8 @@ const Login = () => {
     }
   };
 
+  // Purely cosmetic helper for the dynamic subtitle/button label — does not change submit logic
+  const roleLabel = role === 'admin' ? 'ADMINISTRATOR' : (role === 'staff' ? 'STAFF' : (role === 'parent' ? 'PARENT' : role.toUpperCase()));
 
   return (
     <div className="login-page-wrapper">
@@ -135,7 +143,7 @@ const Login = () => {
           <div className="login-success-box">
             <div className="login-success-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 6L9 17L4 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <h3>Login Successful!</h3>
@@ -146,35 +154,12 @@ const Login = () => {
 
       <div className="login-container-inner">
         <div className="login-left-section">
-          <div className="logo-container">
-            <div className="logo-ring">
-              <div className="logo-ring-inner">
-                <div className="demo-logo">
-                  <img src={logo} alt="School Logo" />
-                </div>
-              </div>
-            </div>
-            <h1 className="brand-name">
-              {'MAGNET SCHOOL'.split('').map((char, i) => (
-                <span key={i} className="flash-letter" style={{ '--i': i }}>
-                  {char === ' ' ? '\u00A0' : char}
-                </span>
-              ))}
-            </h1>
-            <p className="brand-tagline">Welcome to the School Management Portal</p>
-            <div className="brand-dots">
-              <span /><span /><span />
-            </div>
-          </div>
+          <img src={loginImage} alt="" className="hero-image" />
         </div>
-        
+
         <div className="login-right-section">
           <div className={`login-card ${shake ? 'shake-animation' : ''} ${isSuccess ? 'success-state' : ''} ${role === 'superadmin' ? 'superadmin-mode' : ''}`}>
             {error && <div className="error-message">{error}</div>}
-
-
-
-
 
             {role === 'superadmin' ? (
               <div className="superadmin-header">
@@ -187,26 +172,33 @@ const Login = () => {
                 <p className="header-subtitle">Secure Authentication Portal</p>
               </div>
             ) : (
-              <div className="role-toggle">
-                <button 
-                  className={role === 'parent' ? 'active' : ''} 
-                  onClick={() => setRole('parent')}
-                >
-                  PARENT
-                </button>
-                <button 
-                  className={role === 'staff' ? 'active' : ''} 
-                  onClick={() => setRole('staff')}
-                >
-                  STAFF
-                </button>
-                <button 
-                  className={role === 'admin' ? 'active' : ''} 
-                  onClick={() => setRole('admin')}
-                >
-                  ADMINISTRATOR
-                </button>
-              </div>
+              <>
+                <div className="form-header">
+                  <h2>Sign In</h2>
+                  <p>Access your {roleLabel.toLowerCase()} dashboard</p>
+                </div>
+
+                <div className="role-toggle">
+                  <button
+                    className={role === 'parent' ? 'active' : ''}
+                    onClick={() => setRole('parent')}
+                  >
+                    PARENT
+                  </button>
+                  <button
+                    className={role === 'staff' ? 'active' : ''}
+                    onClick={() => setRole('staff')}
+                  >
+                    STAFF
+                  </button>
+                  <button
+                    className={role === 'admin' ? 'active' : ''}
+                    onClick={() => setRole('admin')}
+                  >
+                    ADMINISTRATOR
+                  </button>
+                </div>
+              </>
             )}
             <form onSubmit={handleSubmit} className="login-form">
               {role !== 'superadmin' && (
@@ -267,9 +259,12 @@ const Login = () => {
                     )}
                   </button>
                 </div>
+                {role !== 'superadmin' && (
+                  <a href="#forgot" className="forgot-link">Forgot password?</a>
+                )}
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className={`login-button ${isLoading ? 'loading' : ''} ${isSuccess ? 'success' : ''}`}
                 disabled={isLoading || isSuccess}
               >
@@ -278,12 +273,18 @@ const Login = () => {
                 ) : isLoading ? (
                   <span className="loader"></span>
                 ) : (
-                  `${role === 'admin' ? 'ADMINISTRATOR' : (role === 'staff' ? 'STAFF' : (role === 'parent' ? 'PARENT' : role.toUpperCase())) } LOGIN`
+                  <>
+                    <svg className="button-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="M13 5l7 7-7 7" />
+                    </svg>
+                    <span>{`${roleLabel} LOGIN`}</span>
+                  </>
                 )}
               </button>
             </form>
             <div className="login-footer">
-              <button 
+              <button
                 type="button"
                 className={`superadmin-toggle ${role === 'superadmin' ? 'active' : ''}`}
                 onClick={() => setRole(role === 'superadmin' ? 'staff' : 'superadmin')}
@@ -294,7 +295,6 @@ const Login = () => {
                   <><svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Superadmin Access</>
                 )}
               </button>
-              <a href="#forgot">Forgot password?</a>
             </div>
           </div>
         </div>

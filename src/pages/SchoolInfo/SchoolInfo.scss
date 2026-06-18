@@ -1,8 +1,40 @@
-/* ── School Information Page ───────────────────────────────────── */
+/* =========================================================
+   School Information – matches the new Inter / navy / indigo style
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$accent:       #4F46E5;
+$accent-light: #EEF2FF;
+$ink:          #0F1E3D;
+$navy:         #1B2A4E;
+$subtext:      #6B7B96;
+$border:       #E5E9F0;
+$bg:           #F6F8FB;
+$head-bg:      #F8FAFC;
+$red:          #E11D48;
+$red-light:    #FDEAEE;
+$green:        #16A34A;
+$green-light:  #E8F8EE;
+
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+
+$shadow-card-lg: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+$shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
 
 .si-outer {
-  padding: 28px 32px 48px;
-  max-width: 860px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 48px;
+  max-width: 1300px;     // ← was 900px, widen it
+  width: 100%;            // ← add this so it actually grows to fill space
+  margin: 0 auto;
+  background: $bg;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 /* ── Title bar ─────────────────────────────────────────────────── */
@@ -10,46 +42,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  gap: 16px;
+  padding: 22px 28px;
+  background: #fff;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card-lg;
+  flex-wrap: wrap;
 }
 
 .si-title-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .si-title-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4f6ef7, #6a7ff5);
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366F1, #4338CA);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+  box-shadow: 0 6px 16px rgba($accent, 0.38);
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     color: #fff;
+    stroke-width: 1.8;
   }
 }
 
 .si-title-bar h1 {
-  font-size: 1.35rem;
+  font-size: 1.32rem;
   font-weight: 800;
-  color: #0f1c3a;
-  margin: 0 0 2px;
+  color: $ink;
+  margin: 0 0 3px;
+  letter-spacing: -0.015em;
 }
 
 .si-title-bar p {
-  font-size: 0.78rem;
-  color: #7a8aaa;
+  font-size: 0.85rem;
+  color: $subtext;
   margin: 0;
 
-  strong { color: #4f6ef7; }
+  strong { color: $accent; }
 }
 
 /* ── Loading ───────────────────────────────────────────────────── */
@@ -59,17 +98,17 @@
   align-items: center;
   gap: 14px;
   padding: 80px 0;
-  color: #9aa5c4;
+  color: $subtext;
   font-size: 0.88rem;
 }
 
 /* ── Main card ─────────────────────────────────────────────────── */
 .si-card {
   background: #fff;
-  border-radius: 18px;
-  border: 1px solid #e8edf5;
-  padding: 32px;
-  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.06);
+  border-radius: $radius-lg;
+  border: 1px solid $border;
+  padding: 28px;
+  box-shadow: $shadow-raised;
 }
 
 /* ── Top row: logo + fields ────────────────────────────────────── */
@@ -94,9 +133,9 @@
 .si-logo-drop {
   width: 160px;
   height: 160px;
-  border-radius: 16px;
-  border: 2px dashed #c8d3f0;
-  background: #f5f7ff;
+  border-radius: $radius-md;
+  border: 2px dashed #C7D2FE;
+  background: $accent-light;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -106,15 +145,15 @@
   justify-content: center;
 
   &:hover {
-    border-color: #4f6ef7;
-    box-shadow: 0 0 0 4px rgba(79, 110, 247, 0.1);
+    border-color: $accent;
+    box-shadow: 0 0 0 4px rgba($accent, 0.1);
 
     .si-logo-change-overlay { opacity: 1; }
   }
 
-  &:focus { outline: 2px solid #4f6ef7; outline-offset: 2px; }
+  &:focus { outline: 2px solid $accent; outline-offset: 2px; }
 
-  &.has-logo { border-style: solid; border-color: #e0e7ff; }
+  &.has-logo { border-style: solid; border-color: $border; background: #fff; }
 
   img {
     width: 100%;
@@ -132,15 +171,15 @@
   padding: 16px;
   text-align: center;
 
-  svg { width: 34px; height: 34px; color: #c0caee; }
-  span { font-size: 0.78rem; font-weight: 600; color: #7a8aaa; }
-  small { font-size: 0.68rem; color: #b0bcd4; }
+  svg { width: 34px; height: 34px; color: #B4BCF0; }
+  span { font-size: 0.78rem; font-weight: 600; color: $subtext; }
+  small { font-size: 0.68rem; color: #A4AEC2; }
 }
 
 .si-logo-change-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(79, 110, 247, 0.82);
+  background: rgba(67, 56, 202, 0.85);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -148,7 +187,7 @@
   gap: 6px;
   opacity: 0;
   transition: opacity 0.2s;
-  border-radius: 14px;
+  border-radius: 10px;
 
   svg { width: 22px; height: 22px; color: #fff; }
   span { font-size: 0.75rem; font-weight: 700; color: #fff; }
@@ -156,10 +195,11 @@
 
 .si-file-tag {
   font-size: 0.7rem;
-  color: #4f6ef7;
+  color: $accent;
   word-break: break-all;
   max-width: 160px;
   margin: 0;
+  font-weight: 600;
 }
 
 /* ── Name column ───────────────────────────────────────────────── */
@@ -172,7 +212,7 @@
 /* ── Divider ───────────────────────────────────────────────────── */
 .si-divider {
   height: 1px;
-  background: #f0f4ff;
+  background: $border;
   margin: 24px 0 20px;
 }
 
@@ -180,9 +220,9 @@
 .si-section-label {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #4f6ef7;
+  color: $accent;
   margin: 0 0 14px;
 }
 
@@ -193,34 +233,34 @@
   gap: 6px;
 
   label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #3a4a6b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $navy;
 
-    .req { color: #ef4444; margin-left: 2px; }
+    .req { color: $red; margin-left: 2px; }
   }
 
   input,
   textarea {
-    border: 1.5px solid #e0e7ff;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.88rem;
-    color: #0f1c3a;
-    background: #f8faff;
+    border: 1.5px solid $border;
+    border-radius: $radius-sm;
+    padding: 9px 12px;
+    font-size: 0.85rem;
+    color: $ink;
+    background: $head-bg;
     outline: none;
     font-family: inherit;
     width: 100%;
     box-sizing: border-box;
-    transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 
     &:focus {
-      border-color: #4f6ef7;
+      border-color: $accent;
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
+      box-shadow: 0 0 0 3px rgba($accent, 0.12);
     }
 
-    &::placeholder { color: #b0bcd4; }
+    &::placeholder { color: #A4AEC2; }
   }
 
   textarea {
@@ -234,7 +274,7 @@
 .si-row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
   margin-top: 16px;
 
   @media (max-width: 480px) {
@@ -245,23 +285,23 @@
 /* ── Messages ──────────────────────────────────────────────────── */
 .si-msg {
   margin-top: 18px;
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 10px 16px;
+  border-radius: $radius-sm;
   font-size: 0.84rem;
-  font-weight: 500;
+  font-weight: 600;
+  border: 1px solid transparent;
 }
 
 .si-msg-error {
-  background: #fff5f5;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: $red-light;
+  border-color: rgba($red, 0.3);
+  color: darken($red, 5%);
 }
 
 .si-msg-ok {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
-  font-weight: 600;
+  background: $green-light;
+  border-color: rgba($green, 0.3);
+  color: darken($green, 8%);
 }
 
 /* ── Footer / save button ──────────────────────────────────────── */
@@ -269,39 +309,54 @@
   margin-top: 28px;
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #f0f4ff;
-  padding-top: 24px;
+  border-top: 1px solid $border;
+  padding-top: 22px;
 }
 
 .si-btn-save {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 32px;
-  background: linear-gradient(135deg, #4f6ef7, #6a7ff5);
+  padding: 11px 28px;
+  background: linear-gradient(135deg, #818CF8 0%, #6366F1 45%, #4338CA 100%);
   color: #fff;
   border: none;
-  border-radius: 12px;
-  font-size: 0.92rem;
+  border-radius: 11px;
+  font-size: 0.88rem;
   font-weight: 700;
+  letter-spacing: 0.015em;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(79, 110, 247, 0.35);
   font-family: inherit;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, filter 0.18s ease;
+  box-shadow:
+    0 4px 14px rgba(67, 56, 202, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
 
   svg { width: 16px; height: 16px; flex-shrink: 0; }
 
   &:hover:not(:disabled) {
+    filter: brightness(1.06);
+    box-shadow:
+      0 8px 20px rgba(67, 56, 202, 0.46),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(79, 110, 247, 0.45);
   }
 
-  &:active:not(:disabled) { transform: translateY(0); }
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    filter: brightness(0.97);
+    box-shadow:
+      0 2px 8px rgba(67, 56, 202, 0.35),
+      inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    filter: none;
     box-shadow: none;
   }
 }
@@ -321,8 +376,8 @@
 .si-spinner-lg {
   width: 32px;
   height: 32px;
-  border: 3px solid #e0e7ff;
-  border-top-color: #4f6ef7;
+  border: 3px solid $border;
+  border-top-color: $accent;
   border-radius: 50%;
   display: inline-block;
   animation: siSpin 0.8s linear infinite;

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchStudentsByClassDivision } from '../../services/api';
-import '../SuperUserDashboard/SuperUserDashboard.scss';
-import '../ParentDashboard/ParentPendingFee.scss';
+import './StaffStudentList.scss';
 
 const StaffStudentList = () => {
   const [students, setStudents] = useState([]);
@@ -45,7 +44,7 @@ const StaffStudentList = () => {
       <Sidebar userType="teacher" />
       <main className="dashboard-main">
         <Navbar />
-        <div className="dashboard-content">
+        <div className="dashboard-content staff-student-list">
 
           <section className="welcome-section">
             <div>
@@ -59,13 +58,13 @@ const StaffStudentList = () => {
           </section>
 
           <div className="top-filter-bar">
-            <div className="table-filter">
-              <label htmlFor="search">Search</label>
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input id="search" type="text" placeholder="Search by name, adm no, father name, mobile..." value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} />
-              </div>
-            </div>
+            <input
+              type="text"
+              placeholder="Search by name, adm no, father name, mobile..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #dfe1e6', fontSize: '0.85rem', color: '#172b4d', background: '#fafbfc', width: '320px' }}
+            />
           </div>
 
           <div className="fee-table-card">

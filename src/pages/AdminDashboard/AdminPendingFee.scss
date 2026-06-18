@@ -1,0 +1,364 @@
+/* =========================================================
+   Admin Pending Fee – self-contained, matches StaffList.scss style
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$ink:           #0F1E3D;
+$navy:          #1B2A4E;
+$subtext:       #6B7B96;
+$border:        #E5E9F0;
+$bg:            #F6F8FB;
+$head-bg:       #F8FAFC;
+$accent:        #4F46E5;
+$accent-light:  #EEF2FF;
+$red:           #E11D48;
+$red-light:     #FDEAEE;
+$green:         #16A34A;
+
+$radius-sm: 6px;
+$radius-md: 10px;
+
+$shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
+
+.pending-fee-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: $bg;
+  min-height: 100%;
+
+  /* ── Shared buttons (scoped) ── */
+  .secondary-btn {
+    border: 1px solid $border;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: #fff;
+    color: $ink;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+
+    &:hover:not(:disabled) { background: $bg; border-color: darken($border, 10%); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  /* ── Header ── */
+  .fee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 28px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+    flex-wrap: wrap;
+
+    h1 {
+      margin: 0 0 3px;
+      font-size: 1.32rem;
+      font-weight: 800;
+      color: $ink;
+      letter-spacing: -0.015em;
+    }
+    p {
+      margin: 0;
+      font-size: 0.86rem;
+      color: $subtext;
+    }
+  }
+
+  .fee-header-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .fee-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(217, 119, 6, 0.38);
+
+    svg { width: 24px; height: 24px; stroke-width: 1.8; }
+  }
+
+  .fee-stat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: $red-light;
+    border: 1px solid #FBD2DA;
+
+    span {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: $red;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    strong {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: $navy;
+      line-height: 1.2;
+    }
+  }
+
+  /* ── Filter bar ── */
+  .fee-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid $border;
+    border-radius: $radius-md;
+    box-shadow: $shadow-card-lg;
+  }
+
+  .fee-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+
+    label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: $subtext;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    select {
+      font-family: inherit;
+      padding: 9px 30px 9px 12px;
+      border-radius: $radius-sm;
+      border: 1.5px solid $border;
+      background: #fff;
+      color: $ink;
+      font-size: 0.82rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px;
+      transition: border-color 0.15s;
+
+      &:focus { border-color: $accent; box-shadow: 0 0 0 2px rgba($accent, 0.18); }
+    }
+  }
+
+  .fee-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 240px;
+    padding: 9px 14px;
+    border: 1.5px solid $border;
+    border-radius: $radius-sm;
+    background: #fff;
+    color: $subtext;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus-within {
+      border-color: $accent;
+      box-shadow: 0 0 0 3px rgba($accent, 0.12);
+    }
+
+    svg { flex-shrink: 0; color: $subtext; }
+
+    input {
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: $ink;
+      width: 100%;
+      background: transparent;
+
+      &::placeholder { color: #A4AEC2; }
+    }
+  }
+
+  /* ── Table card ── */
+  .fee-table-card {
+    background: #fff;
+    border-radius: $radius-md;
+    border: 1px solid $border;
+    box-shadow: $shadow-card-lg;
+    overflow: hidden;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    &::-webkit-scrollbar       { height: 6px; }
+    &::-webkit-scrollbar-track { background: $bg; }
+    &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
+  }
+
+  .fee-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 1100px;
+
+    th, td {
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid $border;
+      border-right: 1px solid $border;
+      font-size: 0.81rem;
+      color: $ink;
+      vertical-align: middle;
+    }
+
+    th:last-child, td:last-child { border-right: none; }
+
+    th {
+      font-weight: 800;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: $navy;
+      background: $head-bg;
+      white-space: nowrap;
+      border-bottom: 2px solid darken($border, 10%);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr {
+      transition: background 0.1s;
+      &:nth-child(even) { background: #FAFBFD; }
+      &:nth-child(odd)  { background: #fff; }
+      &:hover           { background: $accent-light !important; }
+      &:last-child td   { border-bottom: none; }
+    }
+  }
+
+  .fee-no-cell { color: $subtext; font-weight: 600; }
+  .fee-plain-cell { color: $ink; white-space: nowrap; }
+  .fee-name-cell { font-weight: 600; color: $ink; white-space: nowrap; }
+
+  .fee-amount-cell {
+    font-weight: 700;
+    white-space: nowrap;
+    font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+  }
+  .fee-fine   { color: $red; }
+  .fee-amount { color: $navy; }
+
+  .fee-empty {
+    padding: 64px 24px;
+    text-align: center;
+    color: #A4AEC2;
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: #fff;
+  }
+
+  .fee-error {
+    padding: 24px;
+    text-align: center;
+    color: $red;
+    background: $red-light;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  /* ── Table controls / pagination ── */
+  .fee-table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 18px;
+    border-top: 1px solid $border;
+    background: $head-bg;
+  }
+
+  .fee-table-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: $subtext;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+  }
+
+  .fee-select {
+    font-family: inherit;
+    padding: 6px 30px 6px 12px;
+    border-radius: $radius-sm;
+    border: 1.5px solid $border;
+    background: #fff;
+    color: $ink;
+    font-size: 0.8rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 14px;
+    transition: border-color 0.12s;
+
+    &:focus { border-color: $accent; box-shadow: 0 0 0 2px rgba($accent, 0.18); }
+  }
+
+  .fee-table-pagination {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+
+    span {
+      font-size: 0.78rem;
+      color: $subtext;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+
+  .fee-pagination-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .fee-header { flex-direction: column; align-items: flex-start; }
+    .fee-filter-bar { flex-direction: column; align-items: stretch; }
+    .fee-search { min-width: 0; }
+    .fee-table-controls { flex-direction: column; align-items: flex-start; }
+  }
+}

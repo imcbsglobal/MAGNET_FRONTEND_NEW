@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchAllEvaluations, fetchTeachers } from '../../services/api';
-import './Evaluations.scss';
+import './AdminEvaluation.scss';
+
+const EvalIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z" />
+    <path d="M5 5h14v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+);
 
 const AdminEvaluationDashboard = () => {
   const navigate = useNavigate();
@@ -27,8 +35,7 @@ const AdminEvaluationDashboard = () => {
         fetchTeachers(institutionId)
       ]);
       setEvaluations(evalsRes.data);
-      const teacherOnly = teachersRes.data.filter(teacher => teacher.job_category && teacher.job_category.toLowerCase() === 'Teacher'.toLowerCase());
-      setTeachers(teacherOnly);
+      setTeachers(teachersRes.data);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
@@ -47,15 +54,7 @@ const AdminEvaluationDashboard = () => {
     }
     const exam = examBase + examPerf;
 
-    // Calculate notebook entry from checkboxes (fallback to notebook_entry for old data)
-    let notebookEntry = 0;
-    if (e.notebook_check1 && e.notebook_check2) {
-      notebookEntry = 6;
-    } else if (e.notebook_check1 || e.notebook_check2) {
-      notebookEntry = 3;
-    } else {
-      notebookEntry = e.notebook_entry;
-    }
+    const notebookEntry = e.notebook_entry;
     const notebookTotalStudents = e.notebook_excellent + e.notebook_good + e.notebook_average + e.notebook_below_average;
     let notebookPerf = 0;
     if (notebookTotalStudents > 0) {
@@ -140,56 +139,55 @@ const AdminEvaluationDashboard = () => {
       <Sidebar userType="admin" />
       <main className="dashboard-main">
         <Navbar placeholder="Search evaluations..." />
-        <div className="admins-page-container">
-          <div className="evaluation-page">
-            <header className="page-header">
-              <div className="header-left">
+        <div className="evaluations-page">
+
+          {/* ── Header ── */}
+          <div className="eval-header">
+            <div className="eval-header-main">
+              <div className="eval-header-icon"><EvalIcon /></div>
+              <div>
                 <h1>Evaluation Dashboard</h1>
                 <p>View all teacher evaluations</p>
               </div>
-              <button className="save-btn" onClick={() => navigate('/admin/evaluations/teachers')} style={{ background: '#6b7280' }}>
-                View Teachers Entry Details
-              </button>
-            </header>
+            </div>
+          </div>
 
-            <div className="form-card">
-              <div className="pf-row">
-                <label>View:</label>
-                <select value={selectedTeacherId} onChange={(e) => setSelectedTeacherId(e.target.value)}>
-                  <option value="">All Teachers</option>
-                  {teachers.map(t => (
-                    <option key={t.id} value={t.id}>{t.username}</option>
-                  ))}
-                </select>
-                <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-                  <option value="">All Months</option>
-                  {[...new Set(evaluations.map(e => e.month))].sort().reverse().map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
+          {/* ── Filters ── */}
+          <div className="eval-filter-card">
+            <div className="eval-filter-bar">
+              <span className="eval-filter-label">View:</span>
+              <select value={selectedTeacherId} onChange={(e) => setSelectedTeacherId(e.target.value)}>
+                <option value="">All Teachers</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.id}>{t.username}</option>
+                ))}
+              </select>
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+                <option value="">All Months</option>
+                {[...new Set(evaluations.map(e => e.month))].sort().reverse().map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
 
-              {loading ? (
-                <div className="loader">
-                  <div className="loading-spinner" style={{width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px'}}></div>
-                  <div>Loading evaluations...</div>
-                </div>
-              ) : filteredEvaluations().length === 0 ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: '#6b7280', fontSize: '16px' }}>
-                  No entries yet.
-                </div>
-              ) : (
-                filteredEvaluations().map(evaluation => {
+            {loading ? (
+              <div className="eval-empty">Loading...</div>
+            ) : filteredEvaluations().length === 0 ? (
+              <div className="eval-empty">No entries yet.</div>
+            ) : (
+              <div className="eval-cards">
+                {filteredEvaluations().map(evaluation => {
                   const scores = calculateTotal(evaluation);
                   const teacher = teachers.find(t => t.id === evaluation.teacher_id);
                   return (
                     <div key={evaluation.id} className="tcard">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>
+                      <div className="tcard-top">
+                        <div className="tcard-teacher">
                           {teacher?.username || 'Unknown Teacher'}
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: '#6b7280' }}>{evaluation.month}</span>
+                        <div className="tcard-meta">
+                          <span className="tcard-month">{evaluation.month}</span>
+                          <span className={`badge ${scores.gradeClass}`}>{scores.grade}</span>
                         </div>
                       </div>
 
@@ -220,7 +218,7 @@ const AdminEvaluationDashboard = () => {
                         </div>
                       </div>
 
-                      <div style={{ overflowX: 'auto' }}>
+                      <div className="table-responsive">
                         <table className="ptable">
                           <thead>
                             <tr>
@@ -236,51 +234,51 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Lesson Plan</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.lessonPlan.replace('.00', '')}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{scores.lessonPlan.replace('.00', '')}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
                             <tr>
                               <td>Subject Knowledge</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.subjectKnowledge.replace('.00', '')}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{scores.subjectKnowledge.replace('.00', '')}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
                             <tr>
                               <td>Classroom Management</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.classroomManagement}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{scores.classroomManagement}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
                             <tr>
                               <td>Activity Based Classroom</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.activityBasedClass}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{scores.activityBasedClass}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
                             <tr>
                               <td>Training</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.training}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{scores.training}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
                             <tr>
                               <td>Exam</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>Teacher</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.exam.replace('.00', '')}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                              <td className="ptable-by">Teacher</td>
+                              <td className="ptable-score">{scores.exam.replace('.00', '')}</td>
+                              <td className="ptable-max">10</td>
                             </tr>
                             <tr>
                               <td>Notebook</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>Teacher</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.notebook.replace('.00', '')}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                              <td className="ptable-by">Teacher</td>
+                              <td className="ptable-score">{scores.notebook.replace('.00', '')}</td>
+                              <td className="ptable-max">10</td>
                             </tr>
                             <tr>
                               <td>Smart Room</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>Teacher</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.smartRoom.replace('.00', '')}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">Teacher</td>
+                              <td className="ptable-score">{scores.smartRoom.replace('.00', '')}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
 
                             <tr className="cat-row">
@@ -288,21 +286,21 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Classroom Comm.</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_classroom}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.english_classroom}</td>
+                              <td className="ptable-max">10</td>
                             </tr>
                             <tr>
                               <td>Informal Comm.</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_informal}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.english_informal}</td>
+                              <td className="ptable-max">10</td>
                             </tr>
                             <tr>
                               <td>Fluency & Vocab.</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_fluency}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.english_fluency}</td>
+                              <td className="ptable-max">10</td>
                             </tr>
 
                             <tr className="cat-row">
@@ -310,15 +308,15 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Extra Activity</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_extra}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.cocurricular_extra}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
                             <tr>
                               <td>Reward</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_reward}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.cocurricular_reward}</td>
+                              <td className="ptable-max">5</td>
                             </tr>
 
                             <tr className="cat-row">
@@ -326,36 +324,36 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Discipline</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_discipline}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>4</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.moral_discipline}</td>
+                              <td className="ptable-max">4</td>
                             </tr>
                             <tr>
                               <td>Uniform</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_uniform}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.moral_uniform}</td>
+                              <td className="ptable-max">3</td>
                             </tr>
                             <tr>
                               <td>Good Deeds</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
-                              <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_good_deeds}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
+                              <td className="ptable-by">HOD</td>
+                              <td className="ptable-score">{evaluation.moral_good_deeds}</td>
+                              <td className="ptable-max">3</td>
                             </tr>
 
                             <tr className="tot-row">
-                              <td colSpan={2} style={{ fontWeight: 600 }}>Total</td>
-                              <td style={{ textAlign: 'center', fontWeight: 600 }}>{scores.total}</td>
-                              <td style={{ textAlign: 'center', color: '#6b7280' }}>100</td>
+                              <td colSpan={2}>Total</td>
+                              <td className="ptable-score">{scores.total}</td>
+                              <td className="ptable-max">100</td>
                             </tr>
                           </tbody>
                         </table>
                       </div>
                     </div>
                   );
-                })
-              )}
-            </div>
+                })}
+              </div>
+            )}
           </div>
         </div>
       </main>

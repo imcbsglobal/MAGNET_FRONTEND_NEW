@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
@@ -13,7 +13,6 @@ const ChatPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -21,14 +20,19 @@ const ChatPage = () => {
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [bulkMessage, setBulkMessage] = useState('');
+  const [socketReady, setSocketReady] = useState(false);
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const recordingIntervalRef = useRef(null);
-  
   const socketRef = useRef(null);
   const notificationSocketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const pendingMessageRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
+  const activeContactRef = useRef(null);
 
   const userType = localStorage.getItem('userType');
   const userId = localStorage.getItem('userId');
@@ -36,7 +40,7 @@ const ChatPage = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredContacts = contacts.filter(contact => 
+  const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -47,6 +51,11 @@ const ChatPage = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Keep activeContactRef in sync
+  useEffect(() => {
+    activeContactRef.current = activeContact;
+  }, [activeContact]);
 
   useEffect(() => {
     if (userType === 'staff' || userType === 'parent') {
@@ -68,10 +77,10 @@ const ChatPage = () => {
     const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const role = userType === 'staff' ? 'teacher' : 'student';
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const wsUrl = isLocalhost 
+    const wsUrl = isLocalhost
       ? `${wsScheme}://${window.location.hostname}:8000/ws/notifications/${role}/${userId}/`
       : `${wsScheme}://${window.location.hostname}/ws/notifications/${role}/${userId}/`;
-    
+
     notificationSocketRef.current = new WebSocket(wsUrl);
 
     notificationSocketRef.current.onmessage = (e) => {
@@ -81,20 +90,18 @@ const ChatPage = () => {
           const updatedContacts = prev.map(contact => {
             const isSender = contact.id === data.sender_id && contact.role === data.sender_role;
             if (isSender) {
-              const isRoomActive = activeContact?.room_id === data.room_id;
+              const isRoomActive = activeContactRef.current?.room_id === data.room_id;
               return {
                 ...contact,
                 last_message: data.message,
                 unread_count: isRoomActive ? contact.unread_count : (contact.unread_count || 0) + 1,
                 room_id: data.room_id,
-                last_message_time: data.created_at // Update time for sorting
+                last_message_time: data.created_at
               };
             }
             return contact;
           });
-          
-          // Sort by last_message_time descending
-          return [...updatedContacts].sort((a, b) => 
+          return [...updatedContacts].sort((a, b) =>
             new Date(b.last_message_time || 0) - new Date(a.last_message_time || 0)
           );
         });
@@ -109,12 +116,14 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (activeContact) {
+      setSocketReady(false);
       loadHistory(activeContact.room_id);
       connectWebSocket(activeContact.room_id);
     }
     return () => {
       if (socketRef.current) {
         socketRef.current.close();
+        socketRef.current = null;
       }
     };
   }, [activeContact]);
@@ -156,43 +165,67 @@ const ChatPage = () => {
   const connectWebSocket = (roomId) => {
     if (socketRef.current) {
       socketRef.current.close();
+      socketRef.current = null;
     }
 
     const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const wsUrl = isLocalhost 
+    const wsUrl = isLocalhost
       ? `${wsScheme}://${window.location.hostname}:8000/ws/chat/${roomId}/`
       : `${wsScheme}://${window.location.hostname}/ws/chat/${roomId}/`;
-    
-    socketRef.current = new WebSocket(wsUrl);
 
-    socketRef.current.onopen = () => {
+    const ws = new WebSocket(wsUrl);
+    socketRef.current = ws;
+
+    ws.onopen = () => {
       console.log("WebSocket connected to room:", roomId);
       const role = userType === 'staff' ? 'teacher' : 'student';
-      socketRef.current.send(JSON.stringify({
+      ws.send(JSON.stringify({
         type: 'init',
         user_id: parseInt(userId),
         role: role
       }));
+      setSocketReady(true);
+
+      // Send any pending message that was queued before socket opened
+      if (pendingMessageRef.current) {
+        const { text, sId, role: pendingRole } = pendingMessageRef.current;
+        pendingMessageRef.current = null;
+        try {
+          ws.send(JSON.stringify({
+            type: 'chat_message',
+            message: text,
+            sender_id: sId,
+            sender_role: pendingRole
+          }));
+        } catch (err) {
+          console.error("Failed to send pending message:", err);
+        }
+      }
     };
 
-    socketRef.current.onerror = (err) => {
+    ws.onerror = (err) => {
       console.error("WebSocket Error:", err);
+      setSocketReady(false);
     };
 
-    socketRef.current.onclose = (e) => {
+    ws.onclose = (e) => {
       console.log("WebSocket closed:", e.code, e.reason);
-      if (activeContact && activeContact.room_id === roomId) {
+      setSocketReady(false);
+      if (socketRef.current === ws) {
+        socketRef.current = null;
+      }
+      // Reconnect only if this room is still active
+      if (activeContactRef.current?.room_id === roomId) {
         console.log("Attempting to reconnect...");
         setTimeout(() => connectWebSocket(roomId), 3000);
       }
     };
 
-    socketRef.current.onmessage = (e) => {
+    ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'chat_message') {
         setMessages(prev => {
-          // Remove any temporary message with the same content if it exists
           const filtered = prev.filter(m => !m.isTemp || m.content !== data.message);
           if (filtered.find(m => m.id === data.id)) return filtered;
           return [...filtered, {
@@ -205,85 +238,101 @@ const ChatPage = () => {
           }];
         });
 
-        // Update contact last message in list and re-sort
         setContacts(prev => {
           const updatedContacts = prev.map(contact => {
             if (contact.room_id === roomId) {
-              return { 
-                ...contact, 
+              return {
+                ...contact,
                 last_message: data.message,
-                last_message_time: data.created_at 
+                last_message_time: data.created_at
               };
             }
             return contact;
           });
-          
-          return [...updatedContacts].sort((a, b) => 
+          return [...updatedContacts].sort((a, b) =>
             new Date(b.last_message_time || 0) - new Date(a.last_message_time || 0)
           );
         });
       } else if (data.type === 'typing') {
-        if (data.sender_id !== parseInt(userId) || data.sender_role !== (userType === 'staff' ? 'teacher' : 'student')) {
+        const myRole = userType === 'staff' ? 'teacher' : 'student';
+        if (data.sender_id !== parseInt(userId) || data.sender_role !== myRole) {
           setOtherUserTyping(data.is_typing);
         }
       }
     };
   };
 
-  const sendMessage = () => {
-    if (!newMessage.trim() || !socketRef.current) return;
-
-    if (socketRef.current.readyState !== WebSocket.OPEN) {
-      console.warn("WebSocket is not open. Trying to reconnect...");
-      connectWebSocket(activeContact.room_id);
-      return;
-    }
-
-    const role = userType === 'staff' ? 'teacher' : 'student';
-    const sId = parseInt(userId);
-    
-    // Optimistic UI update
-    const tempId = 'temp-' + Date.now();
-    const tempMsg = {
-      id: tempId,
-      sender_id: sId,
-      sender_role: role,
-      content: newMessage,
-      created_at: new Date().toISOString(),
-      attachments: [],
-      isTemp: true
-    };
-    
-    setMessages(prev => [...prev, tempMsg]);
-
-    try {
-      socketRef.current.send(JSON.stringify({
-        type: 'chat_message',
-        message: newMessage,
-        sender_id: sId,
-        sender_role: role
-      }));
-    } catch (err) {
-      console.error("Failed to send message:", err);
-      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, isTemp: false, isFailed: true } : m));
-    }
-
-    setNewMessage('');
-    sendTypingStatus(false);
-  };
-
   const sendTypingStatus = (typing) => {
-    if (socketRef.current && isTyping !== typing) {
-      setIsTyping(typing);
-      const role = userType === 'staff' ? 'teacher' : 'student';
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
+    if (isTypingRef.current === typing) return;
+    isTypingRef.current = typing;
+    const role = userType === 'staff' ? 'teacher' : 'student';
+    try {
       socketRef.current.send(JSON.stringify({
         type: 'typing',
         is_typing: typing,
         sender_id: parseInt(userId),
         sender_role: role
       }));
+    } catch (err) {
+      console.error("Failed to send typing status:", err);
     }
   };
+
+  const sendMessage = useCallback(() => {
+    const text = newMessage.trim();
+    if (!text) return;
+
+    const role = userType === 'staff' ? 'teacher' : 'student';
+    const sId = parseInt(userId);
+
+    // Optimistic UI update
+    const tempId = 'temp-' + Date.now();
+    const tempMsg = {
+      id: tempId,
+      sender_id: sId,
+      sender_role: role,
+      content: text,
+      created_at: new Date().toISOString(),
+      attachments: [],
+      isTemp: true
+    };
+
+    setMessages(prev => [...prev, tempMsg]);
+    setNewMessage('');
+    sendTypingStatus(false);
+
+    const doSend = (ws) => {
+      try {
+        ws.send(JSON.stringify({
+          type: 'chat_message',
+          message: text,
+          sender_id: sId,
+          sender_role: role
+        }));
+      } catch (err) {
+        console.error("Failed to send message:", err);
+        setMessages(prev => prev.map(m =>
+          m.id === tempId ? { ...m, isTemp: false, isFailed: true } : m
+        ));
+      }
+    };
+
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      doSend(socketRef.current);
+    } else {
+      // Socket not ready — queue it and reconnect
+      console.warn("WebSocket not open, queuing message and reconnecting...");
+      pendingMessageRef.current = { text, sId, role };
+      if (activeContact) {
+        connectWebSocket(activeContact.room_id);
+      } else {
+        setMessages(prev => prev.map(m =>
+          m.id === tempId ? { ...m, isTemp: false, isFailed: true } : m
+        ));
+      }
+    }
+  }, [newMessage, userType, userId, activeContact]);
 
   const handleFileUpload = async (fileToUpload = null) => {
     const file = fileToUpload || (fileInputRef.current?.files ? fileInputRef.current.files[0] : null);
@@ -371,9 +420,9 @@ const ChatPage = () => {
   };
 
   const handleStudentSelect = (studentId) => {
-    setSelectedStudents(prev => 
-      prev.includes(studentId) 
-        ? prev.filter(id => id !== studentId) 
+    setSelectedStudents(prev =>
+      prev.includes(studentId)
+        ? prev.filter(id => id !== studentId)
         : [...prev, studentId]
     );
   };
@@ -388,7 +437,7 @@ const ChatPage = () => {
 
   const onSendBulkMessage = async () => {
     if (!bulkMessage.trim() || selectedStudents.length === 0) return;
-    
+
     setIsLoading(true);
     try {
       const response = await sendBulkMessage({
@@ -396,12 +445,12 @@ const ChatPage = () => {
         teacher_id: parseInt(userId),
         content: bulkMessage
       });
-      
+
       if (response.data.status) {
         setBulkMessage('');
         setSelectedStudents([]);
         setIsBulkMode(false);
-        loadContacts(); // Refresh last messages
+        loadContacts();
         alert(response.data.message);
       }
     } catch (err) {
@@ -415,33 +464,25 @@ const ChatPage = () => {
   const handleDownload = async (url, fileName) => {
     if (downloadingUrl) return;
     setDownloadingUrl(url);
-    
+
     try {
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-      });
-      
+      const response = await fetch(url, { method: 'GET', mode: 'cors' });
       if (!response.ok) throw new Error('Network response was not ok');
-      
+
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = fileName || 'download';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Clean up the URL object
       setTimeout(() => {
         window.URL.revokeObjectURL(blobUrl);
         setDownloadingUrl(null);
       }, 100);
     } catch (err) {
       console.error('Blob download failed, falling back to direct link:', err);
-      // Fallback: If fetch fails (e.g. CORS), try the direct link as a last resort
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', fileName || 'download');
@@ -453,19 +494,33 @@ const ChatPage = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    setNewMessage(e.target.value);
+    sendTypingStatus(true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => sendTypingStatus(false), 3000);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType={userType === 'staff' ? 'teacher' : 'parent'} />
       <main className="dashboard-main chat-layout-override">
         <Navbar placeholder="Search messages..." />
-        
+
         <div className="chat-page-container">
           <div className={`chat-sidebar ${activeContact ? 'hidden' : ''}`}>
             <div className="sidebar-header">
               <div className="header-top">
                 <h3>Messages</h3>
                 {userType === 'staff' && (
-                  <button 
+                  <button
                     className={`bulk-toggle-btn ${isBulkMode ? 'active' : ''}`}
                     onClick={() => {
                       setIsBulkMode(!isBulkMode);
@@ -474,15 +529,23 @@ const ChatPage = () => {
                     }}
                     title={isBulkMode ? "Exit Bulk Mode" : "Send message to multiple students"}
                   >
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
                   </button>
                 )}
               </div>
               <div className="search-box">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input 
-                  type="text" 
-                  placeholder="Search contacts..." 
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search contacts..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -491,7 +554,11 @@ const ChatPage = () => {
                 <div className="select-all-container">
                   <button className="select-all-btn" onClick={handleSelectAll}>
                     <div className={`checkbox-box ${selectedStudents.length === filteredContacts.length ? 'checked' : ''}`}>
-                      {selectedStudents.length === filteredContacts.length && <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                      {selectedStudents.length === filteredContacts.length && (
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      )}
                     </div>
                     <span>{selectedStudents.length === filteredContacts.length ? 'Deselect All' : 'Select All Students'}</span>
                   </button>
@@ -505,15 +572,19 @@ const ChatPage = () => {
                 <div className="chat-state-msg error">{error}</div>
               ) : filteredContacts.length > 0 ? (
                 filteredContacts.map(contact => (
-                  <div 
-                    key={contact.id} 
+                  <div
+                    key={contact.id}
                     className={`contact-item ${activeContact?.id === contact.id ? 'active' : ''} ${isBulkMode && selectedStudents.includes(contact.id) ? 'selected' : ''}`}
                     onClick={() => isBulkMode ? handleStudentSelect(contact.id) : handleContactSelect(contact)}
                   >
                     {isBulkMode && (
                       <div className="bulk-checkbox">
                         <div className={`checkbox-box ${selectedStudents.includes(contact.id) ? 'checked' : ''}`}>
-                          {selectedStudents.includes(contact.id) && <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                          {selectedStudents.includes(contact.id) && (
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          )}
                         </div>
                       </div>
                     )}
@@ -548,14 +619,14 @@ const ChatPage = () => {
                   <div className="selected-count-badge">
                     {selectedStudents.length} students selected
                   </div>
-                  <textarea 
+                  <textarea
                     placeholder="Type your bulk message here..."
                     value={bulkMessage}
                     onChange={(e) => setBulkMessage(e.target.value)}
                   />
                   <div className="bulk-actions">
-                    <button 
-                      className="cancel-btn" 
+                    <button
+                      className="cancel-btn"
                       onClick={() => {
                         setIsBulkMode(false);
                         setSelectedStudents([]);
@@ -563,7 +634,7 @@ const ChatPage = () => {
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       className="send-bulk-btn"
                       disabled={!bulkMessage.trim() || selectedStudents.length === 0 || isLoading}
                       onClick={onSendBulkMessage}
@@ -578,7 +649,9 @@ const ChatPage = () => {
                 <div className="chat-header">
                   <div className="active-user-info">
                     <button className="mobile-back-btn" onClick={() => setActiveContact(null)}>
-                      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                      </svg>
                     </button>
                     <div className="avatar">{activeContact.name[0]}</div>
                     <div className="details">
@@ -601,10 +674,10 @@ const ChatPage = () => {
                     const msgDate = new Date(msg.created_at);
                     const prevMsgDate = idx > 0 ? new Date(messages[idx - 1].created_at) : null;
                     const showDateSeparator = !prevMsgDate || msgDate.toDateString() !== prevMsgDate.toDateString();
-                    
+
                     const isToday = msgDate.toDateString() === new Date().toDateString();
                     const isYesterday = msgDate.toDateString() === new Date(Date.now() - 86400000).toDateString();
-                    
+
                     let dateStr = msgDate.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
                     if (isToday) dateStr = 'Today';
                     else if (isYesterday) dateStr = 'Yesterday';
@@ -630,8 +703,8 @@ const ChatPage = () => {
                                       <source src={att.file_url} type={att.file_type} />
                                       Your browser does not support the audio element.
                                     </audio>
-                                    <button 
-                                      onClick={() => handleDownload(att.file_url, att.file_name)} 
+                                    <button
+                                      onClick={() => handleDownload(att.file_url, att.file_name)}
                                       className={`audio-download-link ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
                                       title="Download Audio"
                                       disabled={downloadingUrl === att.file_url}
@@ -639,15 +712,19 @@ const ChatPage = () => {
                                       {downloadingUrl === att.file_url ? (
                                         <div className="button-spinner"></div>
                                       ) : (
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none">
+                                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                          <polyline points="7 10 12 15 17 10"></polyline>
+                                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
                                       )}
                                     </button>
                                   </div>
                                 ) : att.file_type.startsWith('image/') ? (
                                   <div className="image-message-container">
                                     <img src={att.file_url} alt={att.file_name} className="chat-image" onClick={() => window.open(att.file_url, '_blank')} />
-                                    <button 
-                                      onClick={() => handleDownload(att.file_url, att.file_name)} 
+                                    <button
+                                      onClick={() => handleDownload(att.file_url, att.file_name)}
                                       className={`image-download-btn ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
                                       title="Download Image"
                                       disabled={downloadingUrl === att.file_url}
@@ -655,18 +732,25 @@ const ChatPage = () => {
                                       {downloadingUrl === att.file_url ? (
                                         <div className="button-spinner"></div>
                                       ) : (
-                                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none">
+                                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                          <polyline points="7 10 12 15 17 10"></polyline>
+                                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
                                       )}
                                     </button>
                                   </div>
                                 ) : (
                                   <div className="file-attachment-container">
                                     <a href={att.file_url} target="_blank" rel="noopener noreferrer" className="file-attachment">
-                                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none">
+                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                        <polyline points="13 2 13 9 20 9"></polyline>
+                                      </svg>
                                       <span className="file-name">{att.file_name}</span>
                                     </a>
-                                    <button 
-                                      onClick={() => handleDownload(att.file_url, att.file_name)} 
+                                    <button
+                                      onClick={() => handleDownload(att.file_url, att.file_name)}
                                       className={`file-download-icon ${downloadingUrl === att.file_url ? 'downloading' : ''}`}
                                       title="Download File"
                                       disabled={downloadingUrl === att.file_url}
@@ -674,7 +758,11 @@ const ChatPage = () => {
                                       {downloadingUrl === att.file_url ? (
                                         <div className="button-spinner"></div>
                                       ) : (
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none">
+                                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                          <polyline points="7 10 12 15 17 10"></polyline>
+                                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
                                       )}
                                     </button>
                                   </div>
@@ -686,9 +774,14 @@ const ChatPage = () => {
                               {isSentByMe && (
                                 <span className={`status ${msg.is_read ? 'read' : 'sent'}`}>
                                   {msg.is_read ? (
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline><polyline points="20 12 9 23 4 18" style={{ transform: 'translateY(-6px)' }}></polyline></svg>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none">
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                      <polyline points="20 12 9 23 4 18" style={{ transform: 'translateY(-6px)' }}></polyline>
+                                    </svg>
                                   ) : (
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="3" fill="none">
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
                                   )}
                                 </span>
                               )}
@@ -704,7 +797,9 @@ const ChatPage = () => {
                 <div className="chat-input-area">
                   <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={() => handleFileUpload()} />
                   <button className="icon-btn" onClick={() => fileInputRef.current.click()} title="Attach file">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
                   </button>
 
                   {isRecording ? (
@@ -712,31 +807,33 @@ const ChatPage = () => {
                       <div className="recording-dot"></div>
                       <span className="recording-time">{formatTime(recordingTime)}</span>
                       <button className="stop-btn" onClick={stopRecording}>
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><rect x="6" y="6" width="12" height="12"></rect></svg>
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+                          <rect x="6" y="6" width="12" height="12"></rect>
+                        </svg>
                       </button>
                     </div>
                   ) : (
                     <button className="icon-btn mic-btn" onClick={startRecording} title="Record voice message">
-                      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                      </svg>
                     </button>
                   )}
 
                   <div className="input-wrapper">
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={isRecording ? "Recording audio..." : "Type your message..."}
                       disabled={isRecording}
                       value={newMessage}
-                      onChange={(e) => {
-                        setNewMessage(e.target.value);
-                        sendTypingStatus(true);
-                        if (window.typingTimeout) clearTimeout(window.typingTimeout);
-                        window.typingTimeout = setTimeout(() => sendTypingStatus(false), 3000);
-                      }}
-                      onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
                     />
                   </div>
-                  
+
                   <button className="send-btn" onClick={sendMessage} disabled={!newMessage.trim()}>
                     Send
                   </button>
@@ -745,7 +842,9 @@ const ChatPage = () => {
             ) : (
               <div className="no-chat-selected">
                 <div className="empty-state">
-                  <svg viewBox="0 0 24 24" width="64" height="64" stroke="#e0e0e0" strokeWidth="1" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  <svg viewBox="0 0 24 24" width="64" height="64" stroke="#e0e0e0" strokeWidth="1" fill="none">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
                   <p>Select a contact to start messaging</p>
                 </div>
               </div>
