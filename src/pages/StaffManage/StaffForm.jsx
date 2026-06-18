@@ -12,6 +12,7 @@ const StaffForm = () => {
   const institutionId = localStorage.getItem('institutionId');
 
   const [formData, setFormData] = useState({
+    name: '',
     username: '',
     password: '',
     job_category: '',
@@ -59,6 +60,7 @@ const StaffForm = () => {
       const res = await fetchTeacherById(id);
       const d = res.data;
       setFormData({
+        name: d.name || '',
         username: d.username || '',
         password: d.password || '',
         job_category: d.job_category || '',
@@ -156,6 +158,16 @@ const StaffForm = () => {
                     </select>
                   </div>
                   <div className="form-group">
+                    <label>Name</label>
+                    <input
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Enter staff name"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
                     <label>Username</label>
                     <input
                       name="username"
@@ -180,10 +192,22 @@ const StaffForm = () => {
               </div>
 
               <div className="form-section">
-                <h3>Primary Class & Division</h3>
-                <div className="form-grid">
+                <div className="section-header">
+                  <h3>Class Assignments</h3>
+                  <button 
+                    type="button" 
+                    className="add-btn" 
+                    onClick={handleAddAdditionalClass}
+                    style={{ fontSize: '0.9rem', padding: '8px 16px' }}
+                  >
+                    + Add Class
+                  </button>
+                </div>
+
+                {/* Primary Class & Division */}
+                <div className="form-grid" style={{ marginBottom: '12px', backgroundColor: '#f0f4ff', padding: '12px', borderRadius: '6px', borderLeft: '4px solid #3d5af1' }}>
                   <div className="form-group">
-                    <label>Class</label>
+                    <label style={{ fontWeight: '700', color: '#3d5af1' }}>Primary Class</label>
                     <select name="assigned_class" value={formData.assigned_class} onChange={handleChange}>
                       <option value="">Select Class</option>
                       {classes.map((cls, i) => (
@@ -192,7 +216,7 @@ const StaffForm = () => {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Division</label>
+                    <label style={{ fontWeight: '700', color: '#3d5af1' }}>Primary Division</label>
                     <select name="assigned_division" value={formData.assigned_division} onChange={handleChange}>
                       <option value="">Select Division</option>
                       {divisions.map((div, i) => (
@@ -201,58 +225,86 @@ const StaffForm = () => {
                     </select>
                   </div>
                 </div>
-              </div>
 
-              <div className="form-section">
-                <div className="section-header">
-                  <h3>Additional Class Assignments</h3>
-                  <button 
-                    type="button" 
-                    className="add-btn" 
-                    onClick={handleAddAdditionalClass}
-                    style={{ fontSize: '0.9rem', padding: '8px 16px' }}
-                  >
-                    + Add Assignment
-                  </button>
-                </div>
-                {formData.additional_class_assignments.map((assignment, index) => (
-                  <div key={index} className="form-grid" style={{ marginBottom: '12px' }}>
-                    <div className="form-group">
-                      <label>Class {index + 1}</label>
-                      <select
-                        value={assignment.class}
-                        onChange={(e) => handleAdditionalClassChange(index, 'class', e.target.value)}
-                      >
-                        <option value="">Select Class</option>
-                        {classes.map((cls, i) => (
-                          <option key={i} value={cls}>{cls}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Division {index + 1}</label>
-                      <select
-                        value={assignment.division}
-                        onChange={(e) => handleAdditionalClassChange(index, 'division', e.target.value)}
-                      >
-                        <option value="">Select Division</option>
-                        {divisions.map((div, i) => (
-                          <option key={i} value={div}>{div}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group" style={{ alignSelf: 'flex-end' }}>
-                      <button
-                        type="button"
-                        className="delete-btn"
-                        onClick={() => handleRemoveAdditionalClass(index)}
-                        style={{ padding: '10px 16px' }}
-                      >
-                        Remove
-                      </button>
+                {/* Additional Classes */}
+                {formData.additional_class_assignments.length > 0 && (
+                  <div style={{ marginTop: '15px' }}>
+                    <h4 style={{ fontSize: '0.9rem', color: '#666', marginBottom: '10px', fontWeight: '600' }}>Additional Assignments</h4>
+                    {formData.additional_class_assignments.map((assignment, index) => (
+                      <div key={index} className="form-grid" style={{ marginBottom: '12px' }}>
+                        <div className="form-group">
+                          <label>Class {index + 1}</label>
+                          <select
+                            value={assignment.class}
+                            onChange={(e) => handleAdditionalClassChange(index, 'class', e.target.value)}
+                          >
+                            <option value="">Select Class</option>
+                            {classes.map((cls, i) => (
+                              <option key={i} value={cls}>{cls}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="form-group">
+                          <label>Division {index + 1}</label>
+                          <select
+                            value={assignment.division}
+                            onChange={(e) => handleAdditionalClassChange(index, 'division', e.target.value)}
+                          >
+                            <option value="">Select Division</option>
+                            {divisions.map((div, i) => (
+                              <option key={i} value={div}>{div}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="form-group" style={{ alignSelf: 'flex-end' }}>
+                          <button
+                            type="button"
+                            className="delete-btn"
+                            onClick={() => handleRemoveAdditionalClass(index)}
+                            style={{ padding: '10px 16px' }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Summary of all classes */}
+                {(formData.assigned_class || formData.additional_class_assignments.length > 0) && (
+                  <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#e8f5e9', borderRadius: '6px', borderLeft: '4px solid #4caf50' }}>
+                    <p style={{ margin: '0 0 8px 0', fontSize: '0.9rem', fontWeight: '600', color: '#2e7d32' }}>📋 All Assigned Classes:</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {formData.assigned_class && (
+                        <span style={{ 
+                          backgroundColor: '#4caf50', 
+                          color: 'white', 
+                          padding: '6px 12px', 
+                          borderRadius: '4px', 
+                          fontSize: '0.85rem',
+                          fontWeight: '500'
+                        }}>
+                          {formData.assigned_class}-{formData.assigned_division || 'N/A'} (Primary)
+                        </span>
+                      )}
+                      {formData.additional_class_assignments.map((assignment, idx) => (
+                        assignment.class && (
+                          <span key={idx} style={{ 
+                            backgroundColor: '#2196f3', 
+                            color: 'white', 
+                            padding: '6px 12px', 
+                            borderRadius: '4px', 
+                            fontSize: '0.85rem',
+                            fontWeight: '500'
+                          }}>
+                            {assignment.class}-{assignment.division || 'N/A'}
+                          </span>
+                        )
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
               </div>
 
               <div className="form-section">

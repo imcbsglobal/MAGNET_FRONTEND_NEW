@@ -5,12 +5,14 @@ const DEFAULT_API_BASE_URL =
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://127.0.0.1:8000/api/'
     : 'https://magnetpro.in/api/';
+    // : 'demo.magnetpro.in/student_data/';
 
 const DEFAULT_STUDENT_BASE_URL =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://127.0.0.1:8000/student_data/'
     : 'https://magnetpro.in/student_data/';
+    // : 'demo.magnetpro.in/student_data/';
 
 const API_BASE_URL = ((import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')) + '/';
 const STUDENT_BASE_URL = ((import.meta.env.VITE_STUDENT_BASE_URL || DEFAULT_STUDENT_BASE_URL).replace(/\/+$/, '')) + '/';
@@ -201,11 +203,24 @@ export const fetchChatHistory = (roomId, role) => api.get(`chat/history/${roomId
 export const uploadChatFile = (formData) => api.post('chat/upload/', formData);
 export const sendBulkMessage = (data) => api.post('chat/send-bulk/', data);
 
-// Evaluation System
+// Evaluation System,
 export const fetchAllEvaluations = (institutionId) => api.get(`evaluation/evaluations/?institution_id=${institutionId}`);
 export const fetchTeacherEvaluations = (teacherId) => api.get(`evaluation/evaluations/teacher/${teacherId}/`);
 export const fetchTeacherMonthEvaluation = (teacherId, month) => api.get(`evaluation/evaluations/teacher/${teacherId}/${month}/`);
 export const saveEvaluation = (data) => api.put('evaluation/evaluations/save/', data);
+
+// Class-wise Evaluation System
+export const fetchTeacherClasses = (teacherId, month) => api.get(`evaluation/class-evaluations/teacher/${teacherId}/${month}/classes/`);
+export const saveClassEvaluation = (data) => api.post('evaluation/class-evaluations/save/', data);
+export const fetchClassEvaluation = (teacherId, month, studentClass, division) => api.get(`evaluation/class-evaluations/teacher/${teacherId}/${month}/${studentClass}/${division}/`);
+export const fetchAllClassEvaluations = (teacherId, month) => api.get(`evaluation/class-evaluations/teacher/${teacherId}/${month}/all/`);
+export const finishMonthEvaluation = (teacherId, month) => api.post(`evaluation/class-evaluations/teacher/${teacherId}/${month}/finish/`);
+export const fetchTeachersEvaluationSummary = (institutionId, month) => api.get(`evaluation/teachers-summary/?institution_id=${institutionId}&month=${month}`);
+
+// Teacher Hours Master
+export const fetchTeacherHours = (institutionId) => api.get(`evaluation/teacher-hours/${encodeURIComponent(institutionId)}/`);
+export const saveTeacherHours = (data) => api.post('evaluation/teacher-hours/', data);
+export const deleteTeacherHours = (hoursId) => api.delete(`evaluation/teacher-hours/${hoursId}/`);
 
 export const initiatePayment = (data) =>
   api.post("payments/initiate/", data);
