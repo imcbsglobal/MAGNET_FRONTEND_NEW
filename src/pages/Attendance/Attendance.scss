@@ -1,564 +1,510 @@
 /* =========================================================
-   Attendance – Professional UI  
+   Attendance – Jira Style (Colorful Cells)
    ========================================================= */
 
-/* ---------- Month Navigation ---------- */
+$jira-blue:         #0052CC;
+$jira-blue-light:   #DEEBFF;
+$jira-text:         #172B4D;
+$jira-subtext:      #6B778C;
+$jira-border:       #DFE1E6;
+$jira-bg:           #F4F5F7;
+$jira-green:        #36B37E;
+$jira-green-light:  #E3FCEF;
+$jira-red:          #FF5630;
+$jira-red-light:    #FFEBE6;
+$jira-yellow:       #FFAB00;
+$jira-yellow-light: #FFF7D6;
+$jira-purple:       #6554C0;
+$jira-grey:         #97A0AF;
+$jira-grey-light:   #EBECF0;
+
+/* ── Welcome / Header ─────────────────────────────────── */
+.welcome-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid $jira-border;
+  border-radius: 3px;
+  padding: 10px 16px;
+  margin: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  h2 {
+    color: $jira-text;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 2px;
+  }
+  p {
+    color: $jira-subtext;
+    font-size: 0.78rem;
+    margin: 0;
+  }
+}
+
+/* ── Month Navigation ─────────────────────────────────── */
 .att-month-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 50px;
-  padding: 6px 8px;
-  backdrop-filter: blur(8px);
+  gap: 6px;
+  background: $jira-bg;
+  border: 1px solid $jira-border;
+  border-radius: 3px;
+  padding: 3px 6px;
 
   span {
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.88rem;
-    min-width: 140px;
+    color: $jira-text;
+    font-weight: 600;
+    font-size: 0.8rem;
+    min-width: 110px;
     text-align: center;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
-
   button {
-    background: rgba(255, 255, 255, 0.18);
-    border: none;
-    color: #fff;
-    font-size: 1.1rem;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    background: #fff;
+    border: 1px solid $jira-border;
+    color: $jira-subtext;
+    font-size: 0.9rem;
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.18s, transform 0.15s;
+    transition: background 0.12s, border-color 0.12s;
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.32);
-      transform: scale(1.08);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
+    &:hover { background: $jira-blue-light; border-color: $jira-blue; color: $jira-blue; }
+    &:active { background: $jira-grey-light; }
   }
 }
 
-/* ---------- Summary Cards ---------- */
+/* ── Summary Cards ────────────────────────────────────── */
 .att-summary-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
+  margin: 0 12px 12px;
 }
 
 .att-box {
   flex: 1;
-  min-width: 130px;
+  min-width: 140px;
   background: #fff;
-  border-radius: 16px;
-  padding: 18px 22px;
+  border-radius: 3px;
+  border: 1px solid $jira-border;
+  padding: 16px 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 2px 12px rgba(30, 45, 90, 0.07);
-  border: 1px solid #eef2ff;
+  align-items: flex-start;
+  gap: 6px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.18s, box-shadow 0.18s;
+  transition: border-color 0.12s, box-shadow 0.12s;
+
+  &:hover { border-color: $jira-grey; box-shadow: 0 1px 4px rgba(9,30,66,0.08); }
 
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: #c7d2fe;
-    border-radius: 16px 0 0 16px;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: $jira-grey;
   }
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(30, 45, 90, 0.13);
+  .att-box-icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    background: $jira-bg;
+    margin-bottom: 2px;
   }
-
-  .att-box-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #94a3b8;
-  }
-
   .att-box-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #1b254b;
-    line-height: 1;
+    font-size: 1.7rem; font-weight: 700;
+    color: $jira-text; line-height: 1.1;
   }
-
-  .att-box-icon {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.8rem;
-    opacity: 0.1;
+  .att-box-label {
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: $jira-subtext;
+  }
+  .att-box-pct {
+    font-size: 0.72rem; font-weight: 600;
+    color: $jira-subtext; margin-top: -2px;
   }
 
   &.present {
-    &::before { background: #059669; }
-    .att-box-value { color: #059669; }
+    &::before { background: $jira-green; }
+    .att-box-icon-wrap { background: $jira-green-light; }
+    .att-box-value { color: $jira-green; }
+    .att-box-pct   { color: $jira-green; }
   }
-
   &.absent {
-    &::before { background: #dc2626; }
-    .att-box-value { color: #dc2626; }
+    &::before { background: $jira-red; }
+    .att-box-icon-wrap { background: $jira-red-light; }
+    .att-box-value { color: $jira-red; }
+    .att-box-pct   { color: $jira-red; }
   }
-
   &.halfday {
-    &::before { background: #84cc16; }
-    .att-box-value { color: #84cc16; }
+    &::before { background: $jira-blue; }
+    .att-box-icon-wrap { background: $jira-blue-light; }
+    .att-box-value { color: $jira-blue; }
+    .att-box-pct   { color: $jira-blue; }
   }
-
   &.holiday {
-    &::before { background: #d97706; }
-    .att-box-value { color: #d97706; }
+    &::before { background: $jira-yellow; }
+    .att-box-icon-wrap { background: $jira-yellow-light; }
+    .att-box-value { color: #B38600; }
+    .att-box-pct   { color: $jira-yellow; }
   }
 }
 
-/* ---------- Table Wrapper ---------- */
-.att-table-wrapper {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 16px rgba(30, 45, 90, 0.08);
-  border: 1px solid #eef2ff;
+/* ── Legend strip ─────────────────────────────────────── */
+.att-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #fff;
+  border-bottom: 1px solid $jira-border;
+  flex-wrap: wrap;
+
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.73rem; font-weight: 500; color: $jira-subtext;
+  }
+
+  .legend-dot, .legend-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 18px;
+    border-radius: 3px;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em;
+
+    &.l-p  { background: $jira-green-light; color: darken($jira-green,14%); border: 1px solid $jira-green; }
+    &.l-a  { background: $jira-red-light;   color: darken($jira-red,10%);   border: 1px solid $jira-red;   }
+    &.l-d  { background: $jira-blue-light;  color: darken($jira-blue,10%);  border: 1px solid $jira-blue;  }
+    &.l-h  { background: $jira-grey-light;  color: $jira-subtext;           border: 1px solid $jira-grey;  }
+    &.l-ph { background: #EAE6FF;           color: $jira-purple;            border: 1px solid $jira-purple; }
+    &.l-f  { background: #fff;              color: $jira-grey;              border: 1px dashed $jira-grey;  }
+  }
 }
 
-/* ---------- Main Table ---------- */
+/* ── Table card ───────────────────────────────────────── */
+.att-table-wrapper {
+  border-radius: 3px; overflow: hidden; border: 1px solid $jira-border;
+}
+.fee-table-card {
+  border-radius: 3px !important;
+  overflow: hidden;
+  border: 1px solid $jira-border;
+  box-shadow: none !important;
+  margin: 0 12px 12px;
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+.table-responsive {
+  overflow-x: auto;
+  &::-webkit-scrollbar       { height: 5px; }
+  &::-webkit-scrollbar-track { background: $jira-bg; }
+  &::-webkit-scrollbar-thumb { background: $jira-grey; border-radius: 10px; }
+}
+
+/* ── Main table ───────────────────────────────────────── */
 .att-table {
   width: 100%;
   border-collapse: collapse;
 
-  /* === THEAD === */
   thead {
-
-    /* --- Bulk Action Row --- */
     .bulk-row {
-      background: #f8f9ff;
-
+      background: $jira-bg;
       th {
         padding: 5px 2px;
-        border-bottom: 1px solid #e8ecff;
+        border-bottom: 1px solid $jira-border;
         vertical-align: top;
-        color: #6366f1;
-        font-weight: 800;
+        color: $jira-subtext;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
+        font-size: 0.63rem;
       }
     }
 
-    /* --- Column Header Row --- */
     tr:last-child {
-      background: linear-gradient(90deg, #1a2550 0%, #1e3564 100%);
+      background: $jira-bg;
+      border-bottom: 2px solid $jira-border;
 
       th {
-        padding: 12px 6px;
-        color: rgba(255, 255, 255, 0.88);
-        font-size: 0.66rem;
+        padding: 9px 4px;
+        color: $jira-subtext;
+        font-size: 0.62rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.07em;
+        letter-spacing: 0.05em;
         white-space: nowrap;
         text-align: center;
         border: none;
 
-        &:nth-child(1) { width: 42px; text-align: center; }
-        &:nth-child(2) { text-align: left; padding-left: 10px; }
-        &:nth-child(3) { text-align: left; min-width: 160px; padding-left: 10px; }
+        &:nth-child(1) { width: 38px; }
+        &:nth-child(2) { text-align: left; padding-left: 12px; }
+        &:nth-child(3) { text-align: left; min-width: 160px; padding-left: 8px; }
+        &:nth-child(1),
+        &:nth-child(2),
+        &:nth-child(3) { border-right: 1px solid $jira-border; }
       }
     }
   }
 
-  /* === TBODY === */
   tbody tr {
-    border-bottom: 1px solid #eef2ff;
-    transition: background 0.12s;
+    border-bottom: 1px solid $jira-border;
+    transition: background 0.1s;
 
-    &:nth-child(even) { background: #f9fafe; }
+    &:nth-child(even) { background: #FAFBFC; }
     &:nth-child(odd)  { background: #fff; }
-
-    &:hover { background: #eef2ff !important; }
-
-    &:last-child { border-bottom: none; }
+    &:hover           { background: $jira-blue-light !important; }
+    &:last-child      { border-bottom: none; }
 
     td {
-      padding: 7px 4px;
+      padding: 6px 3px;
       font-size: 0.8rem;
-      color: #1e2d5a;
+      color: $jira-text;
       text-align: center;
       vertical-align: middle;
 
-      &:nth-child(1) {
-        color: #94a3b8;
-        font-size: 0.72rem;
-        font-weight: 600;
-      }
-
+      &:nth-child(1) { color: $jira-subtext; font-size: 0.72rem; font-weight: 500; }
       &:nth-child(2) {
-        text-align: left;
-        padding-left: 10px;
-        font-size: 0.75rem;
-        color: #64748b;
-        font-family: 'Courier New', monospace;
+        text-align: left; padding-left: 12px;
+        font-size: 0.72rem; color: $jira-subtext;
+        font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
       }
-
       &:nth-child(3) {
-        text-align: left;
-        padding-left: 10px;
-        font-weight: 700;
-        white-space: nowrap;
-        color: #1e2d5a;
+        text-align: left; padding-left: 8px;
+        font-weight: 600; white-space: nowrap;
+        color: $jira-text; font-size: 0.8rem;
       }
+      &:nth-child(1),
+      &:nth-child(2),
+      &:nth-child(3) { border-right: 1px solid $jira-border; }
     }
   }
 }
 
-/* ---------- Day header ---------- */
+/* ── Day column headers ───────────────────────────────── */
 .day-th {
-  min-width: 34px;
+  min-width: 36px;
   text-align: center;
+  &.is-weekend {
+    background: $jira-grey-light !important;
+    .day-number { color: #B38600; }
+  }
 }
-
 .day-label-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
 }
+.day-number { font-weight: 700; font-size: 0.78rem; color: $jira-text; }
+.day-name   { font-size: 0.58rem; color: $jira-subtext; text-transform: lowercase; line-height: 1.1; }
 
-.day-number {
-  font-weight: 700;
-}
-
-.day-name {
-  font-size: 0.72rem;
-  color: #64748b;
-  text-transform: lowercase;
-  line-height: 1.1;
-}
-
-.day-th[title] {
-  cursor: help;
-}
-
-/* ---------- Bulk Buttons ---------- */
+/* ── Bulk buttons ─────────────────────────────────────── */
 .bulk-cell {
-  padding: 4px 6px !important;
+  padding: 4px 4px !important;
   vertical-align: top;
-  text-align: right;
+  text-align: center;
 
   .bulk-btns {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    justify-content: flex-start;
-    align-items: flex-end;
-    width: 100%;
-    min-height: 70px;
-    margin-left: auto;
-    padding-top: 4px;
+    display: flex; flex-direction: column; gap: 2px;
+    align-items: center; width: 100%;
+    min-height: 72px; padding-top: 3px;
 
     button {
-      width: 28px;
-      height: 22px;
-      font-size: 0.66rem;
-      font-weight: 800;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      line-height: 1;
-      transition: opacity 0.15s, transform 0.1s;
+      width: 28px; height: 20px;
+      font-size: 0.6rem; font-weight: 700;
+      border: 1px solid transparent; border-radius: 3px;
+      cursor: pointer; line-height: 1;
+      transition: opacity 0.12s, border-color 0.12s;
 
-      &.bp { background: #d1fae5; color: #065f46; }
-      &.ba { background: #fee2e2; color: #991b1b; }
-      &.bd { background: #ecfdf5; color: #365314; }
-      &.bh { background: #fef3c7; color: #92400e; }
-      &.bc { background: #f1f5f9; color: #64748b; }
+      &.bp { background: $jira-green-light; color: darken($jira-green,14%); border-color: $jira-green; }
+      &.ba { background: $jira-red-light;   color: darken($jira-red,10%);   border-color: $jira-red;   }
+      &.bd { background: $jira-blue-light;  color: darken($jira-blue,10%);  border-color: $jira-blue;  }
+      &.bh { background: $jira-grey-light;  color: $jira-subtext;           border-color: $jira-grey;  }
+      &.bc { background: #fff;              color: $jira-subtext;           border-color: $jira-border; }
 
-      &:hover:not(:disabled) {
-        opacity: 0.82;
-        transform: scale(1.08);
-      }
-
+      &:hover:not(:disabled) { opacity: 0.75; }
       &:disabled {
-        background: #f1f5f9 !important;
-        color: #cbd5e1 !important;
-        cursor: not-allowed;
-        opacity: 0.6;
+        background: #fff !important; color: $jira-grey !important;
+        border-color: $jira-border !important; cursor: not-allowed; opacity: 0.5;
       }
     }
   }
 }
 
-/* ---------- Attendance Cells ---------- */
+/* ══════════════════════════════════════════════════════════
+   COLORFUL ATTENDANCE CELLS  ← the key section
+   ══════════════════════════════════════════════════════════ */
 .att-cell {
-  padding: 4px 2px !important;
+  padding: 3px 2px !important;
   transition: background 0.15s;
 
+  /* The <select> is the only element – style it directly */
   select {
+    display: block;
     width: 36px;
-    font-size: 0.7rem;
+    height: 26px;
+    margin: 0 auto;
+    font-size: 0.68rem;
     font-weight: 800;
-    border: 1.5px solid #e0e7ff;
-    border-radius: 6px;
-    padding: 3px 2px;
+    border-radius: 4px;
+    border: 1.5px solid transparent;
+    padding: 0 2px;
     text-align: center;
     cursor: pointer;
-    background: #fff;
     outline: none;
     appearance: none;
     -webkit-appearance: none;
-    transition: border-color 0.15s, background 0.15s;
+    letter-spacing: 0.02em;
+    transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 
-    &:focus { border-color: #6366f1; }
+    &:hover:not(:disabled) { box-shadow: 0 0 0 2px rgba(0,0,0,0.08); }
+    &:focus { box-shadow: 0 0 0 2px $jira-blue; }
   }
 
+  /* ── Present ─────────────── */
   &.cell-p {
-    background: #ecfdf5;
+    background: rgba($jira-green, 0.07);
     select {
-      background: #d1fae5;
-      color: #065f46;
-      border-color: #6ee7b7;
+      background: $jira-green;
+      color: #fff;
+      border-color: darken($jira-green, 8%);
     }
   }
 
+  /* ── Absent ──────────────── */
   &.cell-a {
-    background: #fff5f5;
+    background: rgba($jira-red, 0.07);
     select {
-      background: #fee2e2;
-      color: #991b1b;
-      border-color: #fca5a5;
+      background: $jira-red;
+      color: #fff;
+      border-color: darken($jira-red, 8%);
     }
   }
 
-  &.cell-h {
-    background: #fef3c7;
-    select {
-      background: #fde68a;
-      color: #92400e;
-      border-color: #fbbf24;
-    }
-  }
-
+  /* ── Half Day ────────────── */
   &.cell-d {
-    background: #ecfdf5;
+    background: rgba($jira-blue, 0.07);
     select {
-      background: #d9f99d;
-      color: #365314;
-      border-color: #bef264;
+      background: $jira-blue;
+      color: #fff;
+      border-color: darken($jira-blue, 8%);
     }
   }
 
-  &.cell-future {
-    background: #f8fafc;
+  /* ── Holiday ─────────────── */
+  &.cell-h {
+    background: $jira-grey-light;
     select {
-      background: #f1f5f9;
-      color: #cbd5e1;
-      border-color: #e2e8f0;
+      background: $jira-grey-light;
+      color: $jira-subtext;
+      border-color: $jira-grey;
+      font-weight: 700;
+    }
+  }
+
+  /* ── Empty / unmarked ────── */
+  &:not(.cell-p):not(.cell-a):not(.cell-d):not(.cell-h):not(.cell-future) {
+    select {
+      background: #fff;
+      color: $jira-border;
+      border-color: $jira-border;
+    }
+  }
+
+  /* ── Future (locked) ─────── */
+  &.cell-future {
+    background: transparent;
+    select {
+      background: $jira-bg;
+      color: $jira-border;
+      border-color: $jira-border;
+      border-style: dashed;
       cursor: not-allowed;
     }
   }
 
-  &.cell-weekend,
-  &.cell-h,
-  &.cell-h.cell-weekend {
-    background: #fef3c7;
-    select {
-      background: #fde68a;
-      color: #92400e;
-      border-color: #fbbf24;
-    }
-  }
+  /* ── Weekend tint ────────── */
+  &.cell-weekend { background: #F0F1F3; }
 
-  &.cell-d.cell-weekend {
-    background: #ecfdf5;
-    select {
-      background: #d9f99d;
-      color: #365314;
-      border-color: #bef264;
-    }
-  }
-
-  &.cell-flash {
-    animation: attendanceFlash 0.45s ease-out;
-  }
+  /* ── Flash on save ───────── */
+  &.cell-flash { animation: attendanceFlash 0.4s ease-out; }
 }
 
 @keyframes attendanceFlash {
-  0% {
-    transform: scale(1.03);
-    background-color: rgba(16, 185, 129, 0.12);
-  }
-  50% {
-    transform: scale(1.01);
-    background-color: rgba(16, 185, 129, 0.2);
-  }
-  100% {
-    transform: scale(1);
-    background-color: transparent;
-  }
+  0%   { box-shadow: inset 0 0 0 2px $jira-blue; }
+  100% { box-shadow: inset 0 0 0 0  transparent; }
 }
 
-/* ---------- Summary Columns ---------- */
-.sum-th {
-  min-width: 40px;
-  background: rgba(99, 102, 241, 0.12) !important;
-}
-
-.att-view-cell {
-  text-align: center;
-  padding: 6px !important;
-}
+/* ── View button ──────────────────────────────────────── */
+.att-view-cell { text-align: center; padding: 4px !important; }
 
 .student-view-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid #e0e7ff;
-  border-radius: 10px;
-  background: #f8fafc;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border: 1px solid $jira-border; border-radius: 3px;
+  background: #fff; cursor: pointer; font-size: 0.95rem;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover  { background: $jira-blue-light; border-color: $jira-blue; }
+  &:active { background: $jira-grey-light; }
 }
 
-.student-view-btn:hover {
-  transform: scale(1.08);
-  background: #eef2ff;
-  border-color: #c7d2fe;
-}
+/* ── Summary column headers ───────────────────────────── */
+.sum-th     { min-width: 36px; background: $jira-blue-light !important; color: $jira-blue !important; }
+.present-th { color: darken($jira-green,14%) !important; background: $jira-green-light !important; }
+.absent-th  { color: darken($jira-red,10%)   !important; background: $jira-red-light   !important; }
+.halfday-th { color: darken($jira-blue,10%)  !important; background: $jira-blue-light  !important; }
+.holiday-th { color: $jira-subtext           !important; background: $jira-grey-light  !important; }
 
-.student-view-btn:active {
-  transform: scale(0.95);
-}
+/* ── Summary body cells ───────────────────────────────── */
+.sum-total { font-weight: 700; color: $jira-text                  !important; font-size: 0.78rem; }
+.sum-p     { font-weight: 700; color: darken($jira-green,14%)     !important; font-size: 0.78rem; }
+.sum-a     { font-weight: 700; color: darken($jira-red,10%)       !important; font-size: 0.78rem; }
+.sum-d     { font-weight: 700; color: darken($jira-blue,10%)      !important; font-size: 0.78rem; }
+.sum-h     { font-weight: 700; color: $jira-subtext               !important; font-size: 0.78rem; }
 
-.present-th { color: #6ee7b7 !important; }
-.absent-th  { color: #fca5a5 !important; }
-.halfday-th { color: #84cc16 !important; }
-.holiday-th { color: #fcd34d !important; }
+/* ── PAL summary badges ───────────────────────────────── */
+.pal-summary {
+  display: flex; gap: 3px; align-items: center;
+  justify-content: center; flex-wrap: nowrap;
 
-.sum-total {
-  font-weight: 800;
-  color: #1b254b !important;
-  background: #f0f4ff;
-}
+  .pal-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 18px; border-radius: 3px;
+    font-size: 0.65rem; font-weight: 700; padding: 0 4px;
 
-.sum-p {
-  font-weight: 800;
-  color: #059669 !important;
-  background: #ecfdf5;
-}
-
-.sum-a {
-  font-weight: 800;
-  color: #dc2626 !important;
-  background: #fff5f5;
-}
-
-.sum-d {
-  font-weight: 800;
-  color: #365314 !important;
-  background: #ecfdf5;
-}
-
-.sum-h {
-  font-weight: 800;
-  color: #d97706 !important;
-  background: #fffbeb;
-}
-
-/* ---------- Legend strip ---------- */
-.att-legend {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 10px 18px;
-  background: #f8f9ff;
-  border-top: 1px solid #eef2ff;
-  flex-wrap: wrap;
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #64748b;
-    letter-spacing: 0.03em;
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 3px;
-      flex-shrink: 0;
-
-      &.l-p { background: #6ee7b7; }
-      &.l-a { background: #fca5a5; }
-      &.l-d { background: #bef264; }
-      &.l-h { background: #fcd34d; }
-      &.l-w { background: #e2e8f0; }
-      &.l-f { background: #f1f5f9; border: 1px dashed #cbd5e1; }
-    }
+    &.pal-p { background: $jira-green; color: #fff; }
+    &.pal-a { background: $jira-red;   color: #fff; }
+    &.pal-h { background: $jira-grey-light; color: $jira-subtext; }
   }
 }
 
-/* ---------- Empty / Error States ---------- */
+/* ── Empty / error states ─────────────────────────────── */
 .att-empty {
-  padding: 48px 24px;
-  text-align: center;
-  color: #94a3b8;
+  padding: 56px 24px; text-align: center; color: $jira-grey;
 
-  .att-empty-icon {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-    opacity: 0.45;
-  }
-
-  p {
-    font-size: 0.88rem;
-    font-weight: 500;
-  }
+  .att-empty-icon { font-size: 2.5rem; margin-bottom: 14px; opacity: 0.5; }
+  p { font-size: 0.88rem; font-weight: 500; color: $jira-subtext; }
 }
 
-/* ---------- Table card override ---------- */
-.fee-table-card {
-  border-radius: 16px !important;
-  overflow: hidden;
-  border: 1px solid #eef2ff;
-  box-shadow: 0 2px 16px rgba(30, 45, 90, 0.07) !important;
-}
+/* ── Search bar ───────────────────────────────────────── */
+.att-search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid $jira-border;
+  border-radius: 3px; padding: 4px 12px;
 
-/* ---------- Scrollbar ---------- */
-.table-responsive {
-  overflow-x: auto;
-
-  &::-webkit-scrollbar {
-    height: 5px;
+  input {
+    background: transparent; border: none; outline: none;
+    color: $jira-text; font-size: 0.82rem; font-weight: 500; width: 160px;
+    &::placeholder { color: $jira-grey; }
   }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f5f9;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c7d2fe;
-    border-radius: 10px;
-  }
+  span { color: $jira-grey; font-size: 0.9rem; }
 }

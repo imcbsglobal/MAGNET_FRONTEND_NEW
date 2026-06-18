@@ -1,0 +1,450 @@
+// ─── MAGNET Footer — "corkboard" closing section ──────────────────────────
+$navy:       #0D1B2A;
+$navy-mid:   #112236;
+$navy-deep:  #060D16;
+$blue:       #2563EB;
+$blue-light: #3B82F6;
+$gold:       #F59E0B;
+$green:      #10B981;
+$white:      #F8FAFC;
+$slate:      #64748B;
+$slate-light:#94A3B8;
+
+$font-display: 'Sora', system-ui, sans-serif;
+$font-body:    'Inter', system-ui, sans-serif;
+
+.ft {
+  background: $navy-mid;
+}
+
+.ft__card {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  background: $navy-mid;
+}
+
+.ft__grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba($white, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba($white, 0.05) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.ft__glow {
+  position: absolute;
+  width: 46%;
+  padding-bottom: 46%;
+  border-radius: 50%;
+  filter: blur(70px);
+  z-index: 0;
+  pointer-events: none;
+
+  &--gold { top: -12%; left: -6%; background: radial-gradient(circle, rgba($gold, 0.35), transparent 70%); }
+  &--blue { bottom: -14%; right: -6%; background: radial-gradient(circle, rgba($blue, 0.4), transparent 70%); }
+}
+
+// ── Constrained stage for floats + center text ────────────────────────────
+.ft__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// ── Center CTA ───────────────────────────────────────────────────────────
+.ft__center {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 560px;
+  padding: 0 24px;
+}
+
+.ft__headline {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: clamp(28px, 4.5vw, 46px);
+  line-height: 1.15;
+  color: $white;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+.ft__sub {
+  font-size: 15px;
+  color: $slate-light;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.ft__btn {
+  background: $white;
+  color: $navy;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 14px 30px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover { background: $gold; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+}
+
+// ── Floats (shared base) — positioned relative to .ft__inner ─────────────
+.ft__float {
+  position: absolute;
+  z-index: 1;
+  font-family: $font-body;
+}
+
+.ft__chat-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: $blue;
+  color: $white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ft__chat-sub {
+  display: block;
+  font-size: 10.5px;
+  margin-bottom: 4px;
+}
+
+// Top-left teacher chat bubble
+.ft__float--chat-teacher {
+  top: 3%;
+  left: 0%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 220px;
+  background: rgba($white, 0.97);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  transform: rotate(-3deg);
+
+  .ft__chat-sub { color: $slate; }
+
+  strong { display: block; font-size: 12.5px; color: $navy; font-weight: 700; }
+  p { font-size: 12px; color: $navy; line-height: 1.45; margin: 0; }
+}
+
+// Red ID / nametag card
+.ft__float--id-card {
+  top: 36%;
+  left: 7%;
+  width: 152px;
+  background: #DC2626;
+  color: $white;
+  border-radius: 14px;
+  padding: 14px 16px 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  transform: rotate(-6deg);
+}
+
+.ft__id-tag {
+  background: $white;
+  color: #DC2626;
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.ft__id-note {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+// Diagonal ribbon banner with logo
+.ft__float--ribbon {
+  top: 63%;
+  left: -22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, $blue, $blue-light);
+  color: $white;
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  padding: 8px 24px 8px 12px;
+  border-radius: 4px 14px 14px 4px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+  transform: rotate(-4deg);
+}
+
+.ft__ribbon-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+// Yellow hexagon badge
+.ft__float--hexagon {
+  bottom: 3%;
+  left: 2%;
+  width: 46px;
+  height: 46px;
+  background: $gold;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+  transform: rotate(8deg);
+
+  svg { width: 20px; height: 20px; }
+}
+
+// Stack of textbooks + glasses
+.ft__float--books {
+  bottom: 3%;
+  left: 14%;
+  width: 120px;
+  height: 70px;
+}
+
+.ft__book {
+  position: absolute;
+  left: 0;
+  border-radius: 4px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+
+  &--1 { width: 92px; height: 14px; background: #B91C1C; bottom: 0; transform: rotate(-2deg); }
+  &--2 { width: 84px; height: 14px; background: $gold; bottom: 12px; left: 4px; transform: rotate(1deg); }
+  &--3 { width: 76px; height: 14px; background: $blue; bottom: 24px; left: 9px; transform: rotate(-1deg); }
+}
+
+.ft__glasses {
+  position: absolute;
+  width: 60px;
+  left: 16px;
+  bottom: 34px;
+  transform: rotate(-4deg);
+}
+
+// Top-right parent chat bubble
+.ft__float--chat-parent {
+  top: 10%;
+  right: -10px;
+  width: 190px;
+  background: $blue;
+  color: $white;
+  border-radius: 14px 14px 4px 14px;
+  padding: 12px 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  transform: rotate(3deg);
+
+  strong { display: block; font-size: 12.5px; font-weight: 700; }
+  .ft__chat-sub { color: rgba($white, 0.7); }
+  p { font-size: 12px; line-height: 1.45; margin: 0; color: rgba($white, 0.95); }
+}
+
+// Overlapping module badges
+.ft__float--badges {
+  top: 38%;
+  right: 13%;
+  display: flex;
+}
+
+.ft__badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba($white, 0.55);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+
+  svg { width: 18px; height: 18px; }
+
+  &--gold { background: $gold; color: $navy; margin-right: -14px; z-index: 2; }
+  &--blue { background: $blue; color: $white; z-index: 1; }
+}
+
+// Small attendance dot
+.ft__float--dot {
+  bottom: 23%;
+  right: 30%;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: $green;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+
+  svg { width: 16px; height: 16px; }
+}
+
+// Lower-right staff chat bubble
+.ft__float--chat-staff {
+  top: 47%;
+  right: -10px;
+  width: 190px;
+  background: rgba($white, 0.97);
+  color: $navy;
+  border-radius: 14px 4px 14px 14px;
+  padding: 12px 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  transform: rotate(-2deg);
+
+  strong { display: block; font-size: 12.5px; font-weight: 700; }
+  .ft__chat-sub { color: $slate; }
+  p { font-size: 12px; line-height: 1.45; margin: 0; }
+}
+
+// Yellow sticky note
+.ft__float--sticky {
+  bottom: 15%;
+  right: -6px;
+  width: 160px;
+  background: $gold;
+  color: $navy;
+  padding: 14px 16px;
+  border-radius: 4px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+  transform: rotate(5deg);
+  font-size: 12.5px;
+  line-height: 1.5;
+
+  p { margin: 0; }
+}
+
+.ft__sticky-strike {
+  font-weight: 700;
+  text-decoration: line-through wavy;
+}
+
+// ── Bottom bar ───────────────────────────────────────────────────────────
+.ft__bottom {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 40px 20px;
+  border-top: 1px solid rgba($white, 0.08);
+}
+
+.ft__links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  justify-self: start;
+
+  a {
+    font-size: 13px;
+    color: $slate-light;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover { color: $white; }
+  }
+}
+
+.ft__brand {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 15px;
+  color: $white;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+// Logo image in the bottom brand area
+.ft__brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ft__credit {
+  justify-self: end;
+  font-size: 12.5px;
+  color: $slate-light;
+  white-space: nowrap;
+}
+
+// ── Legal strip ───────────────────────────────────────────────────────────
+.ft__legal {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  text-align: center;
+  padding: 20px 24px 24px;
+  font-size: 12px;
+  color: $slate;
+  border-top: 1px solid rgba($white, 0.1);
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .ft__float { display: none; }
+
+  .ft__inner { min-height: auto; padding: 48px 0 40px; }
+
+  .ft__bottom { padding: 24px 24px 16px; }
+}
+
+@media (max-width: 600px) {
+  .ft__bottom {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .ft__links,
+  .ft__brand,
+  .ft__credit {
+    justify-self: center;
+  }
+
+  .ft__links { justify-content: center; }
+}

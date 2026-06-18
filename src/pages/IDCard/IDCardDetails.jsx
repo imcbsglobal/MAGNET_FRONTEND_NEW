@@ -25,6 +25,17 @@ const EditIcon = () => (
   </svg>
 );
 
+const IdCardIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2.5" />
+    <circle cx="8.5" cy="11" r="2" />
+    <path d="M5 16.5c0-1.4 1.4-2.5 3.5-2.5s3.5 1.1 3.5 2.5" />
+    <path d="M14 9.5h6" />
+    <path d="M14 13h6" />
+    <path d="M14 16.5h4" />
+  </svg>
+);
+
 const DETAIL_LABELS = {
   student_name: 'Student Name',
   father_name:  'Father Name',
@@ -53,28 +64,35 @@ const EDIT_FIELDS = [
   { name: 'pin',          label: 'PIN Code',      type: 'text'  },
 ];
 
+const STATUS_FILTERS = [
+  { value: 'all',       label: 'All'       },
+  { value: 'submitted', label: 'Submitted' },
+  { value: 'pending',   label: 'Pending'   },
+  { value: 'not_sent',  label: 'Not Sent'  },
+];
+
 const IDCardDetails = () => {
   const institutionId    = localStorage.getItem('institutionId')    || '';
   const assignedClass    = localStorage.getItem('assignedClass')    || '';
   const assignedDivision = localStorage.getItem('assignedDivision') || '';
   const userType         = localStorage.getItem('userType')         || '';
 
-  const [students, setStudents]       = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState('');
-  const [search, setSearch]           = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [viewStudent, setViewStudent] = useState(null);
-  const [editStudent, setEditStudent] = useState(null);
-  const [editForm, setEditForm]       = useState({});
-  const [saving, setSaving]           = useState(false);
+  const [students, setStudents]             = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState('');
+  const [search, setSearch]                 = useState('');
+  const [statusFilter, setStatusFilter]     = useState('all');
+  const [viewStudent, setViewStudent]       = useState(null);
+  const [editStudent, setEditStudent]       = useState(null);
+  const [editForm, setEditForm]             = useState({});
+  const [saving, setSaving]                 = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [saveMsg, setSaveMsg]         = useState('');
-  const [generatedLink, setGeneratedLink] = useState('');
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [formEnabled, setFormEnabled] = useState(true);
-  const [toggleLoading, setToggleLoading] = useState(false);
-  const [houseGroups, setHouseGroups] = useState([]);
+  const [saveMsg, setSaveMsg]               = useState('');
+  const [generatedLink, setGeneratedLink]   = useState('');
+  const [showLinkModal, setShowLinkModal]   = useState(false);
+  const [formEnabled, setFormEnabled]       = useState(true);
+  const [toggleLoading, setToggleLoading]   = useState(false);
+  const [houseGroups, setHouseGroups]       = useState([]);
   const photoInputRef = React.useRef(null);
 
   // Determine if user is admin
@@ -104,15 +122,15 @@ const IDCardDetails = () => {
     }
     setLoading(true);
     setError('');
-    
-    console.log('🔍 Loading students...', { 
-      institutionId, 
-      isAdmin, 
-      assignedClass, 
+
+    console.log('🔍 Loading students...', {
+      institutionId,
+      isAdmin,
+      assignedClass,
       assignedDivision,
-      userType 
+      userType
     });
-    
+
     try {
       // Load house groups for the dropdown
       const hgRes = await fetchHouseGroups(institutionId);
@@ -123,14 +141,14 @@ const IDCardDetails = () => {
         const statusRes = await fetchIDCardFormStatus(institutionId);
         setFormEnabled(statusRes.data.enabled);
       }
-      
+
       let res;
       console.log('🧪 Testing basic API call first...');
-      
+
       // Test with basic teacher mode first to verify API is working
       res = await fetchIDCardStudents(institutionId, assignedClass, assignedDivision);
       console.log('✅ Basic API test successful:', res.data);
-      
+
       if (isAdmin) {
         console.log('📋 Admin detected - fetching ALL submitted students');
         // Admin: Get ALL submitted students from all classes
@@ -199,7 +217,7 @@ const IDCardDetails = () => {
       await uploadStudentPhoto(fd);
       setSaveMsg('✅ Photo uploaded successfully.');
       await loadStudents();
-      
+
       // Update local editStudent so photo reflects in modal
       let res;
       if (isAdmin) {
@@ -207,7 +225,7 @@ const IDCardDetails = () => {
       } else {
         res = await fetchIDCardStudents(institutionId, assignedClass, assignedDivision);
       }
-      
+
       const updatedList = Array.isArray(res.data) ? res.data : [];
       const updated = updatedList.find(s => s.admno === editStudent.admno);
       if (updated) setEditStudent(updated);
@@ -255,28 +273,28 @@ const IDCardDetails = () => {
   };
 
   const filtered = students.filter((s) => {
-    const searchMatch = (s.student_name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.admno        || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.fathername   || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.mobile       || '').includes(search) ||
-      (s.student_class || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.div          || '').toLowerCase().includes(search.toLowerCase()) ||
+    const searchMatch =
+      (s.student_name   || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.admno          || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.fathername     || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.mobile         || '').includes(search) ||
+      (s.student_class  || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.div            || '').toLowerCase().includes(search.toLowerCase()) ||
       (s.details?.house_group || '').toLowerCase().includes(search.toLowerCase());
 
-    const statusMatch = statusFilter === 'all' || 
+    const statusMatch =
+      statusFilter === 'all' ||
       (statusFilter === 'submitted' && s.link_status === 'used') ||
-      (statusFilter === 'pending' && s.link_status === 'pending') ||
-      (statusFilter === 'not_sent' && (s.link_status === 'none' || !s.link_status));
+      (statusFilter === 'pending'   && s.link_status === 'pending') ||
+      (statusFilter === 'not_sent'  && (s.link_status === 'none' || !s.link_status));
 
     return searchMatch && statusMatch;
   });
 
   const statusBadge = (status, isAdminView) => {
     if (isAdminView) {
-      // In admin view, all students shown are submitted (we filter them in backend)
       return <span className="badge badge--green">Submitted</span>;
     }
-    // Regular teacher view with all statuses
     if (status === 'used')    return <span className="badge badge--green">Submitted</span>;
     if (status === 'pending') return <span className="badge badge--yellow">Pending</span>;
     return <span className="badge badge--gray">Not sent</span>;
@@ -289,51 +307,45 @@ const IDCardDetails = () => {
         <Navbar />
         <div className="idcard-page">
 
+          {/* ── Header ── */}
           <div className="idcard-header">
             <div>
-              <h1>ID Card Details</h1>
-              <p>
-                {isAdmin 
-                  ? "View and edit all submitted ID card information from all classes." 
-                  : "View and edit submitted ID card information for each student."}
-              </p>
-              {isAdmin && (
-                <div className="admin-badge" style={{marginTop: '8px', padding: '4px 12px', background: '#7c3aed', color: 'white', borderRadius: '12px', fontSize: '12px', display: 'inline-block', fontWeight: '600'}}>
-                  Admin View - All Classes ({students.length} submitted)
+              <div className="idcard-header-main">
+                <div className="idcard-header-icon"><IdCardIcon /></div>
+                <div>
+                  <h1>ID Card Details</h1>
+                  <p>
+                    {isAdmin
+                      ? "View and edit all submitted ID card information from all classes."
+                      : "View and edit submitted ID card information for each student."}
+                  </p>
                 </div>
-              )}
+              </div>
               {isAdmin && (
-                <div className={`form-status-badge ${formEnabled ? 'enabled' : 'disabled'}`} style={{
-                  marginTop: '8px', 
-                  marginLeft: isAdmin ? '10px' : '0',
-                  padding: '4px 12px', 
-                  background: formEnabled ? '#10b981' : '#ef4444', 
-                  color: 'white', 
-                  borderRadius: '12px', 
-                  fontSize: '12px', 
-                  display: 'inline-block', 
-                  fontWeight: '600'
-                }}>
-                  Form {formEnabled ? 'Enabled' : 'Disabled'}
+                <div className="idcard-pill-row">
+                  <span className="idcard-pill idcard-pill--admin">
+                    Admin View · All Classes ({students.length} submitted)
+                  </span>
+                  <span className={`idcard-pill ${formEnabled ? 'idcard-pill--enabled' : 'idcard-pill--disabled'}`}>
+                    Form {formEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
                 </div>
               )}
             </div>
             <div className="idcard-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="primary-btn"
                 onClick={handleGenerateLink}
-                style={{ marginRight: '10px' }}
               >
                 🔗 Generate Form Link
               </button>
               {isAdmin && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className={formEnabled ? "secondary-btn" : "primary-btn"}
                   onClick={handleToggleForm}
                   disabled={toggleLoading}
-                  style={{ marginRight: '10px' }}
                 >
                   {toggleLoading ? 'Updating...' : (formEnabled ? '🚫 Disable Form' : '✅ Enable Form')}
                 </button>
@@ -346,31 +358,39 @@ const IDCardDetails = () => {
 
           {error && <div className="idcard-error">{error}</div>}
 
+          {/* ── Search bar ── */}
           <div className="idcard-search-bar">
             <div className="search-input-wrapper">
               <input
                 type="text"
                 value={search}
-                placeholder={isAdmin ? "Search by student, class, adm no, father name, or mobile" : "Search by student, adm no, father name, or mobile"}
+                placeholder={
+                  isAdmin
+                    ? "Search by student, class, adm no, father name, or mobile"
+                    : "Search by student, adm no, father name, or mobile"
+                }
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+
+            {/* ── Status toggle buttons (teacher only) ── */}
             {!isAdmin && (
               <div className="status-filter-wrapper">
-                <select 
-                  value={statusFilter} 
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="status-select"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="pending">Pending</option>
-                  <option value="not_sent">Not sent</option>
-                </select>
+                {STATUS_FILTERS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`status-filter-btn${statusFilter === value ? ' status-filter-btn--active' : ''}`}
+                    onClick={() => setStatusFilter(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
+          {/* ── Table ── */}
           <div className="idcard-table-card">
             {loading ? (
               <div className="idcard-empty">Loading students...</div>
@@ -397,9 +417,9 @@ const IDCardDetails = () => {
                       <tr key={`${student.admno}-${index}`}>
                         <td>{index + 1}</td>
                         <td>{student.admno}</td>
-                        <td>{(student.student_name || '').toUpperCase()}</td>
+                        <td>{(student.student_name  || '').toUpperCase()}</td>
                         <td>{(student.student_class || '').toUpperCase()}</td>
-                        <td>{(student.div || '').toUpperCase()}</td>
+                        <td>{(student.div           || '').toUpperCase()}</td>
                         <td>{(student.details?.house_group || '-').toUpperCase()}</td>
                         <td>{student.mobile || '-'}</td>
                         <td>{statusBadge(student.link_status, isAdmin)}</td>
@@ -452,7 +472,9 @@ const IDCardDetails = () => {
                   <div className="modal-row" key={key}>
                     <span className="modal-label">{label}</span>
                     <span className="modal-value">
-                      {key === 'email' ? viewStudent.details[key] : String(viewStudent.details[key]).toUpperCase()}
+                      {key === 'email'
+                        ? viewStudent.details[key]
+                        : String(viewStudent.details[key]).toUpperCase()}
                     </span>
                   </div>
                 ) : null
@@ -460,7 +482,10 @@ const IDCardDetails = () => {
             </div>
             <div className="modal-footer">
               <button className="secondary-btn" onClick={() => setViewStudent(null)}>Close</button>
-              <button className="primary-btn" onClick={() => { setViewStudent(null); openEdit(viewStudent); }}>
+              <button
+                className="primary-btn"
+                onClick={() => { setViewStudent(null); openEdit(viewStudent); }}
+              >
                 Edit Details
               </button>
             </div>
@@ -481,9 +506,9 @@ const IDCardDetails = () => {
                     ) : (
                       <div className="photo-placeholder">🎓</div>
                     )}
-                    <button 
-                      type="button" 
-                      className="photo-edit-btn" 
+                    <button
+                      type="button"
+                      className="photo-edit-btn"
                       onClick={() => photoInputRef.current?.click()}
                       disabled={uploadingPhoto}
                     >
@@ -569,31 +594,23 @@ const IDCardDetails = () => {
               <button className="modal-close" onClick={() => setShowLinkModal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <div className="modal-row">
-                <span className="modal-label">Generated Link:</span>
-                <div style={{ 
-                  padding: '12px', 
-                  background: '#f8f9fa', 
-                  border: '1px solid #dee2e6',
-                  borderRadius: '8px',
-                  marginTop: '8px',
-                  fontFamily: 'monospace',
-                  fontSize: '14px',
-                  wordBreak: 'break-all',
-                  color: '#495057'
-                }}>
+              <div className="modal-row modal-row--stacked">
+                <span className="modal-label">Generated Link</span>
+                <div className="link-display">
                   {generatedLink}
                 </div>
               </div>
-              <div style={{ marginTop: '15px', padding: '12px', background: '#e7f3ff', borderRadius: '8px', fontSize: '14px', color: '#0066cc' }}>
-                <strong>📋 How to use:</strong>
+              <div className="usage-info">
+                <strong>📋 How to use</strong>
                 <br />• Share this link with parents to fill ID card forms
                 <br />• Parents enter their phone number to find their student
                 <br />• Works only for students registered in your institution
                 <br />• Link is permanent and can be reused multiple times
-                <br />• <strong style={{color: formEnabled ? '#10b981' : '#ef4444'}}>
-                  Form Status: {formEnabled ? 'Enabled ✅' : 'Disabled ❌'}
-                </strong>
+                <div className="usage-info--status">
+                  <span className={`idcard-pill ${formEnabled ? 'idcard-pill--enabled' : 'idcard-pill--disabled'}`}>
+                    Form Status: {formEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="modal-footer">

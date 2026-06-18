@@ -19,6 +19,93 @@ const getErrorMessage = (result, fallback) => {
   return result.reason?.response?.data?.message || result.reason?.message || fallback;
 };
 
+// ── Small decorative icon set (purely visual, no logic) ──
+const Icons = {
+  Users: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+  ),
+  UserCheck: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="8.5" cy="7" r="4"></circle>
+      <polyline points="17 11 19 13 23 9"></polyline>
+    </svg>
+  ),
+  UserX: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="8.5" cy="7" r="4"></circle>
+      <line x1="18" y1="8" x2="23" y2="13"></line>
+      <line x1="23" y1="8" x2="18" y2="13"></line>
+    </svg>
+  ),
+  Clock: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+  ),
+  TrendingUp: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+      <polyline points="17 6 23 6 23 12"></polyline>
+    </svg>
+  ),
+  Plus: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  ),
+  List: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"></line>
+      <line x1="8" y1="12" x2="21" y2="12"></line>
+      <line x1="8" y1="18" x2="21" y2="18"></line>
+      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+    </svg>
+  ),
+  BarChart: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="20" x2="12" y2="10"></line>
+      <line x1="18" y1="20" x2="18" y2="4"></line>
+      <line x1="6" y1="20" x2="6" y2="16"></line>
+    </svg>
+  ),
+  PieChart: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+      <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+    </svg>
+  ),
+  Calendar: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+      <path d="M16 2v4"></path>
+      <path d="M8 2v4"></path>
+      <path d="M3 10h18"></path>
+    </svg>
+  ),
+  Flag: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+      <line x1="4" y1="22" x2="4" y2="15"></line>
+    </svg>
+  ),
+  Bolt: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    </svg>
+  ),
+};
+
 const StaffDashboard = () => {
   const username = localStorage.getItem('username') || 'Staff';
   const institutionId = localStorage.getItem('institutionId') || '';
@@ -149,7 +236,6 @@ const StaffDashboard = () => {
       .sort((a, b) => b.absent - a.absent || a.rate - b.rate)
       .slice(0, 5);
 
-    // Calculate leaves and holidays for current month (excluding weekends)
     const monthLeaves = calendarEvents
       .filter((event) => event.event_type === 'L' || event.event_type === 'H')
       .map((event) => {
@@ -164,7 +250,7 @@ const StaffDashboard = () => {
           typeLabel,
         };
       })
-      .filter((event) => event.dayOfWeek !== 0 && event.dayOfWeek !== 6) // Exclude Sunday (0) and Saturday (6)
+      .filter((event) => event.dayOfWeek !== 0 && event.dayOfWeek !== 6)
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     return {
@@ -187,226 +273,276 @@ const StaffDashboard = () => {
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType="teacher" />
-      
+
       <main className="dashboard-main">
-        <Navbar placeholder="Search activities..." />
+        <Navbar placeholder="Search students, reports..." />
 
         <div className="dashboard-content staff-dashboard-content">
-          <section className="staff-hero">
-            <div>
-              <span className="staff-kicker">Staff Dashboard</span>
-              <h2>Welcome back, {username}</h2>
-              <p>Manage Class {assignedClass || '-'} {assignedDivision || ''} with attendance insights, student follow-ups, and daily classroom actions.</p>
-              <div className="staff-hero-actions">
-                <button type="button" className="staff-primary-btn" onClick={() => navigate('/staff/attendance')}>
+
+          {/* ── Hero ── */}
+          <section className="sd-hero">
+            <div className="sd-hero-left">
+              <span className="sd-eyebrow">Staff Dashboard</span>
+              <h2 className="sd-title">Good day, {username}</h2>
+              <p className="sd-subtitle">
+                Class {assignedClass || '—'} {assignedDivision} &nbsp;·&nbsp; {monthName} {year} &nbsp;·&nbsp; {loading ? '…' : students.length} students enrolled
+              </p>
+              <div className="sd-hero-actions">
+                <button type="button" className="sd-btn-primary" onClick={() => navigate('/staff/attendance')}>
+                  <span className="sd-btn-icon"><Icons.Plus /></span>
                   Mark Attendance
                 </button>
-                <button type="button" className="staff-secondary-btn" onClick={() => navigate('/staff/students')}>
+                <button type="button" className="sd-btn-ghost" onClick={() => navigate('/staff/students')}>
+                  <span className="sd-btn-icon"><Icons.List /></span>
                   View Students
                 </button>
               </div>
             </div>
-            <div className={`staff-class-card ${schoolLogo ? 'has-logo' : ''}`}>
+
+            <div className="sd-school-card">
               {schoolLogo ? (
-                <div className="staff-logo-display">
-                  <img src={schoolLogo} alt="School Logo" />
-                  {schoolInfoName && <p className="staff-school-name">{schoolInfoName}</p>}
-                </div>
+                <>
+                  <img src={schoolLogo} alt="School logo" className="sd-school-logo" />
+                  {schoolInfoName && <p className="sd-school-name">{schoolInfoName}</p>}
+                </>
               ) : (
                 <>
-                  <span>Assigned Class</span>
-                  <strong>{assignedClass || '-'} {assignedDivision || ''}</strong>
+                  <div className="sd-class-badge">
+                    {assignedClass || '—'}{assignedDivision}
+                  </div>
+                  <p className="sd-school-label">Assigned class</p>
                 </>
               )}
-              {!schoolLogo && <p>{students.length} students enrolled</p>}
             </div>
           </section>
 
-          {error && <div className="staff-alert">{error}</div>}
+          {/* ── Error ── */}
+          {error && <div className="sd-alert">{error}</div>}
 
-          <div className="staff-stats-row">
-            <div className="staff-stat-card">
-              <span>Total Students</span>
-              <strong>{loading ? '...' : students.length}</strong>
-              <p>Class strength</p>
-            </div>
-            <div className="staff-stat-card present">
-              <span>Today Present</span>
-              <strong>{loading ? '...' : dashboardData.presentToday}</strong>
-              <p>{dashboardData.attendanceRate}% attendance today</p>
-            </div>
-            <div className="staff-stat-card absent">
-              <span>Today Absent</span>
-              <strong>{loading ? '...' : dashboardData.absentToday}</strong>
-              <p>{dashboardData.pendingToday} pending marks</p>
-            </div>
-            <div className="staff-stat-card halfday">
-              <span>Today Half Day</span>
-              <strong>{loading ? '...' : dashboardData.halfDayToday}</strong>
-              <p>Half-day students</p>
-            </div>
-            <div className="staff-stat-card month">
-              <span>Monthly Rate</span>
-              <strong>{loading ? '...' : `${dashboardData.monthlyRate}%`}</strong>
-              <p>{monthName} attendance average</p>
-            </div>
+          {/* ── Stats row ── */}
+          <div className="sd-stats-row">
+            {[
+              { label: 'Total Students', value: loading ? '…' : students.length, sub: 'Class strength', mod: '', icon: <Icons.Users /> },
+              { label: 'Present Today', value: loading ? '…' : dashboardData.presentToday, sub: `${dashboardData.attendanceRate}% rate`, mod: 'present', icon: <Icons.UserCheck /> },
+              { label: 'Absent Today', value: loading ? '…' : dashboardData.absentToday, sub: `${dashboardData.pendingToday} pending`, mod: 'absent', icon: <Icons.UserX /> },
+              { label: 'Half Day', value: loading ? '…' : dashboardData.halfDayToday, sub: 'Half-day students', mod: 'half', icon: <Icons.Clock /> },
+              { label: 'Monthly Rate', value: loading ? '…' : `${dashboardData.monthlyRate}%`, sub: `${monthName} average`, mod: 'rate', icon: <Icons.TrendingUp /> },
+            ].map((card) => (
+              <div className={`sd-stat ${card.mod}`} key={card.label}>
+                <span className="sd-stat-icon">{card.icon}</span>
+                <span className="sd-stat-label">{card.label}</span>
+                <strong className="sd-stat-value">{card.value}</strong>
+                <p className="sd-stat-sub">{card.sub}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="staff-dashboard-grid">
-            <section className="staff-panel staff-chart-panel">
-              <div className="staff-panel-header">
-                <div>
-                  <h3>Attendance Trend</h3>
-                  <p>Last marked days in {monthName}</p>
+          {/* ── Main grid ── */}
+          <div className="sd-grid-top">
+
+            {/* Trend chart */}
+            <section className="sd-panel sd-chart-panel">
+              <div className="sd-panel-head">
+                <div className="sd-panel-heading">
+                  <span className="sd-panel-icon"><Icons.BarChart /></span>
+                  <div>
+                    <h3>Attendance trend</h3>
+                    <p>Last marked days in {monthName}</p>
+                  </div>
                 </div>
-                <span>{dashboardData.monthTotal} marks</span>
+                <span className="sd-pill">{dashboardData.monthTotal} marks</span>
               </div>
 
-              <div className="staff-chart">
+              <div className="sd-bars">
                 {loading ? (
-                  <div className="staff-empty">Loading attendance graph...</div>
+                  <div className="sd-empty">Loading chart…</div>
                 ) : dashboardData.dailyBars.length === 0 ? (
-                  <div className="staff-empty">No attendance marked this month.</div>
+                  <div className="sd-empty">No attendance marked yet.</div>
                 ) : (
                   dashboardData.dailyBars.map((bar) => (
-                    <div className="staff-bar-item" key={bar.day}>
-                      <div className="staff-bar-track">
-                        <span style={{ height: `${Math.max(bar.percentage, 6)}%` }}></span>
+                    <div className="sd-bar-col" key={bar.day}>
+                      <span className="sd-bar-pct">{bar.percentage > 0 ? `${bar.percentage}%` : ''}</span>
+                      <div className="sd-bar-track">
+                        <div
+                          className="sd-bar-fill"
+                          style={{ height: `${Math.max(bar.percentage, 4)}%` }}
+                        />
                       </div>
-                      <small>{bar.day}</small>
+                      <span className="sd-bar-day">{bar.day}</span>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="staff-chart-legend">
-                <span><i className="present-dot"></i>Present percentage</span>
-                <span><i className="absent-dot"></i>{dashboardData.absentMonth} monthly absences</span>
+              <div className="sd-legend">
+                <span><i className="sd-dot present-dot" />Present %</span>
+                <span><i className="sd-dot absent-dot" />{dashboardData.absentMonth} absences this month</span>
               </div>
             </section>
 
-            <section className="staff-panel">
-              <div className="staff-panel-header">
-                <div>
-                  <h3>Monthly Summary</h3>
-                  <p>{monthName} {year}</p>
+            {/* Donut summary */}
+            <section className="sd-panel sd-donut-panel">
+              <div className="sd-panel-head">
+                <div className="sd-panel-heading">
+                  <span className="sd-panel-icon"><Icons.PieChart /></span>
+                  <div>
+                    <h3>Monthly summary</h3>
+                    <p>{monthName} {year}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="staff-donut-wrap">
+              <div className="sd-donut-wrap">
                 <div
-                  className="staff-donut"
+                  className="sd-donut"
                   style={{
-                    background: `conic-gradient(#16a34a 0 ${dashboardData.monthlyRate}%, #ef4444 ${dashboardData.monthlyRate}% 100%)`,
+                    background: `conic-gradient(#2e7d32 0 ${dashboardData.monthlyRate}%, #de350b ${dashboardData.monthlyRate}% 100%)`,
                   }}
                 >
                   <span>{dashboardData.monthlyRate}%</span>
                 </div>
-                <div className="staff-summary-list">
-                  <div><span>Present</span><strong>{dashboardData.presentMonth}</strong></div>
-                  <div><span>Absent</span><strong>{dashboardData.absentMonth}</strong></div>
-                  <div><span>Holiday</span><strong>{dashboardData.holidayMonth}</strong></div>
+              </div>
+
+              <div className="sd-summary-rows">
+                <div className="sd-summary-row">
+                  <span><i className="sd-dot present-dot" />Present</span>
+                  <strong>{dashboardData.presentMonth}</strong>
+                </div>
+                <div className="sd-summary-row">
+                  <span><i className="sd-dot absent-dot" />Absent</span>
+                  <strong>{dashboardData.absentMonth}</strong>
+                </div>
+                <div className="sd-summary-row">
+                  <span><i className="sd-dot holiday-dot" />Holiday</span>
+                  <strong>{dashboardData.holidayMonth}</strong>
                 </div>
               </div>
             </section>
           </div>
 
-          <div className="staff-dashboard-grid bottom">
-            <section className="staff-panel">
-              <div className="staff-panel-header">
-                <div>
-                  <h3>Current Month Leaves & Holidays</h3>
-                  <p>Working days only (no weekends)</p>
+          {/* ── Bottom grid ── */}
+          <div className="sd-grid-bottom">
+
+            {/* Leaves & holidays */}
+            <section className="sd-panel">
+              <div className="sd-panel-head">
+                <div className="sd-panel-heading">
+                  <span className="sd-panel-icon"><Icons.Calendar /></span>
+                  <div>
+                    <h3>Leaves &amp; holidays</h3>
+                    <p>Working days only · no weekends</p>
+                  </div>
                 </div>
-                <span className="staff-leaves-count">{loading ? '...' : dashboardData.monthLeaves.length}</span>
+                <span className="sd-pill">{loading ? '…' : dashboardData.monthLeaves.length}</span>
               </div>
 
-              <div className="staff-leaves-list">
+              <div className="sd-leave-list">
                 {loading ? (
-                  <div className="staff-empty">Loading calendar...</div>
+                  <div className="sd-empty">Loading calendar…</div>
                 ) : dashboardData.monthLeaves.length === 0 ? (
-                  <div className="staff-empty">No leaves or holidays scheduled this month.</div>
+                  <div className="sd-empty">No leaves or holidays this month.</div>
                 ) : (
                   dashboardData.monthLeaves.map((leave) => (
-                    <div className="staff-leave-item" key={leave.id || leave.date}>
-                      <div className="staff-leave-date">
-                        <span className="staff-leave-day">{leave.dateNum}</span>
-                        <span className="staff-leave-dayname">{leave.dayName}</span>
+                    <div className="sd-leave-item" key={leave.id || leave.date}>
+                      <div className={`sd-leave-cal ${leave.event_type === 'H' ? 'cal-holiday' : 'cal-leave'}`}>
+                        <strong>{leave.dateNum}</strong>
+                        <span>{leave.dayName}</span>
                       </div>
-                      <div className="staff-leave-info">
-                        <div className="staff-leave-type">
-                          <span className={`staff-leave-badge ${leave.event_type === 'H' ? 'badge-holiday' : 'badge-leave'}`}>
-                            {leave.typeLabel}
-                          </span>
-                        </div>
-                        <strong>{leave.title}</strong>
-                        <small>{leave.description || leave.typeLabel}</small>
+
+                      <div className="sd-leave-body">
+                        <p className="sd-leave-title">{leave.title}</p>
+                        <p className="sd-leave-desc">{leave.description || leave.typeLabel}</p>
                       </div>
+
+                      <span className={`sd-badge ${leave.event_type === 'H' ? 'badge-holiday' : 'badge-leave'}`}>
+                        {leave.typeLabel}
+                      </span>
                     </div>
                   ))
                 )}
               </div>
             </section>
 
-            <div className="staff-panel-col">
-              <section className="staff-panel">
-                <div className="staff-panel-header">
-                  <div>
-                    <h3>Students To Review</h3>
-                    <p>Attendance follow-up list</p>
+            {/* Right column */}
+            <div className="sd-right-col">
+
+              {/* Students to review */}
+              <section className="sd-panel">
+                <div className="sd-panel-head">
+                  <div className="sd-panel-heading">
+                    <span className="sd-panel-icon"><Icons.Flag /></span>
+                    <div>
+                      <h3>Students to review</h3>
+                      <p>Attendance follow-up list</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="staff-student-list">
+                <div className="sd-student-list">
                   {loading ? (
-                    <div className="staff-empty">Loading students...</div>
+                    <div className="sd-empty">Loading…</div>
                   ) : dashboardData.attentionStudents.length === 0 ? (
-                    <div className="staff-empty">No attendance concerns found.</div>
+                    <div className="sd-empty">No concerns found.</div>
                   ) : (
                     dashboardData.attentionStudents.map((student) => (
                       <button
                         type="button"
-                        className="staff-student-item"
+                        className="sd-student-row"
                         key={student.admno}
                         onClick={() => navigate(`/staff/attendance/student/${encodeURIComponent(student.admno)}`, {
                           state: { studentName: student.student_name },
                         })}
                       >
-                        <span className="staff-avatar">{getInitials(student.student_name)}</span>
-                        <span>
+                        <span className="sd-avatar">{getInitials(student.student_name)}</span>
+                        <span className="sd-student-info">
                           <strong>{student.student_name}</strong>
-                          <small>Adm No: {student.admno}</small>
+                          <small>Adm: {student.admno}</small>
                         </span>
-                        <em>{student.rate || 0}%</em>
+                        <span className={`sd-rate-pill ${(student.rate || 0) < 75 ? 'rate-low' : 'rate-ok'}`}>
+                          {student.rate || 0}%
+                        </span>
                       </button>
                     ))
                   )}
                 </div>
               </section>
 
-              <section className="staff-panel">
-                <div className="staff-panel-header">
-                  <div>
-                    <h3>Quick Actions</h3>
-                    <p>Daily staff tools</p>
+              {/* Quick actions */}
+              <section className="sd-panel">
+                <div className="sd-panel-head">
+                  <div className="sd-panel-heading">
+                    <span className="sd-panel-icon"><Icons.Bolt /></span>
+                    <div>
+                      <h3>Quick actions</h3>
+                      <p>Daily staff tools</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="staff-action-list">
-                  <button type="button" onClick={() => navigate('/staff/attendance')}>
-                    <span>A</span>
-                    <strong>Open Attendance</strong>
-                    <small>Mark or review monthly attendance</small>
+                <div className="sd-action-list">
+                  <button type="button" className="sd-action-row" onClick={() => navigate('/staff/attendance')}>
+                    <span className="sd-action-icon">A</span>
+                    <span className="sd-action-text">
+                      <strong>Open Attendance</strong>
+                      <small>Mark or review monthly attendance</small>
+                    </span>
+                    <svg className="sd-arrow" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
-                  <button type="button" onClick={() => navigate('/staff/students')}>
-                    <span>S</span>
-                    <strong>Student Directory</strong>
-                    <small>Search class student details</small>
+                  <button type="button" className="sd-action-row" onClick={() => navigate('/staff/students')}>
+                    <span className="sd-action-icon">S</span>
+                    <span className="sd-action-text">
+                      <strong>Student Directory</strong>
+                      <small>Search class student details</small>
+                    </span>
+                    <svg className="sd-arrow" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
-                  <button type="button" onClick={() => navigate('/staff/attendance')}>
-                    <span>R</span>
-                    <strong>Attendance Reports</strong>
-                    <small>View student-wise attendance records</small>
+                  <button type="button" className="sd-action-row" onClick={() => navigate('/staff/attendance')}>
+                    <span className="sd-action-icon">R</span>
+                    <span className="sd-action-text">
+                      <strong>Attendance Reports</strong>
+                      <small>View student-wise records</small>
+                    </span>
+                    <svg className="sd-arrow" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
                 </div>
               </section>

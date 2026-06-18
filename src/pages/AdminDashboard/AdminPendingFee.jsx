@@ -3,8 +3,22 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchAllPendingFees } from '../../services/api';
 import { getCache, setCache } from '../../services/cache';
-import '../SuperUserDashboard/SuperUserDashboard.scss';
-import '../ParentDashboard/ParentPendingFee.scss';
+import './AdminPendingFee.scss';
+
+const FeeIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="13" rx="2" />
+    <path d="M2 10h20" />
+    <circle cx="16" cy="14.5" r="1.5" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" />
+  </svg>
+);
 
 const AdminPendingFee = () => {
   const [fees, setFees] = useState([]);
@@ -77,20 +91,26 @@ const AdminPendingFee = () => {
       <Sidebar userType="admin" />
       <main className="dashboard-main">
         <Navbar />
-        <div className="dashboard-content">
-          <section className="welcome-section">
-            <div>
-              <h2>Pending Fees — All Students</h2>
-              <p>All pending fee records for your institution.</p>
+        <div className="pending-fee-page">
+
+          {/* ── Header ── */}
+          <div className="fee-header">
+            <div className="fee-header-main">
+              <div className="fee-header-icon"><FeeIcon /></div>
+              <div>
+                <h1>Pending Fees — All Students</h1>
+                <p>All pending fee records for your institution.</p>
+              </div>
             </div>
-            <div className="fee-summary-banner">
+            <div className="fee-stat-chip">
               <span>Total Due</span>
               <strong>₹{totalDue.toFixed(2)}</strong>
             </div>
-          </section>
+          </div>
 
-          <div className="top-filter-bar">
-            <div className="table-filter">
+          {/* ── Filters ── */}
+          <div className="fee-filter-bar">
+            <div className="fee-filter">
               <label htmlFor="feeFilter">Filter</label>
               <select id="feeFilter" value={filterType} onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}>
                 <option value="all">All</option>
@@ -98,38 +118,36 @@ const AdminPendingFee = () => {
                 <option value="feeItem">Fee Item</option>
               </select>
             </div>
-            <div className="table-filter">
+            <div className="fee-filter">
               <label htmlFor="classFilter">Class</label>
               <select id="classFilter" value={filterClass} onChange={(e) => { setFilterClass(e.target.value); setCurrentPage(1); }}>
                 <option value="">All Classes</option>
                 {classes.map((cls, i) => <option key={i} value={cls}>{cls}</option>)}
               </select>
             </div>
-            <div className="table-filter">
+            <div className="fee-filter">
               <label htmlFor="divFilter">Division</label>
               <select id="divFilter" value={filterDiv} onChange={(e) => { setFilterDiv(e.target.value); setCurrentPage(1); }}>
                 <option value="">All Divisions</option>
                 {divisions.map((div, i) => <option key={i} value={div}>{div}</option>)}
               </select>
             </div>
-            <div className="table-filter">
-              <label htmlFor="search">Search</label>
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  id="search"
-                  type="text"
-                  placeholder="Search by Adm No, Student Name, Month..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                />
-              </div>
+            <div className="fee-search">
+              <SearchIcon />
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by Adm No, Student Name, Month..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              />
             </div>
           </div>
 
+          {/* ── Table ── */}
           <div className="fee-table-card">
-            {loading ? <p>Loading...</p> : error ? <div className="error-message">{error}</div> : filtered.length === 0 ? (
-              <div className="empty-state"><p>No pending fee records found.</p></div>
+            {loading ? <div className="fee-empty">Loading...</div> : error ? <div className="fee-error">{error}</div> : filtered.length === 0 ? (
+              <div className="fee-empty">No pending fee records found.</div>
             ) : (
               <>
                 <div className="table-responsive">
@@ -152,34 +170,34 @@ const AdminPendingFee = () => {
                     <tbody>
                       {paginated.map((fee, index) => (
                         <tr key={fee.id}>
-                          <td>{firstIndex + index + 1}</td>
-                          <td>{fee.admno}</td>
-                          <td style={{ fontWeight: 600 }}>{fee.student_name || '-'}</td>
-                          <td>{fee.student_class || '-'}</td>
-                          <td>{fee.div || '-'}</td>
-                          <td>{fee.month}</td>
-                          <td>{formatDate(fee.date)}</td>
-                          <td>{fee.refno}</td>
-                          <td className="amount-cell">₹{Number(fee.fine).toFixed(2)}</td>
-                          <td className="amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                          <td>{fee.remark || '-'}</td>
+                          <td className="fee-no-cell">{firstIndex + index + 1}</td>
+                          <td className="fee-plain-cell">{fee.admno}</td>
+                          <td className="fee-name-cell">{fee.student_name || '-'}</td>
+                          <td className="fee-plain-cell">{fee.student_class || '-'}</td>
+                          <td className="fee-plain-cell">{fee.div || '-'}</td>
+                          <td className="fee-plain-cell">{fee.month}</td>
+                          <td className="fee-plain-cell">{formatDate(fee.date)}</td>
+                          <td className="fee-plain-cell">{fee.refno}</td>
+                          <td className="fee-amount-cell fee-fine">₹{Number(fee.fine).toFixed(2)}</td>
+                          <td className="fee-amount-cell fee-amount">₹{Number(fee.amount).toFixed(2)}</td>
+                          <td className="fee-plain-cell">{fee.remark || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="table-controls">
-                  <div className="table-filter">
+                <div className="fee-table-controls">
+                  <div className="fee-table-filter">
                     <label htmlFor="pageSize">Rows per page</label>
-                    <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                    <select id="pageSize" className="fee-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
                       {[20, 50, 100].map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
-                  <div className="table-pagination">
+                  <div className="fee-table-pagination">
                     <span>Showing {filtered.length === 0 ? 0 : firstIndex + 1}–{Math.min(filtered.length, firstIndex + pageSize)} of {filtered.length}</span>
-                    <div className="pagination-buttons">
-                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>Previous</button>
-                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>Next</button>
+                    <div className="fee-pagination-buttons">
+                      <button type="button" className="secondary-btn" disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>Previous</button>
+                      <button type="button" className="secondary-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>Next</button>
                     </div>
                   </div>
                 </div>

@@ -1,0 +1,301 @@
+/* =========================================================
+   Admin Evaluation Dashboard – self-contained, matches the
+   Inter / navy / indigo admin style
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$ink:           #0F1E3D;
+$navy:          #1B2A4E;
+$subtext:       #6B7B96;
+$border:        #E5E9F0;
+$bg:            #F6F8FB;
+$head-bg:       #F8FAFC;
+$accent:        #4F46E5;
+$accent-light:  #EEF2FF;
+$green:         #16A34A;
+$green-light:   #E8F8EE;
+$red:           #E11D48;
+$red-light:     #FDEAEE;
+$yellow:        #D97706;
+$yellow-light:  #FEF3E2;
+$pill-bg:       #F1F2F5;
+
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-pill: 100px;
+
+$shadow-card-lg: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+$shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
+
+.evaluations-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: $bg;
+  min-height: 100%;
+
+  /* ── Header ── */
+  .eval-header {
+    display: flex;
+    align-items: center;
+    padding: 22px 28px;
+    background: #fff;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-card-lg;
+    flex-wrap: wrap;
+  }
+
+  .eval-header-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    h1 {
+      margin: 0 0 3px;
+      font-size: 1.32rem;
+      font-weight: 800;
+      color: $ink;
+      letter-spacing: -0.015em;
+    }
+    p {
+      margin: 0;
+      font-size: 0.86rem;
+      color: $subtext;
+    }
+  }
+
+  .eval-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366F1, #4338CA);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba($accent, 0.38);
+
+    svg { width: 24px; height: 24px; stroke-width: 1.8; }
+  }
+
+  /* ── Filter card / wrapper ── */
+  .eval-filter-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .eval-filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid $border;
+    border-radius: $radius-md;
+    box-shadow: $shadow-raised;
+  }
+
+  .eval-filter-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $navy;
+  }
+
+  .eval-filter-bar select {
+    font-family: inherit;
+    padding: 8px 30px 8px 12px;
+    border-radius: $radius-sm;
+    border: 1.5px solid $border;
+    background: #fff;
+    color: $ink;
+    font-size: 0.82rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    transition: border-color 0.15s;
+
+    &:focus { border-color: $accent; box-shadow: 0 0 0 3px rgba($accent, 0.12); }
+  }
+
+  .eval-empty {
+    padding: 64px 24px;
+    text-align: center;
+    color: #A4AEC2;
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: #fff;
+    border-radius: $radius-md;
+    border: 1px solid $border;
+  }
+
+  /* ── Evaluation cards ── */
+  .eval-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .tcard {
+    background: #fff;
+    border-radius: $radius-md;
+    border: 1px solid $border;
+    box-shadow: $shadow-raised;
+    padding: 20px 22px;
+  }
+
+  .tcard-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .tcard-teacher {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  .tcard-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tcard-month {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: $subtext;
+  }
+
+  /* ── Grade badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: $radius-pill;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .bg-e  { background: $green-light;  color: darken($green, 8%); }
+  .bg-vg { background: $accent-light; color: $accent; }
+  .bg-g  { background: $yellow-light; color: darken($yellow, 4%); }
+  .bg-a  { background: $red-light;    color: darken($red, 5%); }
+
+  /* ── Metric row ── */
+  .mrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .mc {
+    flex: 1 1 130px;
+    background: $head-bg;
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .mv {
+    font-size: 1rem;
+    font-weight: 800;
+    color: $navy;
+  }
+
+  .ml {
+    margin-top: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: $subtext;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Breakdown table ── */
+  .table-responsive {
+    overflow-x: auto;
+    &::-webkit-scrollbar       { height: 6px; }
+    &::-webkit-scrollbar-track { background: $bg; }
+    &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
+  }
+
+  .ptable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 480px;
+
+    th, td {
+      padding: 9px 14px;
+      text-align: left;
+      border-bottom: 1px solid $border;
+      border-right: 1px solid $border;
+      font-size: 0.8rem;
+      color: $ink;
+    }
+
+    th:last-child, td:last-child { border-right: none; }
+
+    th {
+      font-weight: 800;
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $navy;
+      background: $head-bg;
+      border-bottom: 2px solid darken($border, 10%);
+    }
+
+    tbody tr {
+      &:nth-child(even) { background: #FAFBFD; }
+      &:nth-child(odd)  { background: #fff; }
+      &:last-child td   { border-bottom: none; }
+    }
+  }
+
+  .ptable-by    { font-size: 0.7rem; color: $subtext; }
+  .ptable-score { text-align: center; font-weight: 600; color: $ink; }
+  .ptable-max   { text-align: center; color: $subtext; }
+
+  .cat-row td {
+    background: $accent-light !important;
+    color: $accent;
+    font-weight: 700;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 14px;
+  }
+
+  .tot-row td {
+    background: $head-bg !important;
+    font-weight: 800;
+    color: $navy;
+    border-top: 2px solid darken($border, 10%);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .eval-header { flex-direction: column; align-items: flex-start; }
+    .mc { flex: 1 1 100%; }
+  }
+}

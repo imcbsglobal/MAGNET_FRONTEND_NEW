@@ -1,0 +1,450 @@
+/* =========================================================
+   Staff List – Clean Admin Style (avatar + flat-pill table)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$ink:           #0F1E3D;
+$navy:          #1B2A4E;
+$subtext:       #6B7B96;
+$border:        #E5E9F0;
+$bg:            #F6F8FB;
+$head-bg:       #F8FAFC;
+$accent:        #4F46E5;
+$accent-light:  #EEF2FF;
+$green:         #16A34A;
+$green-light:   #E8F8EE;
+$red:           #E11D48;
+$red-light:     #FDEAEE;
+$blue-soft:     #EAF2FE;
+$blue-soft-ink: #2563EB;
+$pill-bg:       #F1F2F5;
+$pill-border:   #E2E4E9;
+
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-pill: 100px;
+
+$shadow-card: 0 1px 2px rgba(15, 30, 62, 0.05), 0 1px 1px rgba(15, 30, 62, 0.04);
+$shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
+
+/* ─── Shared Buttons ─────────────────────────────────────────────────────── */
+.primary-btn,
+.secondary-btn {
+  font-family: 'Inter', sans-serif;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+  line-height: 1.4;
+}
+.primary-btn {
+  background: $accent;
+  color: #fff;
+  border-color: transparent;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba($accent, 0.32);
+  &:hover    { background: darken($accent, 6%); box-shadow: 0 6px 16px rgba($accent, 0.42); transform: translateY(-1px); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+}
+.secondary-btn {
+  background: #fff;
+  color: $ink;
+  border-color: $border;
+  &:hover    { background: $bg; border-color: darken($border, 10%); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+}
+
+/* ─── Staff Page ─────────────────────────────────────────────────────────── */
+.staff-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background: $bg;
+  min-height: 100%;
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────── */
+/* ─── Header ────────────────────────────────────────────────────────────── */
+.staff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  background: #fff;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 3px;
+    font-size: 1.36rem;
+    font-weight: 800;
+    color: $ink;
+    letter-spacing: -0.015em;
+  }
+  p {
+    margin: 0;
+    font-size: 0.86rem;
+    color: $subtext;
+  }
+}
+
+.staff-header-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.staff-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366F1, #4338CA);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba($accent, 0.38);
+
+  svg { width: 24px; height: 24px; stroke-width: 1.8; }
+}
+
+.staff-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ─── Table card ─────────────────────────────────────────────────────────── */
+.staff-table-card {
+  background: #fff;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  box-shadow: $shadow-card-lg;
+  overflow: hidden;
+}
+
+/* ─── Toolbar (search) ───────────────────────────────────────────────────── */
+.staff-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid $border;
+}
+
+.staff-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 320px;
+  max-width: 100%;
+  padding: 9px 14px;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  background: #fff;
+  color: $subtext;
+  transition: border-color 0.12s, box-shadow 0.12s;
+
+  &:focus-within {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba($accent, 0.12);
+  }
+
+  svg { flex-shrink: 0; color: $subtext; }
+
+  input {
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: $ink;
+    width: 100%;
+    background: transparent;
+
+    &::placeholder { color: #A4AEC2; }
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+  &::-webkit-scrollbar       { height: 6px; }
+  &::-webkit-scrollbar-track { background: $bg; }
+  &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1320px;
+
+  th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid $border;
+    border-right: 1px solid $border;
+    font-size: 0.81rem;
+    color: $ink;
+    vertical-align: middle;
+  }
+
+  th:last-child, td:last-child { border-right: none; }
+
+  th {
+    font-weight: 800;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $navy;
+    background: $head-bg;
+    white-space: nowrap;
+    border-bottom: 2px solid darken($border, 10%);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody tr {
+    transition: background 0.1s;
+    &:nth-child(even) { background: #FAFBFD; }
+    &:nth-child(odd)  { background: #fff; }
+    &:hover           { background: $accent-light !important; }
+    &:last-child td   { border-bottom: none; }
+  }
+}
+
+.staff-no-cell { color: $subtext; font-weight: 600; }
+.staff-plain-cell { color: $ink; }
+
+.staff-address-cell {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Person (avatar + name) ────────────────────────────────────────────── */
+.staff-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.staff-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.staff-person-name {
+  font-weight: 600;
+  color: $ink;
+  white-space: nowrap;
+}
+
+/* ─── Flat pill (job category / status-like values) ────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  background: $pill-bg;
+  border: 1px solid $pill-border;
+  color: $ink;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* ─── Additional assignments chips ──────────────────────────────────────── */
+.staff-assignments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.staff-assignment-chip {
+  font-size: 0.74rem;
+  color: $ink;
+  background: $pill-bg;
+  border: 1px solid $pill-border;
+  border-radius: $radius-sm;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* ─── Password column ────────────────────────────────────────────────────── */
+.staff-password-column { white-space: nowrap; }
+
+.staff-password-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-password-text {
+  font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: $ink;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 2px 8px;
+}
+
+/* ─── Date cell ───────────────────────────────────────────────────────────  */
+.staff-date-cell {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.staff-date-main { font-weight: 600; color: $ink; }
+.staff-date-sub  { font-size: 0.72rem; color: $subtext; }
+
+/* ─── Action buttons ─────────────────────────────────────────────────────── */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-sm;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.12s;
+
+  &:hover    { transform: translateY(-1px); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+}
+.staff-password-toggle {
+  color: $blue-soft-ink;
+  &:hover { background: $blue-soft; }
+}
+.edit-btn {
+  color: $blue-soft-ink;
+  background: $blue-soft;
+  &:hover { background: darken($blue-soft, 4%); }
+}
+.delete-btn {
+  color: $red;
+  background: $red-light;
+  &:hover { background: darken($red-light, 4%); }
+}
+
+.staff-actions-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.staff-empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: #A4AEC2;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: #fff;
+}
+
+/* ─── Table controls / pagination ───────────────────────────────────────── */
+.staff-table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+  border-top: 1px solid $border;
+  background: $head-bg;
+}
+
+.staff-table-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $subtext;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+}
+
+.staff-select {
+  font-family: inherit;
+  padding: 6px 30px 6px 12px;
+  border-radius: $radius-sm;
+  border: 1.5px solid $border;
+  background: #fff;
+  color: $ink;
+  font-size: 0.8rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  transition: border-color 0.12s;
+
+  &:focus { border-color: $accent; box-shadow: 0 0 0 2px rgba($accent, 0.18); }
+}
+
+.staff-table-pagination {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  span {
+    font-size: 0.78rem;
+    color: $subtext;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+.staff-pagination-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .staff-header { flex-direction: column; align-items: flex-start; }
+  .staff-toolbar { flex-direction: column; align-items: stretch; }
+  .staff-search { width: 100%; }
+  .staff-table-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

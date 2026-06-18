@@ -1,0 +1,256 @@
+/* =========================================================
+   Staff Form – matches StaffList.scss admin style
+   Self-contained: does not depend on Administrators.scss
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$navy:    #1B2A4E;
+$ink:     #0F1E3D;
+$subtext: #6B7B96;
+$border:  #E5E9F0;
+$bg:      #F6F8FB;
+$accent:  #4F46E5;
+$red:     #E11D48;
+$red-bg:  #FDEAEE;
+$red-border: #FBD2DA;
+
+.staff-form-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background: $bg;
+  min-height: 100%;
+  width: 100%;
+
+  /* ── Header (matches .staff-header in StaffList.scss) ── */
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 28px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+    flex-wrap: wrap;
+
+    h1 {
+      margin: 0 0 3px;
+      font-size: 1.36rem;
+      font-weight: 800;
+      color: $ink;
+      letter-spacing: -0.015em;
+    }
+    p {
+      margin: 0;
+      font-size: 0.86rem;
+      color: $subtext;
+    }
+  }
+
+  .form-header-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .form-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366F1, #4338CA);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba($accent, 0.38);
+
+    svg { width: 24px; height: 24px; stroke-width: 1.8; }
+  }
+
+  .back-btn {
+    background: #fff;
+    color: $accent;
+    border: 1.5px solid #E0E7FF;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+
+    &:hover { background: #EEF2FF; border-color: $accent; transform: translateY(-1px); }
+  }
+
+  /* ── Form card ── */
+  .form-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid $border;
+    box-shadow: 0 1px 2px rgba(15, 30, 62, 0.05), 0 8px 24px rgba(15, 30, 62, 0.06);
+    padding: 28px;
+    width: 100%;
+  }
+
+  /* ── Form sections ── */
+  .form-section {
+    margin-bottom: 24px;
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #EEF2FF;
+    }
+
+    h3 {
+      margin: 0 0 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: $accent;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .section-header h3 { margin-bottom: 0; }
+  }
+
+  /* ── Grid + groups ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+
+    .full-width { grid-column: span 3; }
+    .span-2 { grid-column: span 2; }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: $navy;
+      letter-spacing: 0.01em;
+    }
+
+    input, select, textarea {
+      padding: 9px 12px;
+      background: #F8FAFC;
+      border: 1.5px solid $border;
+      border-radius: 10px;
+      color: $ink;
+      font-family: inherit;
+      font-size: 0.85rem;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      appearance: none;
+
+      &:focus {
+        outline: none;
+        border-color: $accent;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+      }
+      &::placeholder { color: #A4AEC2; }
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
+      padding-right: 34px;
+      cursor: pointer;
+    }
+
+    textarea {
+      height: 88px;
+      resize: vertical;
+    }
+  }
+
+  /* ── Buttons ── */
+ /* ── Buttons ── */
+  .add-btn, .save-btn {
+    position: relative;
+    background: linear-gradient(135deg, #818CF8 0%, #6366F1 45%, #4338CA 100%);
+    color: #fff;
+    border: none;
+    border-radius: 11px;
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.015em;
+    cursor: pointer;
+    transition: box-shadow 0.18s ease, transform 0.18s ease, filter 0.18s ease;
+    box-shadow:
+      0 4px 14px rgba(67, 56, 202, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+
+    &:hover {
+      filter: brightness(1.06);
+      box-shadow:
+        0 8px 20px rgba(67, 56, 202, 0.46),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+    &:active {
+      transform: translateY(0);
+      filter: brightness(0.97);
+      box-shadow:
+        0 2px 8px rgba(67, 56, 202, 0.35),
+        inset 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      filter: none;
+      box-shadow: none;
+    }
+  }
+  .delete-btn {
+    background: $red-bg;
+    color: $red;
+    border: 1.5px solid $red-border;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    &:hover { background: $red; color: #fff; border-color: $red; }
+  }
+
+  .form-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+
+    .save-btn { min-width: 160px; padding: 10px 24px; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .form-header { flex-direction: column; align-items: flex-start; }
+  }
+
+  @media (max-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+      .full-width, .span-2 { grid-column: span 1; }
+    }
+    .form-actions .save-btn { width: 100%; }
+  }
+}

@@ -2,8 +2,20 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchPaidFees } from '../../services/api';
-import '../SuperUserDashboard/SuperUserDashboard.scss';
-import './ParentPendingFee.scss';
+import './ParentPaidFee.scss';
+
+const PaidFeeIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" />
+  </svg>
+);
 
 const ParentPaidFee = () => {
   const [fees, setFees] = useState([]);
@@ -75,47 +87,49 @@ const ParentPaidFee = () => {
       <Sidebar userType="parent" />
       <main className="dashboard-main">
         <Navbar />
-        <div className="dashboard-content">
-          <section className="welcome-section">
-            <div>
-              <h2>Paid Fee for {studentName}</h2>
-              <p>Showing paid fee records for institution ID {institutionId} and admission number {admno}.</p>
+        <div className="ppaid-page">
+
+          {/* ── Header ── */}
+          <div className="ppaid-header">
+            <div className="ppaid-header-main">
+              <div className="ppaid-header-icon"><PaidFeeIcon /></div>
+              <div>
+                <h1>Paid Fee for {studentName}</h1>
+                <p>Showing paid fee records for institution ID {institutionId} and admission number {admno}.</p>
+              </div>
             </div>
-            <div className="fee-summary-banner paid-banner">
+            <div className="ppaid-stat-chip">
               <span>Total Paid</span>
               <strong>₹{totalPaid.toFixed(2)}</strong>
             </div>
-          </section>
+          </div>
 
-          <div className="top-filter-bar">
-            <div className="table-filter">
-              <label htmlFor="search">Search</label>
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  id="search"
-                  type="text"
-                  placeholder="Search by Particulars, Ref No, Remark..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                />
-              </div>
+          {/* ── Filters ── */}
+          <div className="ppaid-filter-bar">
+            <div className="ppaid-search">
+              <SearchIcon />
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by Particulars, Ref No, Remark..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              />
             </div>
           </div>
 
-          <div className="fee-table-card">
+          {/* ── Table ── */}
+          <div className="ppaid-table-card">
             {loading ? (
-              <p>Loading paid fees...</p>
+              <div className="ppaid-empty">Loading paid fees...</div>
             ) : error ? (
-              <div className="error-message">{error}</div>
+              <div className="ppaid-error">{error}</div>
             ) : sortedFees.length === 0 ? (
-              <div className="empty-state">
-                <p>No paid fee records found.</p>
-              </div>
+              <div className="ppaid-empty">No paid fee records found.</div>
             ) : (
               <>
                 <div className="table-responsive">
-                  <table className="fee-table">
+                  <table className="ppaid-table">
                     <thead>
                       <tr>
                         <th>No</th>
@@ -129,31 +143,31 @@ const ParentPaidFee = () => {
                     <tbody>
                       {paginatedFees.map((fee, index) => (
                         <tr key={fee.id}>
-                          <td>{firstIndex + index + 1}</td>
-                          <td>{fee.particulars || '-'}</td>
-                          <td>{formatDate(fee.date)}</td>
-                          <td>{fee.refno}</td>
-                          <td className="paid-amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                          <td>{fee.remark || '-'}</td>
+                          <td className="ppaid-no-cell">{firstIndex + index + 1}</td>
+                          <td className="ppaid-plain-cell">{fee.particulars || '-'}</td>
+                          <td className="ppaid-plain-cell">{formatDate(fee.date)}</td>
+                          <td className="ppaid-plain-cell">{fee.refno}</td>
+                          <td className="ppaid-amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+                          <td className="ppaid-plain-cell">{fee.remark || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="table-controls">
-                  <div className="table-filter">
+                <div className="ppaid-table-controls">
+                  <div className="ppaid-table-filter">
                     <label htmlFor="pageSize">Rows per page</label>
-                    <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                    <select id="pageSize" className="ppaid-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
                       {[10, 20, 50, 100].map((size) => (
                         <option key={size} value={size}>{size}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="table-pagination">
+                  <div className="ppaid-table-pagination">
                     <span>Showing {filteredFees.length === 0 ? 0 : firstIndex + 1}–{lastIndex} of {filteredFees.length}</span>
-                    <div className="pagination-buttons">
-                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Previous</button>
-                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
+                    <div className="ppaid-pagination-buttons">
+                      <button type="button" className="secondary-btn" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Previous</button>
+                      <button type="button" className="secondary-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
                     </div>
                   </div>
                 </div>

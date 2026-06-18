@@ -259,7 +259,7 @@ const ParentDashboard = () => {
                 <div
                   className="parent-fee-donut"
                   style={{
-                    background: `conic-gradient(#16a34a 0 ${dashboardData.paidRate}%, #ef4444 ${dashboardData.paidRate}% 100%)`,
+                    background: `conic-gradient(#16A34A 0 ${dashboardData.paidRate}%, #E11D48 ${dashboardData.paidRate}% 100%)`,
                   }}
                 >
                   <span>{dashboardData.paidRate}%</span>

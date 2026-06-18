@@ -2,8 +2,21 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchAllStudents } from '../../services/api';
-import '../SuperUserDashboard/SuperUserDashboard.scss';
-import '../ParentDashboard/ParentPendingFee.scss';
+import './AdminStudentList.scss';
+
+const StudentIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 10 12 5 2 10l10 5 10-5z" />
+    <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" />
+  </svg>
+);
 
 const AdminStudentList = () => {
   const [students, setStudents] = useState([]);
@@ -46,51 +59,60 @@ const AdminStudentList = () => {
       <Sidebar userType="admin" />
       <main className="dashboard-main">
         <Navbar />
-        <div className="dashboard-content">
+        <div className="student-list-page">
 
-          <section className="welcome-section">
-            <div>
-              <h2>Student List</h2>
-              <p>All students under your institution.</p>
+          {/* ── Header ── */}
+          <div className="student-header">
+            <div className="student-header-main">
+              <div className="student-header-icon"><StudentIcon /></div>
+              <div>
+                <h1>Student List</h1>
+                <p>All students under your institution.</p>
+              </div>
             </div>
-            <div className="fee-summary-banner paid-banner">
+            <div className="student-stat-chip">
               <span>Total Students</span>
               <strong>{filtered.length}</strong>
             </div>
-          </section>
+          </div>
 
-          <div className="top-filter-bar">
-            <div className="table-filter">
+          {/* ── Filters ── */}
+          <div className="student-filter-bar">
+            <div className="student-filter">
               <label>Class</label>
               <select value={filterClass} onChange={(e) => { setFilterClass(e.target.value); setCurrentPage(1); }}>
                 <option value="">All Classes</option>
                 {classes.map((c, i) => <option key={i} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="table-filter">
+            <div className="student-filter">
               <label>Division</label>
               <select value={filterDiv} onChange={(e) => { setFilterDiv(e.target.value); setCurrentPage(1); }}>
                 <option value="">All Divisions</option>
                 {divisions.map((d, i) => <option key={i} value={d}>{d}</option>)}
               </select>
             </div>
-            <div className="table-filter">
-              <label htmlFor="search">Search</label>
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input id="search" type="text" placeholder="Search by name, adm no, father name, mobile..." value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} />
-              </div>
+            <div className="student-search">
+              <SearchIcon />
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by name, adm no, father name, mobile..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              />
             </div>
           </div>
 
-          <div className="fee-table-card">
-            {loading ? <p style={{ padding: '20px' }}>Loading...</p>
-              : error ? <div className="error-message">{error}</div>
-              : filtered.length === 0 ? <div className="empty-state"><p>No students found.</p></div>
+          {/* ── Table ── */}
+          <div className="student-table-card">
+            {loading ? <div className="student-empty">Loading...</div>
+              : error ? <div className="student-error">{error}</div>
+              : filtered.length === 0 ? <div className="student-empty">No students found.</div>
               : (
                 <>
                   <div className="table-responsive">
-                    <table className="fee-table">
+                    <table className="student-table">
                       <thead>
                         <tr>
                           <th>No</th><th>Adm No</th><th>Student Name</th><th>Class</th><th>Div</th>
@@ -101,35 +123,39 @@ const AdminStudentList = () => {
                       <tbody>
                         {paginated.map((s, index) => (
                           <tr key={s.admno + index}>
-                            <td>{firstIndex + index + 1}</td>
-                            <td>{s.admno}</td>
-                            <td style={{ fontWeight: 600 }}>{s.student_name}</td>
-                            <td>{s.student_class}</td>
-                            <td>{s.div}</td>
-                            <td>{s.mobile || '-'}</td>
-                            <td>{s.fathername || '-'}</td>
-                            <td>{s.mothername || '-'}</td>
-                            <td style={{ maxWidth: '160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.address || '-'}</td>
-                            <td>{s.place || '-'}</td>
-                            <td>{s.refno || '-'}</td>
-                            <td>{s.remark || '-'}</td>
+                            <td className="student-no-cell">{firstIndex + index + 1}</td>
+                            <td className="student-plain-cell">{s.admno}</td>
+                            <td className="student-name-cell">{s.student_name}</td>
+                            <td className="student-plain-cell">{s.student_class}</td>
+                            <td className="student-plain-cell">{s.div}</td>
+                            <td className="student-plain-cell">{s.mobile || '-'}</td>
+                            <td className="student-plain-cell">{s.fathername || '-'}</td>
+                            <td className="student-plain-cell">{s.mothername || '-'}</td>
+                            <td className="student-address-cell">{s.address || '-'}</td>
+                            <td className="student-plain-cell">{s.place || '-'}</td>
+                            <td className="student-plain-cell">{s.refno || '-'}</td>
+                            <td className="student-plain-cell">{s.remark || '-'}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <div className="table-controls">
-                    <div className="table-filter">
+                  <div className="student-table-controls">
+                    <div className="student-table-filter">
                       <label>Rows per page</label>
-                      <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                      <select
+                        className="student-select"
+                        value={pageSize}
+                        onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                      >
                         {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                    <div className="table-pagination">
+                    <div className="student-table-pagination">
                       <span>Showing {filtered.length === 0 ? 0 : firstIndex + 1}–{Math.min(filtered.length, firstIndex + pageSize)} of {filtered.length}</span>
-                      <div className="pagination-buttons">
-                        <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
-                        <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+                      <div className="student-pagination-buttons">
+                        <button type="button" className="secondary-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+                        <button type="button" className="secondary-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
                       </div>
                     </div>
                   </div>

@@ -1,10 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$ink:           #0F1E3D;
+$navy:          #1B2A4E;
+$subtext:       #6B7B96;
+$border:        #E5E9F0;
+$bg:            #F6F8FB;
+$accent:        #4F46E5;
+$accent-light:  #EEF2FF;
+$green:         #16A34A;
+$red:           #E11D48;
+$yellow:        #D97706;
+$yellow-light:  #FEF3E2;
+
 .razorpay-payment {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(15, 30, 62, 0.55);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,20 +28,22 @@
 }
 
 .payment-modal {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
+  border-radius: 18px;
+  border: 1px solid $border;
+  box-shadow: 0 20px 50px rgba(15, 30, 62, 0.25);
+  max-width: 480px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modalSlideIn 0.3s ease-out;
+  animation: modalSlideIn 0.25s ease-out;
 }
 
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-14px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -39,36 +56,40 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #4f6ef7 0%, #6a7ff5 100%);
+  border-bottom: none;
+  background: linear-gradient(135deg, #6366F1, #4338CA);
   color: white;
-  border-radius: 16px 16px 0 0;
+  border-radius: 18px 18px 0 0;
 }
 
 .payment-header h3 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .close-btn {
-  background: none;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.15);
   border: none;
   color: white;
-  font-size: 24px;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
+  transition: background-color 0.18s ease, transform 0.18s ease;
 
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  svg { width: 15px; height: 15px; }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: rotate(90deg);
+  }
 }
 
 .payment-content {
@@ -76,50 +97,53 @@
 }
 
 .student-info {
-  background: #f8fafc;
+  background: $bg;
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 20px;
-  border-left: 4px solid #4f6ef7;
+  border-left: 3px solid $accent;
 }
 
 .student-info h4 {
-  margin: 0 0 8px 0;
-  color: #1e293b;
-  font-size: 1.1rem;
-  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: $ink;
+  font-size: 1.05rem;
+  font-weight: 800;
 }
 
 .student-info p {
-  margin: 4px 0;
-  color: #64748b;
-  font-size: 0.9rem;
+  margin: 3px 0;
+  color: $subtext;
+  font-size: 0.85rem;
 }
 
 .fee-breakdown {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .fee-breakdown h5 {
-  margin: 0 0 12px 0;
-  color: #1e293b;
-  font-size: 1rem;
-  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: $ink;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .fee-items {
-  background: #f1f5f9;
-  border-radius: 8px;
-  padding: 12px;
+  background: $bg;
+  border-radius: 10px;
+  padding: 8px 12px;
   margin-bottom: 12px;
+  border: 1px solid $border;
 }
 
 .fee-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 9px 0;
+  border-bottom: 1px solid $border;
 }
 
 .fee-item:last-child {
@@ -127,89 +151,94 @@
 }
 
 .fee-desc {
-  color: #475569;
-  font-size: 0.9rem;
+  color: $ink;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .fee-amount {
-  color: #dc2626;
-  font-weight: 600;
-  font-size: 0.9rem;
+  color: $red;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .total-amount {
-  background: linear-gradient(135deg, #4f6ef7 0%, #6a7ff5 100%);
+  background: $accent;
   color: white;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba($accent, 0.32);
 }
 
 .payment-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
 .pay-btn {
   flex: 1;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: $green;
   color: white;
   border: none;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 13px 20px;
+  border-radius: 11px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba($green, 0.32);
 }
 
 .pay-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: darken($green, 6%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 16px rgba($green, 0.42);
 }
 
 .pay-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .cancel-btn {
-  background: #f1f5f9;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  background: #fff;
+  color: $ink;
+  border: 1px solid $border;
+  padding: 13px 20px;
+  border-radius: 11px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancel-btn:hover {
-  background: #e2e8f0;
-  color: #475569;
+  background: $bg;
+  border-color: darken($border, 8%);
 }
 
 .payment-note {
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 0.85rem;
-  color: #92400e;
+  background: $yellow-light;
+  border: 1px solid rgba($yellow, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.8rem;
+  color: darken($yellow, 8%);
 }
 
 .payment-note p {
-  margin: 4px 0;
+  margin: 3px 0;
 }
 
 .payment-note p:first-child {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Responsive */

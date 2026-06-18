@@ -4,8 +4,22 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import RazorpayPayment from '../../components/Payment/RazorpayPayment';
 import { fetchPendingFees } from '../../services/api';
-import '../SuperUserDashboard/SuperUserDashboard.scss';
 import './ParentPendingFee.scss';
+
+const FeeIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="13" rx="2" />
+    <path d="M2 10h20" />
+    <circle cx="16" cy="14.5" r="1.5" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" />
+  </svg>
+);
 
 const ParentPendingFee = () => {
   const navigate = useNavigate();
@@ -153,53 +167,42 @@ const ParentPendingFee = () => {
       <Sidebar userType="parent" />
       <main className="dashboard-main">
         <Navbar placeholder="Search pending fee records..." />
-        <div className="dashboard-content">
-          <section className="welcome-section">
-            <div>
-              <h2>Pending Fee for {studentName}</h2>
-              <p>Showing fee records linked to institution ID {institutionId} and admission number {admno}.</p>
-            </div>
-            <div className="fee-summary-banner">
-              <span>Total Due</span>
-              <strong>₹{totalDue.toFixed(2)}</strong>
-            </div>
-          </section>
+        <div className="ppf-page">
 
-          {paymentMessage && (
-            <div className={`payment-message ${paymentMessage.startsWith('✅') ? 'success' : 'error'}`}>
-              {paymentMessage}
+          {/* ── Header ── */}
+          <div className="ppf-header">
+            <div className="ppf-header-main">
+              <div className="ppf-header-icon"><FeeIcon /></div>
+              <div>
+                <h1>Pending Fee for {studentName}</h1>
+                <p>Showing fee records linked to institution ID {institutionId} and admission number {admno}.</p>
+              </div>
             </div>
-          )}
-
-          <div className="payment-actions-bar">
-            <div className="bulk-actions">
-              {selectedFees.length > 0 && (
-                <>
-                  <span className="selected-info">
-                    {selectedFees.length} selected (₹{selectedTotal.toFixed(2)})
-                  </span>
-                  <button 
-                    className="bulk-pay-btn"
-                    onClick={handleBulkPayment}
-                  >
-                    💳 Pay Selected (₹{selectedTotal.toFixed(2)})
-                  </button>
-                </>
-              )}
-            </div>
-            <div className="quick-actions">
-              <button 
-                className="pay-all-btn"
+            <div className="ppf-header-actions">
+              <div className="ppf-stat-chip">
+                <span>Total Due</span>
+                <strong>₹{totalDue.toFixed(2)}</strong>
+              </div>
+              <button
+                type="button"
+                className="ppf-pay-all-btn"
                 onClick={handlePayAllFees}
                 disabled={filteredFees.length === 0}
               >
-                💰 Pay All Fees (₹{totalDue.toFixed(2)})
+                💰 Pay All Fees
               </button>
             </div>
           </div>
 
-          <div className="top-filter-bar">
-            <div className="table-filter">
+          {paymentMessage && (
+            <div className={`ppf-message ${paymentMessage.startsWith('✅') ? 'success' : 'error'}`}>
+              {paymentMessage}
+            </div>
+          )}
+
+          {/* ── Filters ── */}
+          <div className="ppf-filter-bar">
+            <div className="ppf-filter">
               <label htmlFor="feeFilter">Filter</label>
               <select id="feeFilter" value={filterType} onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1); }}>
                 <option value="all">All</option>
@@ -207,34 +210,41 @@ const ParentPendingFee = () => {
                 <option value="feeItem">Fee item</option>
               </select>
             </div>
-            <div className="table-filter">
-              <label htmlFor="search">Search</label>
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  id="search"
-                  type="text"
-                  placeholder="Search by Month, Ref No, Remark..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                />
-              </div>
+            <div className="ppf-search">
+              <SearchIcon />
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by Month, Ref No, Remark..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              />
             </div>
+
+            {selectedFees.length > 0 && (
+              <div className="ppf-bulk-inline">
+                <span className="ppf-selected-info">
+                  {selectedFees.length} selected (₹{selectedTotal.toFixed(2)})
+                </span>
+                <button type="button" className="ppf-bulk-pay-btn" onClick={handleBulkPayment}>
+                  💳 Pay Selected
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="fee-table-card">
+          {/* ── Table ── */}
+          <div className="ppf-table-card">
             {loading ? (
-              <p>Loading pending fees...</p>
+              <div className="ppf-empty">Loading pending fees...</div>
             ) : error ? (
-              <div className="error-message">{error}</div>
+              <div className="ppf-error">{error}</div>
             ) : filteredFees.length === 0 ? (
-              <div className="empty-state">
-                <p>No pending fee records found for this filter.</p>
-              </div>
+              <div className="ppf-empty">No pending fee records found for this filter.</div>
             ) : (
               <>
                 <div className="table-responsive">
-                  <table className="fee-table">
+                  <table className="ppf-table">
                     <thead>
                       <tr>
                         <th>
@@ -260,24 +270,25 @@ const ParentPendingFee = () => {
                         const feeTotal = parseFloat(fee.amount) + parseFloat(fee.fine);
                         return (
                           <tr key={fee.id} className={selectedFees.includes(fee.id) ? 'selected-row' : ''}>
-                            <td>
+                            <td className="ppf-check-cell">
                               <input 
                                 type="checkbox" 
                                 checked={selectedFees.includes(fee.id)}
                                 onChange={() => handleFeeSelection(fee.id)}
                               />
                             </td>
-                            <td>{firstIndex + index + 1}</td>
-                            <td>{fee.month}</td>
-                            <td>{formatDate(fee.date)}</td>
-                            <td>{fee.refno}</td>
-                            <td className="amount-cell">₹{Number(fee.fine).toFixed(2)}</td>
-                            <td className="amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                            <td className="total-cell">₹{feeTotal.toFixed(2)}</td>
-                            <td>{fee.remark || '-'}</td>
-                            <td>
+                            <td className="ppf-no-cell">{firstIndex + index + 1}</td>
+                            <td className="ppf-plain-cell">{fee.month}</td>
+                            <td className="ppf-plain-cell">{formatDate(fee.date)}</td>
+                            <td className="ppf-plain-cell">{fee.refno}</td>
+                            <td className="ppf-amount-cell ppf-fine">₹{Number(fee.fine).toFixed(2)}</td>
+                            <td className="ppf-amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+                            <td className="ppf-total-cell">₹{feeTotal.toFixed(2)}</td>
+                            <td className="ppf-plain-cell">{fee.remark || '-'}</td>
+                            <td className="ppf-action-cell">
                               <button 
-                                className="pay-individual-btn"
+                                type="button"
+                                className="ppf-pay-btn"
                                 onClick={() => handleIndividualPayment(fee)}
                               >
                                 💳 Pay
@@ -289,20 +300,20 @@ const ParentPendingFee = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="table-controls">
-                  <div className="table-filter">
+                <div className="ppf-table-controls">
+                  <div className="ppf-table-filter">
                     <label htmlFor="pageSize">Rows per page</label>
-                    <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
+                    <select id="pageSize" className="ppf-select" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
                       {[10, 20, 50, 100].map((size) => (
                         <option key={size} value={size}>{size}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="table-pagination">
+                  <div className="ppf-table-pagination">
                     <span>Showing {filteredFees.length === 0 ? 0 : firstIndex + 1}–{lastIndex} of {filteredFees.length}</span>
-                    <div className="pagination-buttons">
-                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Previous</button>
-                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
+                    <div className="ppf-pagination-buttons">
+                      <button type="button" className="secondary-btn" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Previous</button>
+                      <button type="button" className="secondary-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
                     </div>
                   </div>
                 </div>

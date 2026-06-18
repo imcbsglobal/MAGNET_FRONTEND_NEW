@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
+import logo from '../../assets/logo2.jpg';
+import logoMini from '../../assets/logo1.jpg';
 import './Sidebar.scss';
 
 const Sidebar = ({ userType = 'superuser' }) => {
@@ -8,12 +10,42 @@ const Sidebar = ({ userType = 'superuser' }) => {
   const location = useLocation();
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [openMenus, setOpenMenus] = React.useState({});
   const [ripple, setRipple] = React.useState({ id: null, x: 0, y: 0 });
 
   const jobCategory = localStorage.getItem('jobCategory') || '';
 
-  const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
+  // User info for footer profile card
+  const username = localStorage.getItem('username') || 'User';
+  const storedUserType = localStorage.getItem('userType') || userType;
+
+  const getRoleLabel = () => {
+    switch (storedUserType) {
+      case 'superuser':      return 'Superadmin';
+      case 'admin':          return 'Administrator';
+      case 'administration': return 'Administrator';
+      case 'parent':         return 'Parent';
+      case 'staff':          return 'Staff Member';
+      case 'teacher':        return 'Staff Member';
+      default:               return 'Staff Member';
+    }
+  };
+
+  const getInitials = (name) => {
+    const parts = String(name || 'U').trim().split(/\s+/).filter(Boolean);
+    return parts.slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+  };
+
+  const toggleMobile   = () => setIsMobileOpen(!isMobileOpen);
+  const toggleCollapse = () => setIsCollapsed((prev) => !prev);
+
+  React.useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--sidebar-width',
+      isCollapsed ? '76px' : '220px'
+    );
+  }, [isCollapsed]);
 
   const handleNavClick = (e, path, index) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -25,6 +57,16 @@ const Sidebar = ({ userType = 'superuser' }) => {
 
   const handleToggleMenu = (index) => {
     setOpenMenus((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const handleParentClick = (e, index, hasChildren) => {
+    if (!hasChildren) return;
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      setOpenMenus((prev) => ({ ...prev, [index]: true }));
+      return;
+    }
+    handleToggleMenu(index);
   };
 
   const Icons = {
@@ -114,6 +156,17 @@ const Sidebar = ({ userType = 'superuser' }) => {
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
       </svg>
     ),
+    Logout: () => (
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 16L21 12M21 12L17 8M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    ChevronLeft: () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+    ),
   };
 
   const menuConfigs = {
@@ -138,12 +191,9 @@ const Sidebar = ({ userType = 'superuser' }) => {
           { label: 'House Groups', path: '/admin/masters/house-groups' },
         ],
       },
-      {
-        icon: <Icons.Teachers />,
-        label: 'Evaluations',
-        path: '/admin/evaluations',
-      },
+      { icon: <Icons.Teachers />, label: 'Evaluations', path: '/admin/evaluations' },
     ],
+    // "teacher" key — used when jobCategory or userType is "teacher"
     teacher: [
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/staff-dashboard' },
       { icon: <Icons.Students />, label: 'Student List', path: '/staff/students' },
@@ -156,11 +206,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
           { label: 'Issue ID Card', path: '/staff/id-card/issue' },
         ],
       },
-      {
-        icon: <Icons.Teachers />,
-        label: 'My Evaluation',
-        path: '/teacher/evaluation',
-      },
+      { icon: <Icons.Teachers />, label: 'My Evaluation', path: '/teacher/evaluation' },
       { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
     hod: [
@@ -175,11 +221,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
           { label: 'Issue ID Card', path: '/staff/id-card/issue' },
         ],
       },
-      {
-        icon: <Icons.Teachers />,
-        label: 'Evaluations',
-        path: '/hod/evaluation',
-      },
+      { icon: <Icons.Teachers />, label: 'Evaluations', path: '/hod/evaluation' },
       { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
     parent: [
@@ -190,7 +232,27 @@ const Sidebar = ({ userType = 'superuser' }) => {
     ],
   };
 
-  const menuItems = menuConfigs[jobCategory.toLowerCase()] || menuConfigs[userType] || [];
+  // ── Menu resolution (order matters) ──────────────────────────────────────
+  //
+  // Priority:
+  //   1. jobCategory from localStorage (lowercased), if it matches a config key
+  //   2. storedUserType from localStorage (lowercased), with aliases resolved
+  //   3. userType prop passed to <Sidebar /> (lowercased), with aliases resolved
+  //   4. Fall back to "teacher" menu so staff pages never show empty sidebar
+  //
+  // Aliases: "staff" → "teacher",  "administration" → "admin"
+  const resolveKey = (raw) => {
+    const k = (raw || '').toLowerCase().trim();
+    if (k === 'staff')          return 'teacher';
+    if (k === 'administration') return 'admin';
+    return k;
+  };
+
+  const menuItems =
+    menuConfigs[resolveKey(jobCategory)] ||
+    menuConfigs[resolveKey(storedUserType)] ||
+    menuConfigs[resolveKey(userType)] ||
+    menuConfigs.teacher; // safe fallback so sidebar is never empty
 
   return (
     <>
@@ -200,32 +262,54 @@ const Sidebar = ({ userType = 'superuser' }) => {
 
       {isMobileOpen && <div className="sidebar-overlay show" onClick={toggleMobile}></div>}
 
-      <aside className={`dashboard-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
+      <aside className={`dashboard-sidebar ${isMobileOpen ? 'mobile-open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
 
+        {/* Collapse / expand toggle */}
+        <button
+          type="button"
+          className="sidebar-collapse-toggle"
+          onClick={toggleCollapse}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <span className={`collapse-arrow ${isCollapsed ? 'rotated' : ''}`}>
+            <Icons.ChevronLeft />
+          </span>
+        </button>
+
+        {/* Brand */}
         <div className="sidebar-brand">
           <span className="brand-text">
-            {'MAGNET'.split('').map((char, i) => (
-              <span key={i} className="brand-letter" style={{ '--i': i }}>
-                {char}
-              </span>
-            ))}
+            <img src={logo} alt="MAGNET" className="brand-logo-full" />
+          </span>
+          <span className="brand-mini">
+            <img src={logoMini} alt="M" className="brand-logo-mini" />
           </span>
         </div>
 
+        {/* Nav */}
         <nav className="sidebar-nav">
           {menuItems.map((item, index) => {
-            const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-            const isActive = item.path && (location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path)));
-            const isChildActive = hasChildren && item.children.some((child) => location.pathname === child.path || location.pathname.startsWith(child.path));
+            const hasChildren  = Array.isArray(item.children) && item.children.length > 0;
+            const isActive     = item.path && (
+              location.pathname === item.path ||
+              (item.path !== '/' && location.pathname.startsWith(item.path))
+            );
+            const isChildActive = hasChildren && item.children.some(
+              (child) => location.pathname === child.path || location.pathname.startsWith(child.path)
+            );
             const isOpen = hasChildren && (openMenus[index] || isChildActive);
 
             return (
-              <div key={index} className={`nav-item-group ${isActive || isChildActive ? 'active' : ''} ${isOpen ? 'open' : ''}`}>
+              <div
+                key={index}
+                className={`nav-item-group ${isActive || isChildActive ? 'active' : ''} ${isOpen ? 'open' : ''}`}
+              >
                 <div
                   className={`nav-item ${isActive || isChildActive ? 'active' : ''}`}
+                  data-tooltip={item.label}
                   onClick={(e) => {
                     if (hasChildren) {
-                      handleToggleMenu(index);
+                      handleParentClick(e, index, hasChildren);
                     } else if (item.isAction) {
                       window.dispatchEvent(new CustomEvent(item.action));
                       if (isMobileOpen) setIsMobileOpen(false);
@@ -239,13 +323,18 @@ const Sidebar = ({ userType = 'superuser' }) => {
                   )}
                   <span className="item-icon">{item.icon}</span>
                   <span className="item-label">{item.label}</span>
-                  {hasChildren && <span className={`submenu-arrow ${isOpen ? 'open' : ''}`}>▾</span>}
+                  {hasChildren && (
+                    <span className={`submenu-arrow ${isOpen ? 'open' : ''}`}>▾</span>
+                  )}
                   {(isActive || isChildActive) && <span className="active-dot" />}
                 </div>
+
                 {hasChildren && (
                   <div className="nav-submenu">
                     {item.children.map((child, childIndex) => {
-                      const childActive = location.pathname === child.path || location.pathname.startsWith(child.path);
+                      const childActive =
+                        location.pathname === child.path ||
+                        location.pathname.startsWith(child.path);
                       return (
                         <div
                           key={childIndex}
@@ -265,14 +354,20 @@ const Sidebar = ({ userType = 'superuser' }) => {
           })}
         </nav>
 
+        {/* Footer: user profile + logout */}
         <div className="sidebar-footer">
-          <div className="logout-card" onClick={() => setShowLogoutConfirm(true)}>
-            <div className="logout-icon-container">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17 16L21 12M21 12L17 8M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          <div className="sidebar-user" data-tooltip={`${username} · ${getRoleLabel()}`}>
+            <div className="sidebar-user-avatar">{getInitials(username)}</div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{username}</span>
+              <span className="sidebar-user-role">{getRoleLabel()}</span>
             </div>
+          </div>
+
+          <div className="sidebar-footer-divider" />
+
+          <div className="logout-card" data-tooltip="Log Out" onClick={() => setShowLogoutConfirm(true)}>
+            <div className="logout-icon-container"><Icons.Logout /></div>
             <button type="button" className="logout-btn">Log Out</button>
           </div>
         </div>
