@@ -21,8 +21,9 @@ const AdministratorForm = () => {
     phone_number: '',
     institution_id: '',
     username: '',
-    password: ''
-  });
+    password: '',
+    has_payment: false,        // ← add this
+});
 
   const [loading, setLoading] = useState(false);
 
@@ -33,12 +34,28 @@ const AdministratorForm = () => {
   }, [id]);
 
   const loadAdministrator = async () => {
-    try {
-      const response = await api.get(`admins/${id}/`);
-      setFormData(response.data);
-    } catch (err) {
-      console.error('Failed to load administrator:', err);
-    }
+      try {
+        const response = await api.get(`admins/${id}/`);
+        const data = response.data;
+
+        // Replace null values with empty string to avoid uncontrolled input issues
+        setFormData({
+          school_name:      data.school_name      || '',
+          address:          data.address          || '',
+          city:             data.city             || '',
+          district:         data.district         || '',
+          pincode:          data.pincode          || '',
+          state:            data.state            || '',
+          email:            data.email            || '',
+          phone_number:     data.phone_number     || '',
+          institution_id:   data.institution_id   || '',
+          username:         data.username         || '',
+          password:         data.password         || '',
+          has_payment:      data.has_payment      ?? false,   // ← add this
+        });
+      } catch (err) {
+        console.error('Failed to load administrator:', err);
+      }
   };
 
   const handleChange = (e) => {
@@ -151,6 +168,33 @@ const AdministratorForm = () => {
                 </div>
               </div>
 
+              <div className="form-section">
+                <h3>💳 Payment Gateway</h3>
+
+                <div className="payment-toggle-row">
+                  <span className="toggle-label">Does this school use online payment?</span>
+                  <div className="toggle-options">
+                    <label className={`toggle-option ${formData.has_payment ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="has_payment"
+                        checked={formData.has_payment === true}
+                        onChange={() => setFormData(prev => ({ ...prev, has_payment: true }))}
+                      />
+                      Yes
+                    </label>
+                    <label className={`toggle-option ${!formData.has_payment ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="has_payment"
+                        checked={formData.has_payment === false}
+                        onChange={() => setFormData(prev => ({ ...prev, has_payment: false }))}
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+              </div>
               <div className="form-actions">
                 <button type="submit" className="save-btn" disabled={loading}>
                   {loading ? 'Saving...' : (isEdit ? 'Update Administrator' : 'Create Administrator')}

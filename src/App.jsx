@@ -22,6 +22,7 @@ import ParentPendingFee from './pages/ParentDashboard/ParentPendingFee';
 import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
 import SchoolInfo from './pages/SchoolInfo/SchoolInfo';
 import HouseGroupMaster from './pages/Masters/HouseGroupMaster';
+import TeacherHoursMaster from './pages/Masters/TeacherHoursMaster';
 import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
 import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
@@ -31,6 +32,9 @@ import ChatPage from './pages/ChatPage/ChatPage';
 import TeacherEvaluation from './pages/Evaluations/TeacherEvaluation';
 import HODEvaluation from './pages/Evaluations/HODEvaluation';
 import AdminEvaluation from './pages/Evaluations/AdminEvaluation';
+import AdminEvaluationTeachers from './pages/Evaluations/AdminEvaluationTeachers';
+import PaymentSuccess from "./components/Payment/PaymentSuccess";
+import PaymentFailure from "./components/Payment/PaymentFailure";
 import LandingPage from './pages/LandingPage/LandingPage';
 import './App.css';
 
@@ -53,6 +57,29 @@ function AppContent() {
 
         {/* Dashboards */}
         <Route path="/superuser-dashboard" element={<SuperUserDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/pending-fee" element={<AdminPendingFee />} />
+        <Route path="/admin/paid-fee" element={<AdminPaidFee />} />
+        <Route path="/admin/students" element={<AdminStudentList />} />
+        <Route path="/admin/id-card/details" element={<IDCardDetails />} />
+        <Route path="/staff-dashboard" element={<StaffDashboard />} />
+        <Route path="/staff/students" element={<StaffStudentList />} />
+        <Route path="/staff/attendance" element={<Attendance />} />
+        <Route path="/staff/attendance/student/:admno" element={<StudentAttendance />} />
+        <Route path="/staff/id-card/details" element={<IDCardDetails />} />
+        <Route path="/staff/id-card/issue" element={<IssueIDCard />} />
+        <Route path="/id-card/form" element={<IDCardParentForm />} />
+        <Route path="/id-card/form/:clientId" element={<IDCardParentForm isClientIdForm={true} institutionId={location.pathname.split('/').pop()} />} />
+        <Route path="/id-card/form/:token" element={<IDCardParentForm />} />
+        <Route path="/admin/calendar" element={<CalendarSetup />} />
+        <Route path="/parent-dashboard" element={<ParentDashboard />} />
+        <Route path="/parent/pending-fee" element={<ParentPendingFee />} />
+        <Route path="/parent/paid-fee" element={<ParentPaidFee />} />
+        <Route path="/admin/school-info" element={<SchoolInfo />} />
+        <Route path="/admin/masters/house-groups" element={<HouseGroupMaster />} />
+        <Route path="/admin/masters/teacher-hours" element={<TeacherHoursMaster />} />
+        <Route path="/admin/job-categories" element={<JobCategoriesList />} />
+        <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
         <Route path="/admin-dashboard"     element={<AdminDashboard />} />
         <Route path="/staff-dashboard"     element={<StaffDashboard />} />
         <Route path="/parent-dashboard"    element={<ParentDashboard />} />
@@ -99,6 +126,11 @@ function AppContent() {
 
         {/* Evaluation routes */}
         <Route path="/teacher/evaluation" element={<TeacherEvaluation />} />
+        <Route path="/hod/evaluation" element={<HODEvaluation />} />
+        <Route path="/admin/evaluations" element={<AdminEvaluation />} />
+        <Route path="/admin/evaluations/teachers" element={<AdminEvaluationTeachers />} />
+        <Route path="/payment-success"element={<PaymentSuccess />}/>
+        <Route path="/payment-failed"element={<PaymentFailure />}/>
         <Route path="/hod/evaluation"     element={<HODEvaluation />} />
       </Routes>
 
