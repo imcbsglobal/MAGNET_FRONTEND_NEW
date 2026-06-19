@@ -2,33 +2,42 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchPaidFees } from '../../services/api';
-import '../SuperUserDashboard/SuperUserDashboard.scss';
-import './ParentPendingFee.scss';
+import './FeePages.scss';
 
 const ParentPaidFee = () => {
   const [fees, setFees] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
 
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno = localStorage.getItem('admno') || '';
   const studentName = localStorage.getItem('studentName') || 'Student';
 
-  const formatDate = (value) => {
-    if (!value) return '-';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+  const formatDateTime = (value) => {
+    if (!value) return { date: '-', time: '' };
+
+    // Force UTC parsing — append Z if no timezone info present
+    const normalized = value.includes('Z') || value.includes('+') ? value : value.replace(' ', 'T') + 'Z';
+    const d = new Date(normalized);
+    if (Number.isNaN(d.getTime())) return { date: value, time: '' };
+
+    // Now getHours() etc. will return IST (browser local time)
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const mins = String(d.getMinutes()).padStart(2, '0');
+    const secs = String(d.getSeconds()).padStart(2, '0');
+
+    return {
+      date: `${day}-${month}-${year}`,
+      time: `${hours}:${mins}:${secs}`,
+    };
   };
 
   const sortedFees = React.useMemo(() => {
-    return [...fees].sort((a, b) => new Date(b.date) - new Date(a.date));
+    return [...fees].sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date));
   }, [fees]);
 
   const filteredFees = React.useMemo(() => {
@@ -43,20 +52,9 @@ const ParentPaidFee = () => {
   }, [search, sortedFees]);
 
   const totalPaid = filteredFees.reduce(
-    (sum, f) =>
-      sum +
-      Number(f.amount || 0) +
-      Number(f.fine || 0),
+    (sum, f) => sum + Number(f.amount || 0) + Number(f.fine || 0),
     0
   );
-  const totalPages = Math.max(1, Math.ceil(filteredFees.length / pageSize));
-  const firstIndex = (currentPage - 1) * pageSize;
-  const lastIndex = Math.min(filteredFees.length, firstIndex + pageSize);
-  const paginatedFees = filteredFees.slice(firstIndex, lastIndex);
-
-  useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
 
   useEffect(() => {
     if (!institutionId || !admno) {
@@ -83,11 +81,16 @@ const ParentPaidFee = () => {
       <Sidebar userType="parent" />
       <main className="dashboard-main">
         <Navbar />
-        <div className="dashboard-content">
+        <div className="dashboard-content fee-page-content">
+
           <section className="welcome-section">
             <div>
-              <h2>Paid Fee for {studentName}</h2>
-              <p>Showing paid fee records for institution ID {institutionId} and admission number {admno}.</p>
+              <h2>Paid Fee — {studentName}</h2>
+              <p>
+                Institution: <strong>{institutionId}</strong>
+                &nbsp;|&nbsp;
+                Adm No: <strong>{admno}</strong>
+              </p>
             </div>
             <div className="fee-summary-banner paid-banner">
               <span>Total Paid</span>
@@ -96,24 +99,20 @@ const ParentPaidFee = () => {
           </section>
 
           <div className="top-filter-bar">
-            <div className="table-filter">
-              <label htmlFor="search">Search</label>
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  id="search"
-                  type="text"
-                  placeholder="Search by Particulars, Ref No, Remark..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                />
-              </div>
+            <div className="fee-search-box">
+              <span className="fee-search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search by Particulars, Ref No, Remark..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
           </div>
 
           <div className="fee-table-card">
             {loading ? (
-              <p>Loading paid fees...</p>
+              <div className="loading-state">Loading paid fees…</div>
             ) : error ? (
               <div className="error-message">{error}</div>
             ) : sortedFees.length === 0 ? (
@@ -121,103 +120,65 @@ const ParentPaidFee = () => {
                 <p>No paid fee records found.</p>
               </div>
             ) : (
-              <>
-                <div className="table-responsive">
-                  <table className="fee-table">
-                    <thead>
-                      <tr>
-                        <th>No</th>
-                        <th>Month</th>
-                        <th>Particulars</th>
-                        <th>Ref No</th>
-                        <th>Amount</th>
-                        <th>Fine</th>
-                        <th>Total</th>
-                        <th>Txn ID</th>
-                        <th>Payment Date</th>
-                        <th>Status</th>
-                        <th>Remark</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedFees.map((fee, index) => (
+              <div className="table-responsive">
+                <table className="fee-table">
+                  <thead>
+                    <tr>
+                      <th className="no-col">No</th>
+                      <th>Month/Term</th>
+                      <th>Particulars</th>
+                      <th>Ref No</th>
+                      <th className="money-col">Fine</th>
+                      <th className="money-col">Amount</th>
+                      <th className="money-col">Total</th>
+                      <th className="txn-col">Txn ID</th>
+                      <th>Payment Date</th>
+                      <th>Status</th>
+                      <th>Remark</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredFees.map((fee, index) => {
+                      const fineValue = Number(fee.fine || 0);
+                      const isSuccess = fee.payment_status === 'SUCCESS';
+                      return (
                         <tr key={fee.id}>
-                          <td>{firstIndex + index + 1}</td>
-
+                          <td className="no-col">{index + 1}</td>
                           <td>{fee.month || '-'}</td>
-
                           <td>{fee.particulars || '-'}</td>
-
                           <td>{fee.refno || '-'}</td>
-
-                          <td className="paid-amount-cell">
-                            ₹{Number(fee.amount || 0).toFixed(2)}
+                          <td className={`money-col fine-cell ${fineValue === 0 ? 'is-zero' : ''}`}>₹{fineValue.toFixed(2)}</td>
+                          <td className="money-col paid-amount-cell">₹{Number(fee.amount || 0).toFixed(2)}</td>
+                          <td className="money-col total-cell">
+                            ₹{(Number(fee.amount || 0) + fineValue).toFixed(2)}
                           </td>
-
+                          <td className="txn-cell txn-col">{fee.txnid || '-'}</td>
                           <td>
-                            ₹{Number(fee.fine || 0).toFixed(2)}
+                            {(() => {
+                              const { date, time } = formatDateTime(fee.payment_date);
+                              return (
+                                <div className="datetime-cell">
+                                  <span className="dt-date">{date}</span>
+                                  {time && <span className="dt-time">{time}</span>}
+                                </div>
+                              );
+                            })()}
                           </td>
-
                           <td>
-                            ₹{(
-                              Number(fee.amount || 0) +
-                              Number(fee.fine || 0)
-                            ).toFixed(2)}
-                          </td>
-
-                          <td
-                            style={{
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            {fee.txnid || '-'}
-                          </td>
-
-                          <td>
-                            {formatDate(fee.payment_date)}
-                          </td>
-
-                          <td>
-                            <span
-                              style={{
-                                color:
-                                  fee.payment_status === 'SUCCESS'
-                                    ? 'green'
-                                    : 'red',
-                                fontWeight: 'bold'
-                              }}
-                            >
+                            <span className={`status-badge ${isSuccess ? 'success' : 'failed'}`}>
                               {fee.payment_status || '-'}
                             </span>
                           </td>
-
                           <td>{fee.remark || '-'}</td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="table-controls">
-                  <div className="table-filter">
-                    <label htmlFor="pageSize">Rows per page</label>
-                    <select id="pageSize" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}>
-                      {[10, 20, 50, 100].map((size) => (
-                        <option key={size} value={size}>{size}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="table-pagination">
-                    <span>Showing {filteredFees.length === 0 ? 0 : firstIndex + 1}–{lastIndex} of {filteredFees.length}</span>
-                    <div className="pagination-buttons">
-                      <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Previous</button>
-                      <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
-                    </div>
-                  </div>
-                </div>
-              </>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
+
         </div>
       </main>
     </div>
