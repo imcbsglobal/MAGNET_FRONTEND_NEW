@@ -3,8 +3,28 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import { fetchTeacherHours, saveTeacherHours, deleteTeacherHours, fetchTeachers } from '../../services/api';
-import '../Administrators/Administrators.scss';
-import './HouseGroupMaster.scss';
+import './TeacherHoursMaster.scss';
+
+const ClockIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
 
 const TeacherHoursMaster = () => {
   const institutionId = localStorage.getItem('institutionId') || '';
@@ -13,14 +33,14 @@ const TeacherHoursMaster = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [currentConfig, setCurrentConfig] = useState({ 
-    id: null, 
-    teacher_id: '', 
-    hours_type: 'smartroom', 
+  const [currentConfig, setCurrentConfig] = useState({
+    id: null,
+    teacher_id: '',
+    hours_type: 'smartroom',
     required_hours: 110
   });
   const [saving, setSaving] = useState(false);
-  
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -32,14 +52,8 @@ const TeacherHoursMaster = () => {
         fetchTeachers(institutionId)
       ]);
       setHoursConfigs(hoursRes.data);
-      // Filter to only show teachers with job_category = "Teacher"
-      console.log("Teachers from API:", teachersRes.data);
-      console.log("Teachers data type:", typeof teachersRes.data);
-      console.log("Is array:", Array.isArray(teachersRes.data));
-      
       const teacherList = Array.isArray(teachersRes.data) ? teachersRes.data : [];
       const filteredTeachers = teacherList.filter(t => t.job_category && t.job_category.toLowerCase() === 'teacher');
-      console.log("Filtered teachers:", filteredTeachers);
       setTeachers(filteredTeachers);
     } catch (err) {
       setError('Failed to load data.');
@@ -55,7 +69,7 @@ const TeacherHoursMaster = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!currentConfig.teacher_id) return;
-    
+
     setSaving(true);
     try {
       await saveTeacherHours({
@@ -63,10 +77,10 @@ const TeacherHoursMaster = () => {
         institution_id: institutionId
       });
       setShowModal(false);
-      setCurrentConfig({ 
-        id: null, 
-        teacher_id: '', 
-        hours_type: 'smartroom', 
+      setCurrentConfig({
+        id: null,
+        teacher_id: '',
+        hours_type: 'smartroom',
         required_hours: 110
       });
       loadData();
@@ -92,49 +106,66 @@ const TeacherHoursMaster = () => {
     }
   };
 
-  const getTeacherName = (teacherId) => {
-    const teacher = teachers.find(t => t.id === teacherId);
-    return teacher ? teacher.username : 'Unknown';
-  };
-
   const isTeacherAlreadyConfigured = (teacherId) => {
     if (!teacherId || currentConfig.id) return false;
     return hoursConfigs.some(c => c.teacher_id === teacherId);
   };
 
+  const openAdd = () => {
+    setCurrentConfig({
+      id: null,
+      teacher_id: '',
+      hours_type: 'smartroom',
+      required_hours: 110
+    });
+    setShowModal(true);
+  };
+
+  const openEdit = (config) => {
+    setCurrentConfig({
+      id: config.id,
+      teacher_id: config.teacher_id,
+      hours_type: config.hours_type,
+      required_hours: config.required_hours
+    });
+    setShowModal(true);
+  };
+
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType="admin" />
-      <div className="dashboard-main">
+      <main className="dashboard-main">
         <Navbar title="Masters" />
-        
-        <div className="admins-page-container">
-          <header className="page-header">
-            <div className="header-left">
-              <h1>Teacher Hours Master</h1>
-              <p>Manage hours configuration for teacher evaluations</p>
+
+        <div className="thm-page">
+
+          {/* ── Header ── */}
+          <div className="thm-header">
+            <div className="thm-header-main">
+              <div className="thm-header-icon"><ClockIcon /></div>
+              <div>
+                <h1>Teacher Hours Master</h1>
+                <p>Manage hours configuration for teacher evaluations.</p>
+              </div>
             </div>
-            <button className="add-btn" onClick={() => { 
-              setCurrentConfig({ 
-                id: null, 
-                teacher_id: '', 
-                hours_type: 'smartroom', 
-                required_hours: 110
-              }); 
-              setShowModal(true); 
-            }}>
-              + Add New Configuration
-            </button>
-          </header>
+            <div className="thm-actions">
+              <button type="button" className="primary-btn" onClick={openAdd}>
+                + Add New Configuration
+              </button>
+            </div>
+          </div>
 
-          {error && <div className="error-alert" style={{ margin: '0 0 14px' }}>{error}</div>}
+          {error && <div className="thm-error">{error}</div>}
 
-          <div className="table-card">
+          {/* ── Table ── */}
+          <div className="thm-table-card">
             {loading ? (
-              <div className="loader" style={{ padding: '20px' }}>Loading...</div>
+              <div className="thm-empty">Loading configurations...</div>
+            ) : hoursConfigs.length === 0 ? (
+              <div className="thm-empty">No hours configurations added yet.</div>
             ) : (
               <div className="table-responsive">
-                <table className="admins-table">
+                <table className="thm-table">
                   <thead>
                     <tr>
                       <th>No</th>
@@ -145,95 +176,109 @@ const TeacherHoursMaster = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {hoursConfigs.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} style={{ textAlign: 'center', padding: '30px', color: '#a3aed0' }}>
-                          No hours configurations added yet.
+                    {hoursConfigs.map((config, index) => (
+                      <tr key={config.id}>
+                        <td>{index + 1}</td>
+                        <td style={{ fontWeight: 600 }}>{(config.teacher_name || '').toUpperCase()}</td>
+                        <td><span className="badge badge--purple">{config.hours_type}</span></td>
+                        <td><span className="badge badge--blue">{config.required_hours}</span></td>
+                        <td>
+                          <div className="thm-actions-cell">
+                            <button
+                              type="button"
+                              className="action-btn edit-btn"
+                              onClick={() => openEdit(config)}
+                              title="Edit configuration"
+                            >
+                              <EditIcon />
+                            </button>
+                            <button
+                              type="button"
+                              className="action-btn delete-btn"
+                              onClick={() => handleDeleteClick(config.id)}
+                              title="Delete configuration"
+                            >
+                              <TrashIcon />
+                            </button>
+                          </div>
                         </td>
                       </tr>
-                    ) : (
-                      hoursConfigs.map((config, index) => (
-                        <tr key={config.id}>
-                          <td>{index + 1}</td>
-                          <td style={{ fontWeight: 600 }}>{config.teacher_name}</td>
-                          <td>{config.hours_type}</td>
-                          <td>{config.required_hours}</td>
-                          <td>
-                            <div className="action-btns">
-                              <button className="edit-btn" onClick={() => { 
-                                setCurrentConfig({
-                                  id: config.id,
-                                  teacher_id: config.teacher_id,
-                                  hours_type: config.hours_type,
-                                  required_hours: config.required_hours
-                                }); 
-                                setShowModal(true); 
-                              }}>Edit</button>
-                              <button className="delete-btn" onClick={() => handleDeleteClick(config.id)}>Delete</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </main>
 
+      {/* ── Add / Edit Modal ── */}
       {showModal && (
-        <div className="hgm-modal-overlay">
-          <div className="hgm-modal-content">
-            <h3>{currentConfig.id ? 'Edit Configuration' : 'Add New Configuration'}</h3>
+        <div className="modal-overlay" onClick={() => !saving && setShowModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>{currentConfig.id ? 'Edit Configuration' : 'Add New Configuration'}</h2>
+                <span className="modal-sub">Teacher hours evaluation setup</span>
+              </div>
+              <button className="modal-close" onClick={() => setShowModal(false)} disabled={saving}>✕</button>
+            </div>
+
             <form onSubmit={handleSave}>
-              <div className="hgm-form-group">
-                <label>Teacher</label>
-                <select 
-                  value={currentConfig.teacher_id} 
-                  onChange={(e) => setCurrentConfig({...currentConfig, teacher_id: e.target.value})}
-                  disabled={!!currentConfig.id}
-                  required
-                >
-                  <option value="">Select Teacher</option>
-                  {teachers.map(teacher => (
-                    <option 
-                      key={teacher.id} 
-                      value={teacher.id}
-                      disabled={isTeacherAlreadyConfigured(teacher.id)}
-                    >
-                      {teacher.username} ({teacher.staff_id})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="hgm-form-group">
-                <label>Hours Type</label>
-                <select 
-                  value={currentConfig.hours_type} 
-                  onChange={(e) => setCurrentConfig({...currentConfig, hours_type: e.target.value})}
-                  required
-                >
-                  <option value="smartroom">Smartroom</option>
-                </select>
-              </div>
-              <div className="hgm-form-group">
-                <label>Required Hours</label>
-                <input 
-                  type="number" 
-                  step="0.1"
-                  value={currentConfig.required_hours} 
-                  onChange={(e) => setCurrentConfig({...currentConfig, required_hours: parseFloat(e.target.value) || 0})}
-                  placeholder="110"
-                  required
-                />
+              <div className="modal-edit-body">
+                <div className="modal-edit-field">
+                  <label>Teacher</label>
+                  <select
+                    className="modal-select"
+                    value={currentConfig.teacher_id}
+                    onChange={(e) => setCurrentConfig({ ...currentConfig, teacher_id: e.target.value })}
+                    disabled={!!currentConfig.id}
+                    required
+                  >
+                    <option value="">Select Teacher</option>
+                    {teachers.map(teacher => (
+                      <option
+                        key={teacher.id}
+                        value={teacher.id}
+                        disabled={isTeacherAlreadyConfigured(teacher.id)}
+                      >
+                        {teacher.username} ({teacher.staff_id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="modal-edit-field">
+                  <label>Hours Type</label>
+                  <select
+                    className="modal-select"
+                    value={currentConfig.hours_type}
+                    onChange={(e) => setCurrentConfig({ ...currentConfig, hours_type: e.target.value })}
+                    required
+                  >
+                    <option value="smartroom">Smartroom</option>
+                  </select>
+                </div>
+
+                <div className="modal-edit-field">
+                  <label>Required Hours</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={currentConfig.required_hours}
+                    onChange={(e) => setCurrentConfig({ ...currentConfig, required_hours: parseFloat(e.target.value) || 0 })}
+                    placeholder="110"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="hgm-modal-actions">
-                <button type="button" className="hgm-cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="hgm-save-btn" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save'}
+              <div className="modal-footer">
+                <button type="button" className="secondary-btn" onClick={() => setShowModal(false)} disabled={saving}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary-btn" disabled={saving}>
+                  {saving ? 'Saving...' : '💾 Save'}
                 </button>
               </div>
             </form>
@@ -241,14 +286,14 @@ const TeacherHoursMaster = () => {
         </div>
       )}
 
-      <ConfirmModal 
-        isOpen={showDeleteConfirm} 
-        title="Delete Configuration" 
-        message="Are you sure you want to delete this hours configuration?" 
-        onConfirm={confirmDelete} 
-        onCancel={() => setShowDeleteConfirm(false)} 
-        confirmText="Delete" 
-        type="danger" 
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Delete Configuration"
+        message="Are you sure you want to delete this hours configuration?"
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+        confirmText="Delete"
+        type="danger"
       />
     </div>
   );
