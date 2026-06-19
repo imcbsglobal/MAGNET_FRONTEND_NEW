@@ -4,7 +4,7 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import { fetchStudentsByClassDivision, saveAttendance, getAttendance, fetchCalendarEvents } from '../../services/api';
 import '../SuperUserDashboard/SuperUserDashboard.scss';
-import '../ParentDashboard/ParentPendingFee.scss';
+import '../ParentDashboard/FeePages.scss';
 import './Attendance.scss';
 
 const today = new Date();

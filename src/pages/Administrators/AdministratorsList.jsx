@@ -1,6 +1,7 @@
+// AdministratorsList.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAdministrators, deleteAdministrator } from '../../services/api';
+import { fetchAdministrators, deleteAdministrator, api } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
@@ -13,6 +14,11 @@ const AdministratorsList = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // --- Payment modal state ---
+  const [paymentModal, setPaymentModal] = useState(null); // null | { id, gateway, key, secret }
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => { loadAdministrators(); }, []);
@@ -36,6 +42,51 @@ const AdministratorsList = () => {
       setAdministrators(administrators.filter(a => a.id !== deleteId));
       setShowDeleteConfirm(false);
     } catch (err) { alert('Failed to delete administrator'); }
+  };
+
+  // Open payment modal pre-filled with existing data
+  const handlePaymentClick = async (administrator) => {
+    try {
+      const response = await api.get(
+        `payments/config/${administrator.institution_id}/`
+      );
+
+      const data = response.data;
+
+      setPaymentModal({
+        id: administrator.id,
+        institution_id: administrator.institution_id,
+        payment_gateway: data.payment_gateway || "easebuzz",
+        gateway_key: data.gateway_key || "",
+        gateway_secret: data.gateway_secret || "",
+      });
+    } catch (err) {
+      alert("Failed to load payment details");
+    }
+  };
+
+  const handlePaymentChange = (e) => {
+    setPaymentModal(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handlePaymentSave = async () => {
+    setPaymentLoading(true);
+
+    try {
+      await api.post("payments/config/save/", {
+        institution_id: paymentModal.institution_id,
+        payment_gateway: paymentModal.payment_gateway,
+        gateway_key: paymentModal.gateway_key,
+        gateway_secret: paymentModal.gateway_secret,
+      });
+
+      alert("Payment configuration saved successfully");
+      setPaymentModal(null);
+    } catch (err) {
+      alert("Failed to save payment configuration");
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(administrators.length / pageSize));
@@ -103,8 +154,28 @@ const AdministratorsList = () => {
                           </td>
                           <td>
                             <div className="action-btns">
-                              <button className="edit-btn" onClick={() => navigate(`/administrators/edit/${administrator.id}`)}>Edit</button>
-                              <button className="delete-btn" onClick={() => handleDeleteClick(administrator.id)}>Delete</button>
+                              <button
+                                className="edit-btn"
+                                onClick={() => navigate(`/administrators/edit/${administrator.id}`)}
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                className={`payment-btn ${!administrator.has_payment ? 'disabled' : ''}`}
+                                onClick={() => administrator.has_payment && handlePaymentClick(administrator)}
+                                disabled={!administrator.has_payment}
+                                title={!administrator.has_payment ? 'Payment not enabled for this school' : 'Manage payment gateway'}
+                              >
+                                Payment
+                              </button>
+
+                              <button
+                                className="delete-btn"
+                                onClick={() => handleDeleteClick(administrator.id)}
+                              >
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -132,6 +203,61 @@ const AdministratorsList = () => {
           </div>
 
           <ConfirmModal isOpen={showDeleteConfirm} title="Delete Administrator" message="Are you sure you want to delete this school administrator? This action cannot be undone." onConfirm={confirmDelete} onCancel={() => setShowDeleteConfirm(false)} confirmText="Delete" type="danger" />
+
+          {/* ── Payment Gateway Modal ── */}
+          {paymentModal && (
+            <div className="modal-overlay" onClick={() => setPaymentModal(null)}>
+              <div className="payment-modal" onClick={e => e.stopPropagation()}>
+                <div className="payment-modal-header">
+                  <h2>💳 Payment Gateway</h2>
+                  <button className="modal-close-btn" onClick={() => setPaymentModal(null)}>✕</button>
+                </div>
+
+                <div className="payment-modal-body">
+                  <div className="form-group">
+                    <label>Payment Gateway</label>
+                    <select
+                      name="payment_gateway"
+                      value={paymentModal.payment_gateway}
+                      onChange={handlePaymentChange}
+                    >
+                      <option value="easebuzz">Easebuzz</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Easebuzz Key</label>
+                    <input
+                      type="text"
+                      name="gateway_key"
+                      value={paymentModal.gateway_key}
+                      onChange={handlePaymentChange}
+                      placeholder="Enter Easebuzz Key"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Easebuzz Salt</label>
+                    <input
+                      type="text"
+                      name="gateway_secret"
+                      value={paymentModal.gateway_secret}
+                      onChange={handlePaymentChange}
+                      placeholder="Enter Easebuzz Salt"
+                    />
+                  </div>
+                </div>
+
+                <div className="payment-modal-footer">
+                  <button className="modal-cancel-btn" onClick={() => setPaymentModal(null)}>Cancel</button>
+                  <button className="modal-save-btn" onClick={handlePaymentSave} disabled={paymentLoading}>
+                    {paymentLoading ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
     </div>

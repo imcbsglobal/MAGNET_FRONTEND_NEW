@@ -1,3 +1,5 @@
+// PaymentSuccess.scss
+
 .payment-success-overlay {
   position: fixed;
   top: 0;
@@ -21,6 +23,19 @@
   text-align: center;
   padding: 40px 30px;
   animation: successSlideIn 0.4s ease-out;
+
+  h2 {
+    color: #1e293b;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+
+  > p {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0 0 30px 0;
+  }
 }
 
 @keyframes successSlideIn {
@@ -34,6 +49,7 @@
   }
 }
 
+// ── Checkmark Icon ──────────────────────────────────────────
 .success-icon {
   margin-bottom: 24px;
 }
@@ -55,36 +71,19 @@
 }
 
 @keyframes checkmarkPulse {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0%   { transform: scale(0); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
-.payment-success-modal h2 {
-  color: #1e293b;
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-}
-
-.payment-success-modal > p {
-  color: #64748b;
-  font-size: 1rem;
-  margin: 0 0 30px 0;
-}
-
+// ── Payment Details Card ────────────────────────────────────
 .payment-details {
   background: #f8fafc;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
   border: 1px solid #e2e8f0;
+  text-align: left;
 }
 
 .detail-row {
@@ -93,39 +92,59 @@
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid #e2e8f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span:first-child {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  span:last-child {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
 }
 
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-row span:first-child {
-  color: #64748b;
-  font-weight: 500;
-}
-
-.detail-row span:last-child {
-  color: #1e293b;
-  font-weight: 600;
-}
-
+// ── Value Variants ──────────────────────────────────────────
 .status-success {
   color: #059669 !important;
   background: #d1fae5;
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
 }
 
+.txn-id-text {
+  color: #1e293b;
+  font-weight: 700 !important;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.02em;
+}
+
+.amount-text {
+  color: #059669 !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+}
+
+// ── Action Buttons ──────────────────────────────────────────
 .success-actions {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  align-items: stretch;   // ← ADD THIS
 }
 
 .download-receipt-btn {
   flex: 1;
-  background: linear-gradient(135deg, #4f6ef7 0%, #6a7ff5 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
   padding: 14px 20px;
@@ -134,13 +153,22 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(79, 110, 247, 0.3);
-}
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  white-space: nowrap;
+  height: 52px;           // ← ADD THIS
+  display: flex;          // ← ADD THIS
+  align-items: center;    // ← ADD THIS
+  justify-content: center;// ← ADD THIS
 
-.download-receipt-btn:hover {
-  background: linear-gradient(135deg, #3d5af1 0%, #5b6ef5 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(79, 110, 247, 0.4);
+  &:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .close-btn {
@@ -154,13 +182,19 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;    // ← ADD THIS
+  height: 52px;           // ← ADD THIS
+  display: flex;          // ← ADD THIS
+  align-items: center;    // ← ADD THIS
+  justify-content: center;// ← ADD THIS
+
+  &:hover {
+    background: #e2e8f0;
+    color: #475569;
+  }
 }
 
-.close-btn:hover {
-  background: #e2e8f0;
-  color: #475569;
-}
-
+// ── Demo Note (optional) ────────────────────────────────────
 .demo-note {
   background: #fef3c7;
   border: 1px solid #f59e0b;
@@ -168,24 +202,24 @@
   padding: 12px;
   font-size: 0.85rem;
   color: #92400e;
+
+  p {
+    margin: 0;
+    font-weight: 600;
+  }
 }
 
-.demo-note p {
-  margin: 0;
-  font-weight: 600;
-}
-
-/* Responsive */
+// ── Responsive ──────────────────────────────────────────────
 @media (max-width: 768px) {
   .payment-success-modal {
     padding: 30px 20px;
     margin: 10px;
   }
-  
+
   .success-actions {
     flex-direction: column;
   }
-  
+
   .download-receipt-btn,
   .close-btn {
     width: 100%;

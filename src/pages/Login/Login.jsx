@@ -6,7 +6,7 @@ import './Login.scss';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [role, setRole] = useState('parent'); // 'parent', 'staff', 'admin', or 'superadmin'
+  const [role, setRole] = useState('parent'); // 'parent', 'staff', 'admin', or 'superadminn'
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

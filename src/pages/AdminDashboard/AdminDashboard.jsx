@@ -475,6 +475,11 @@ const AdminDashboard = () => {
                   <strong>Evaluations</strong>
                   <small>View teacher evaluations</small>
                 </button>
+                <button type="button" onClick={() => navigate('/admin/evaluations/teachers')}>
+                  <span>D</span>
+                  <strong>Entry Details</strong>
+                  <small>Teacher evaluation entry status</small>
+                </button>
               </div>
             </section>
           </div>
