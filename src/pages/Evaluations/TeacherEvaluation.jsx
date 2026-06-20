@@ -419,7 +419,7 @@ const TeacherEvaluationDashboard = () => {
                         )}
 
                         {/* Exam Section */}
-                        <div className="form-section" style={{ opacity: isClassCompleted || isMonthFinished ? 0.7 : 1 }}>
+                        <div className="form-section" style={{ opacity: isMonthFinished ? 0.7 : 1 }}>
                           <h3>Exam (Max 10)</h3>
                           <div className="row">
                             <div className="rlabel">Exam Conducted</div>
@@ -432,7 +432,7 @@ const TeacherEvaluationDashboard = () => {
                                     name="exam_conducted"
                                     checked={formData.exam_conducted}
                                     onChange={handleChange}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                   Exam Conducted
                                 </label>
@@ -448,7 +448,7 @@ const TeacherEvaluationDashboard = () => {
                                     min="0"
                                     value={formData.exam_excellent}
                                     onChange={handleChange}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                 </div>
                                 <div className="fld">
@@ -459,7 +459,7 @@ const TeacherEvaluationDashboard = () => {
                                     min="0"
                                     value={formData.exam_good}
                                     onChange={handleChange}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                 </div>
                                 <div className="fld">
@@ -470,7 +470,7 @@ const TeacherEvaluationDashboard = () => {
                                     min="0"
                                     value={formData.exam_average}
                                     onChange={handleChange}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                 </div>
                                 <div className="fld">
@@ -481,7 +481,7 @@ const TeacherEvaluationDashboard = () => {
                                     min="0"
                                     value={formData.exam_below_average}
                                     onChange={handleChange}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                 </div>
                               </div>
@@ -490,7 +490,7 @@ const TeacherEvaluationDashboard = () => {
                         </div>
 
                         {/* Notebook Section */}
-                        <div className="form-section" style={{ opacity: isClassCompleted || isMonthFinished ? 0.7 : 1 }}>
+                        <div className="form-section" style={{ opacity: isMonthFinished ? 0.7 : 1 }}>
                           <h3>Notebook (Max 10)</h3>
                           <div className="row">
                             <div className="rlabel">Notebook Check</div>
@@ -504,7 +504,7 @@ const TeacherEvaluationDashboard = () => {
                                     value="0"
                                     checked={!formData.notebook_check1 && !formData.notebook_check2}
                                     onChange={(e) => handleNotebookCheckChange('0')}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                   No Checks (0 pts)
                                 </label>
@@ -517,7 +517,7 @@ const TeacherEvaluationDashboard = () => {
                                     value="3"
                                     checked={(formData.notebook_check1 || formData.notebook_check2) && !(formData.notebook_check1 && formData.notebook_check2)}
                                     onChange={(e) => handleNotebookCheckChange('3')}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                   One Check (3 pts)
                                 </label>
@@ -530,7 +530,7 @@ const TeacherEvaluationDashboard = () => {
                                     value="6"
                                     checked={formData.notebook_check1 && formData.notebook_check2}
                                     onChange={(e) => handleNotebookCheckChange('6')}
-                                    disabled={isClassCompleted || isMonthFinished}
+                                    disabled={isMonthFinished}
                                   />
                                   Two Checks (6 pts)
                                 </label>
@@ -545,7 +545,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.notebook_excellent}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                               <div className="fld">
@@ -556,7 +556,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.notebook_good}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                               <div className="fld">
@@ -567,7 +567,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.notebook_average}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                               <div className="fld">
@@ -578,7 +578,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.notebook_below_average}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                             </div>
@@ -586,7 +586,7 @@ const TeacherEvaluationDashboard = () => {
                         </div>
 
                         {/* Smart Room Section */}
-                        <div className="form-section" style={{ opacity: isClassCompleted || isMonthFinished ? 0.7 : 1 }}>
+                        <div className="form-section" style={{ opacity: isMonthFinished ? 0.7 : 1 }}>
                           <h3>Smart Room (Max 5)</h3>
                           <div className="row">
                             <div className="rlabel">Smart Room Usage</div>
@@ -600,7 +600,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.smartroom_hours}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                               <div className="fld">
@@ -611,7 +611,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.smartroom_ai}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                               <div className="fld">
@@ -622,7 +622,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.smartroom_youtube}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                               <div className="fld">
@@ -633,7 +633,7 @@ const TeacherEvaluationDashboard = () => {
                                   min="0"
                                   value={formData.smartroom_creative}
                                   onChange={handleChange}
-                                  disabled={isClassCompleted || isMonthFinished}
+                                  disabled={isMonthFinished}
                                 />
                               </div>
                             </div>
@@ -642,7 +642,7 @@ const TeacherEvaluationDashboard = () => {
 
                         {/* Save Button for Class */}
                         <div className="form-actions">
-                          <button type="submit" className="save-btn" disabled={saving || isClassCompleted || isMonthFinished}>
+                          <button type="submit" className="save-btn" disabled={saving || isMonthFinished}>
                             {saving ? 'Saving...' : `Save ${selectedClass}-${selectedDivision}`}
                           </button>
                           {saved && <span className="saved-tag">✅ Saved Successfully!</span>}

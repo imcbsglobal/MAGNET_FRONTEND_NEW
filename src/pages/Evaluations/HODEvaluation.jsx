@@ -26,11 +26,8 @@ const HODEvaluationDashboard = () => {
     subject_knowledge_5: 0,
     classroom_management: 0,
     activity_based_class: 0,
-    training_1: 0,
-    training_2: 0,
-    training_3: 0,
-    training_4: 0,
-    training_5: 0,
+    training_total: 0,
+    training_attended: 0,
     english_classroom: 0,
     english_informal: 0,
     english_fluency: 0,
@@ -39,6 +36,7 @@ const HODEvaluationDashboard = () => {
     moral_discipline: 0,
     moral_uniform: 0,
     moral_good_deeds: 0,
+    hod_remark: '',
     // Teacher's part (for display)
     exam_classes_with: 0,
     exam_excellent: 0,
@@ -119,11 +117,8 @@ const HODEvaluationDashboard = () => {
         subject_knowledge_5: data.subject_knowledge_5 || 0,
         classroom_management: data.classroom_management || 0,
         activity_based_class: data.activity_based_class || 0,
-        training_1: data.training_1 || 0,
-        training_2: data.training_2 || 0,
-        training_3: data.training_3 || 0,
-        training_4: data.training_4 || 0,
-        training_5: data.training_5 || 0,
+        training_total: data.training_total || 0,
+        training_attended: data.training_attended || 0,
         english_classroom: data.english_classroom || 0,
         english_informal: data.english_informal || 0,
         english_fluency: data.english_fluency || 0,
@@ -132,6 +127,7 @@ const HODEvaluationDashboard = () => {
         moral_discipline: data.moral_discipline || 0,
         moral_uniform: data.moral_uniform || 0,
         moral_good_deeds: data.moral_good_deeds || 0,
+        hod_remark: data.hod_remark || '',
         // Teacher's part (for display)
         exam_classes_with: data.exam_classes_with || 0,
         exam_excellent: data.exam_excellent || 0,
@@ -168,11 +164,8 @@ const HODEvaluationDashboard = () => {
         subject_knowledge_5: 0,
         classroom_management: 0,
         activity_based_class: 0,
-        training_1: 0,
-        training_2: 0,
-        training_3: 0,
-        training_4: 0,
-        training_5: 0,
+        training_total: 0,
+        training_attended: 0,
         english_classroom: 0,
         english_informal: 0,
         english_fluency: 0,
@@ -181,6 +174,7 @@ const HODEvaluationDashboard = () => {
         moral_discipline: 0,
         moral_uniform: 0,
         moral_good_deeds: 0,
+        hod_remark: '',
         exam_classes_with: 0,
         exam_excellent: 0,
         exam_good: 0,
@@ -228,11 +222,12 @@ const HODEvaluationDashboard = () => {
   };
 
   const calculateTrainingScore = () => {
-    let total = 0;
-    for (let i = 1; i <= 5; i++) {
-      total += formData[`training_${i}`];
+    const total = formData.training_total;
+    const attended = formData.training_attended;
+    if (total > 0) {
+      return Math.min((attended / total) * 5, 5).toFixed(2);
     }
-    return total.toFixed(2);
+    return '0.00';
   };
 
   // Calculate exam score for a single class
@@ -516,238 +511,6 @@ const HODEvaluationDashboard = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Evaluation Summary */}
-                    <div className="form-section" style={{ background: '#f0f9ff', borderRadius: '10px', padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <h3 style={{ marginTop: 0, marginBottom: 0 }}>Evaluation Summary</h3>
-                        {classEvaluations.length > 0 && (
-                          <button
-                            type="button"
-                            className="save-btn"
-                            onClick={() => setShowClassDetails(!showClassDetails)}
-                            style={{ fontSize: '13px', padding: '8px 16px' }}
-                          >
-                            {showClassDetails ? 'Hide Class Details' : 'Show Class Details'}
-                          </button>
-                        )}
-                      </div>
-                      <div className="tcard" style={{ marginBottom: 0, border: '1px solid #bae6fd' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>
-                          {selectedTeacher?.username || 'Teacher'}
-                        </div>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: '#6b7280' }}>{month}</span>
-                        </div>
-                      </div>
-
-                      {(() => {
-                        // Calculate average check status from class evaluations
-                        let totalCheck1 = 0;
-                        let totalCheck2 = 0;
-                        
-                        classEvaluations.forEach((cls) => {
-                          let c1 = cls.notebook_check1 || false;
-                          let c2 = cls.notebook_check2 || false;
-                          
-                          if (cls.notebook_check1 === undefined && cls.notebook_entry) {
-                            if (cls.notebook_entry >= 6) {
-                              c1 = true;
-                              c2 = true;
-                            } else if (cls.notebook_entry >= 3) {
-                              c1 = true;
-                            }
-                          }
-                          
-                          if (c1) totalCheck1++;
-                          if (c2) totalCheck2++;
-                        });
-                        
-                        const avgCheck1 = classEvaluations.length > 0 ? totalCheck1 / classEvaluations.length : 0;
-                        const avgCheck2 = classEvaluations.length > 0 ? totalCheck2 / classEvaluations.length : 0;
-                        
-                        const displayCheck1 = avgCheck1 >= 0.5 ? '✓' : '✗';
-                        const displayCheck2 = avgCheck2 >= 0.5 ? '✓' : '✗';
-                        
-                        return (
-                          <>
-                            <div className="mrow">
-                          <div className="mc">
-                            <div className="mv">{(parseFloat(scores?.exam) + parseFloat(scores?.notebook) + parseFloat(scores?.smartroom)).toFixed(1)} / 25</div>
-                            <div className="ml">Teacher Total</div>
-                          </div>
-                          <div className="mc">
-                            <div className="mv">{parseFloat(scores?.exam).toFixed(1)} / 10</div>
-                            <div className="ml">Exam</div>
-                          </div>
-                          <div className="mc">
-                            <div className="mv">{parseFloat(scores?.notebook).toFixed(1)} / 10</div>
-                            <div className="ml">Notebook</div>
-                          </div>
-                          <div className="mc">
-                            <div className="mv">{parseFloat(scores?.smartroom).toFixed(1)} / 5</div>
-                            <div className="ml">Smart Room</div>
-                          </div>
-                        </div>
-
-                        <div style={{ overflowX: 'auto' }}>
-                          <table className="ptable">
-                            <thead>
-                              <tr>
-                                <th style={{ width: '44%' }}>Criterion</th>
-                                <th style={{ width: '28%', textAlign: 'center' }}>Score</th>
-                                <th style={{ width: '28%', textAlign: 'center' }}>Max</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr className="cat-row">
-                                <td colSpan={3}>Teacher-Submitted Data</td>
-                              </tr>
-                              <tr>
-                                <td>Exam</td>
-                                <td style={{ textAlign: 'center', fontWeight: 500 }}>{parseFloat(scores?.exam).toFixed(1)}</td>
-                                <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  Notebook Checks: {displayCheck1} / {displayCheck2} {classEvaluations.length > 0 && `(Avg across ${classEvaluations.length} classes)`}
-                                </td>
-                                <td style={{ textAlign: 'center', fontWeight: 500 }}>{parseFloat(scores?.notebook).toFixed(1)}</td>
-                                <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
-                              </tr>
-                              <tr>
-                                <td>Smart Room</td>
-                                <td style={{ textAlign: 'center', fontWeight: 500 }}>{parseFloat(scores?.smartroom).toFixed(1)}</td>
-                                <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
-                              </tr>
-                              <tr className="tot-row">
-                                <td style={{ fontWeight: 600 }}>Teacher Total</td>
-                                <td style={{ textAlign: 'center', fontWeight: 600 }}>{(parseFloat(scores?.exam) + parseFloat(scores?.notebook) + parseFloat(scores?.smartroom)).toFixed(1)}</td>
-                                <td style={{ textAlign: 'center', color: '#6b7280' }}>25</td>
-                              </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </>
-                        );
-                      })()}
-
-                        {/* Class-based details */}
-                        {showClassDetails && classEvaluations.length > 0 && (
-                            <div style={{ marginTop: '20px' }}>
-                                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: 600 }}>Class-wise Details</h4>
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table className="ptable">
-                                        <thead>
-                                            <tr>
-                                                <th>Class</th>
-                                                <th>Exam Conducted</th>
-                                                <th>Exam (Exc/Good/Avg/Below)</th>
-                                                <th>Notebook Checks</th>
-                                                <th>Notebook (Exc/Good/Avg/Below)</th>
-                                                <th>Smart Room Hours</th>
-                                                <th>Smart Room (AI/YT/Creative)</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {classEvaluations.map((cls, idx) => {
-                                                // Add fallback values for all fields
-                                                const safeCls = {
-                                                    student_class: cls.student_class || '-',
-                                                    division: cls.division || '-',
-                                                    exam_conducted: cls.exam_conducted || false,
-                                                    exam_excellent: cls.exam_excellent || 0,
-                                                    exam_good: cls.exam_good || 0,
-                                                    exam_average: cls.exam_average || 0,
-                                                    exam_below_average: cls.exam_below_average || 0,
-                                                    notebook_check1: cls.notebook_check1 || false,
-                                                    notebook_check2: cls.notebook_check2 || false,
-                                                    notebook_entry: cls.notebook_entry || 0,
-                                                    notebook_excellent: cls.notebook_excellent || 0,
-                                                    notebook_good: cls.notebook_good || 0,
-                                                    notebook_average: cls.notebook_average || 0,
-                                                    notebook_below_average: cls.notebook_below_average || 0,
-                                                    smartroom_hours: cls.smartroom_hours || 0,
-                                                    smartroom_ai: cls.smartroom_ai || 0,
-                                                    smartroom_youtube: cls.smartroom_youtube || 0,
-                                                    smartroom_creative: cls.smartroom_creative || 0,
-                                                    is_completed: cls.is_completed || false,
-                                                };
-
-                                                let nbCheck1 = safeCls.notebook_check1;
-                                                let nbCheck2 = safeCls.notebook_check2;
-                                                if (safeCls.notebook_check1 === undefined && safeCls.notebook_entry) {
-                                                    if (safeCls.notebook_entry >= 6) {
-                                                        nbCheck1 = true;
-                                                        nbCheck2 = true;
-                                                    } else if (safeCls.notebook_entry >= 3) {
-                                                        nbCheck1 = true;
-                                                    }
-                                                }
-
-                                                return (
-                                                    <tr key={idx}>
-                                                        <td style={{ fontWeight: 500 }}>{safeCls.student_class} - {safeCls.division}</td>
-                                                        <td style={{ textAlign: 'center' }}>
-                                                            {safeCls.exam_conducted ? (
-                                                                <span className="badge bg-e" style={{ fontSize: '11px' }}>Yes</span>
-                                                            ) : (
-                                                                <span className="badge bg-a" style={{ fontSize: '11px' }}>No</span>
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
-                                                                <span style={{ color: '#16a34a', fontWeight: 500 }}>{safeCls.exam_excellent}</span>
-                                                                <span style={{ color: '#2563eb', fontWeight: 500 }}>{safeCls.exam_good}</span>
-                                                                <span style={{ color: '#d97706', fontWeight: 500 }}>{safeCls.exam_average}</span>
-                                                                <span style={{ color: '#dc2626', fontWeight: 500 }}>{safeCls.exam_below_average}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td style={{ textAlign: 'center' }}>
-                                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', fontSize: '12px' }}>
-                                                                <span style={{ color: nbCheck1 ? '#16a34a' : '#dc2626', fontWeight: 500 }}>
-                                                                    {nbCheck1 ? '✓' : '✗'}
-                                                                </span>
-                                                                <span style={{ color: nbCheck2 ? '#16a34a' : '#dc2626', fontWeight: 500 }}>
-                                                                    {nbCheck2 ? '✓' : '✗'}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
-                                                                <span style={{ color: '#16a34a', fontWeight: 500 }}>{safeCls.notebook_excellent}</span>
-                                                                <span style={{ color: '#2563eb', fontWeight: 500 }}>{safeCls.notebook_good}</span>
-                                                                <span style={{ color: '#d97706', fontWeight: 500 }}>{safeCls.notebook_average}</span>
-                                                                <span style={{ color: '#dc2626', fontWeight: 500 }}>{safeCls.notebook_below_average}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td style={{ textAlign: 'center', fontWeight: 500 }}>{safeCls.smartroom_hours}</td>
-                                                        <td>
-                                                            <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
-                                                                <span style={{ color: '#16a34a', fontWeight: 500 }}>{safeCls.smartroom_ai}</span>
-                                                                <span style={{ color: '#2563eb', fontWeight: 500 }}>{safeCls.smartroom_youtube}</span>
-                                                                <span style={{ color: '#d97706', fontWeight: 500 }}>{safeCls.smartroom_creative}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td style={{ textAlign: 'center' }}>
-                                                            {safeCls.is_completed ? (
-                                                                <span className="badge bg-e" style={{ fontSize: '11px' }}>Completed</span>
-                                                            ) : (
-                                                                <span className="badge bg-a" style={{ fontSize: '11px' }}>Pending</span>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
-                      </div>
-                    </div>
-
                     <div className="form-section">
                       <h3>Academics - Lesson Plan (Max 5)</h3>
                       <div className="row">
@@ -785,7 +548,7 @@ const HODEvaluationDashboard = () => {
                     <div className="form-section">
                       <h3>Academics - Subject Knowledge (Max 5)</h3>
                       <div className="row">
-                        <div className="rlabel">5 parameters - rate each (Exc=1, Good=0.75, Avg=0.5)</div>
+<div className="rlabel">5 parameters - rate each (Exc=1, Good=0.75, Avg=0.5, Below Avg=0.25)</div>
                         <div className="fields">
                           {[1, 2, 3, 4, 5].map(i => (
                             <div key={i} className="fld">
@@ -799,7 +562,8 @@ const HODEvaluationDashboard = () => {
                                 <option value={1}>Excellent</option>
                                 <option value={0.75}>Good</option>
                                 <option value={0.5}>Average</option>
-                              </select>
+                                <option value={0.25}>Below Average</option>
+                          </select>
                             </div>
                           ))}
                         </div>
@@ -856,23 +620,30 @@ const HODEvaluationDashboard = () => {
                     <div className="form-section">
                       <h3>Academics - Training (Max 5)</h3>
                       <div className="row">
-                        <div className="rlabel">5 parameters - rate each (Exc=1, Good=0.75, Avg=0.5)</div>
+                        <div className="rlabel">Total Training &amp; Training Attended</div>
                         <div className="fields">
-                          {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="fld">
-                              <label>Param {i}</label>
-                              <select
-                                name={`training_${i}`}
-                                value={formData[`training_${i}`]}
-                                onChange={handleChange}
-                              >
-                                <option value={0}>—</option>
-                                <option value={1}>Excellent</option>
-                                <option value={0.75}>Good</option>
-                                <option value={0.5}>Average</option>
-                              </select>
-                            </div>
-                          ))}
+                          <div className="fld">
+                            <label>Total Training</label>
+                            <input
+                              type="number"
+                              name="training_total"
+                              value={formData.training_total}
+                              onChange={handleChange}
+                              min="0"
+                              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit', fontSize: '14px' }}
+                            />
+                          </div>
+                          <div className="fld">
+                            <label>Training Attended</label>
+                            <input
+                              type="number"
+                              name="training_attended"
+                              value={formData.training_attended}
+                              onChange={handleChange}
+                              min="0"
+                              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit', fontSize: '14px' }}
+                            />
+                          </div>
                         </div>
                         <div className="score-preview">Score: {calculateTrainingScore()}</div>
                       </div>
@@ -1040,6 +811,25 @@ const HODEvaluationDashboard = () => {
                               <option value={2}>Good (2)</option>
                               <option value={1}>Average (1)</option>
                             </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="form-section">
+                      <h3>HOD Remark</h3>
+                      <div className="row">
+                        <div className="fields" style={{ width: '100%' }}>
+                          <div className="fld" style={{ width: '100%' }}>
+                            <label>Remark (optional)</label>
+                            <textarea
+                              name="hod_remark"
+                              value={formData.hod_remark}
+                              onChange={(e) => setFormData(prev => ({ ...prev, hod_remark: e.target.value }))}
+                              rows={3}
+                              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #d1d5db', resize: 'vertical', fontFamily: 'inherit', fontSize: '14px' }}
+                              placeholder="Enter any remarks..."
+                            />
                           </div>
                         </div>
                       </div>

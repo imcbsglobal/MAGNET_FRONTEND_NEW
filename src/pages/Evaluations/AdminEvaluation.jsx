@@ -79,7 +79,7 @@ const AdminEvaluationDashboard = () => {
     const subjectKnowledge = e.subject_knowledge_1 + e.subject_knowledge_2 + e.subject_knowledge_3 + e.subject_knowledge_4 + e.subject_knowledge_5;
     const classroomManagement = e.classroom_management;
     const activityBasedClass = e.activity_based_class;
-    const training = e.training_1 + e.training_2 + e.training_3 + e.training_4 + e.training_5;
+    const training = e.training_total > 0 ? Math.min((e.training_attended / e.training_total) * 5, 5) : 0;
 
     const academics = exam + notebook + smartRoom + lessonPlan + subjectKnowledge + classroomManagement + activityBasedClass + training;
     const english = e.english_classroom + e.english_informal + e.english_fluency;
@@ -348,6 +348,13 @@ const AdminEvaluationDashboard = () => {
                               <td style={{ textAlign: 'center', fontWeight: 600 }}>{scores.total}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>100</td>
                             </tr>
+                            {evaluation.hod_remark && (
+                              <tr>
+                                <td colSpan={4} style={{ padding: '10px 16px', color: '#4b5563', fontStyle: 'italic', background: '#fffbeb', borderTop: '1px solid #fde68a' }}>
+                                  <strong>HOD Remark:</strong> {evaluation.hod_remark}
+                                </td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>

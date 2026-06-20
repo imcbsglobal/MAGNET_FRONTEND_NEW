@@ -201,6 +201,7 @@ const AdminEvaluationTeachers = () => {
           assigned_division: r.assigned_division,
           is_month_finished: r.is_month_finished,
           hod_entered: r.hod_entered,
+          hod_remark: r.hod_remark || '',
           // HOD fields (teacher-level)
           lesson_plan_submitted: r.lesson_plan_submitted,
           lesson_plan_quality: r.lesson_plan_quality,
@@ -211,11 +212,8 @@ const AdminEvaluationTeachers = () => {
           subject_knowledge_5: r.subject_knowledge_5,
           classroom_management: r.classroom_management,
           activity_based_class: r.activity_based_class,
-          training_1: r.training_1,
-          training_2: r.training_2,
-          training_3: r.training_3,
-          training_4: r.training_4,
-          training_5: r.training_5,
+          training_total: r.training_total,
+          training_attended: r.training_attended,
           english_classroom: r.english_classroom,
           english_informal: r.english_informal,
           english_fluency: r.english_fluency,
@@ -270,7 +268,7 @@ const AdminEvaluationTeachers = () => {
       // Calculate HOD scores
       const lessonPlanScore = (teacher.lesson_plan_submitted || 0) + (teacher.lesson_plan_quality || 0);
       const subjectKnowledgeScore = (teacher.subject_knowledge_1 || 0) + (teacher.subject_knowledge_2 || 0) + (teacher.subject_knowledge_3 || 0) + (teacher.subject_knowledge_4 || 0) + (teacher.subject_knowledge_5 || 0);
-      const trainingScore = (teacher.training_1 || 0) + (teacher.training_2 || 0) + (teacher.training_3 || 0) + (teacher.training_4 || 0) + (teacher.training_5 || 0);
+      const trainingScore = teacher.training_total > 0 ? Math.min((teacher.training_attended / teacher.training_total) * 5, 5) : 0;
       const englishScore = (teacher.english_classroom || 0) + (teacher.english_informal || 0) + (teacher.english_fluency || 0);
       const cocurricularScore = (teacher.cocurricular_extra || 0) + (teacher.cocurricular_reward || 0);
       const moralScore = (teacher.moral_discipline || 0) + (teacher.moral_uniform || 0) + (teacher.moral_good_deeds || 0);
@@ -407,7 +405,7 @@ const AdminEvaluationTeachers = () => {
                     <table className="ptable">
                       <thead>
                         <tr>
-                          <th colSpan={21}>
+                          <th colSpan={22}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
                               <div style={{ fontSize: '14px', fontWeight: 600 }}>Name of the HOD: {(() => {
                                 // First try to find a HOD in teachers list
@@ -429,6 +427,7 @@ const AdminEvaluationTeachers = () => {
                           <th colSpan={2} style={{ background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' }}>Co-curricular Activities</th>
                           <th colSpan={3} style={{ background: 'linear-gradient(135deg, #ffe4e6 0%, #ffcdd2 100%)' }}>Moral</th>
                           <th rowSpan={2}>Status</th>
+                          <th rowSpan={2} style={{ minWidth: '150px' }}>HOD Remark</th>
                           <th rowSpan={2}>Total</th>
                           <th rowSpan={2}>Percentage</th>
                         </tr>
@@ -561,6 +560,9 @@ const AdminEvaluationTeachers = () => {
                               </div>
                             </td>
                             
+                            <td style={{ textAlign: 'center', fontSize: '12px', maxWidth: '160px', color: teacher.hod_remark ? '#4b5563' : '#d1d5db', fontStyle: teacher.hod_remark ? 'normal' : 'italic' }}>
+                              {teacher.hod_remark || '—'}
+                            </td>
                             <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '14px' }}>{teacher.totalScore.toFixed(1)}</td>
                             <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '14px' }}>{teacher.percentage}%</td>
                           </tr>
