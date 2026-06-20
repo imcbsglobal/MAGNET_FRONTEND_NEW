@@ -76,10 +76,11 @@ const calculateClassNotebookScore = (cls) => {
 };
 
 // Helper: calculate smart room score per class
-const calculateClassSmartroomScore = (cls, config = { required_hours: 110, max_marks: 5 }) => {
+const calculateClassSmartroomScore = (cls, config = { required_hours: 110 }) => {
   const smartPct = (cls.smartroom_hours || 0) / config.required_hours;
-  const maxUsage = (config.max_marks * 3) / 5;
-  const maxCreative = config.max_marks - maxUsage;
+  const maxMarks = config.max_marks || 5;
+  const maxUsage = (maxMarks * 3) / 5;
+  const maxCreative = maxMarks - maxUsage;
   const usage = smartPct >= 0.3 ? maxUsage : parseFloat((smartPct / 0.3 * maxUsage).toFixed(2));
   const totalContent = (cls.smartroom_ai || 0) + (cls.smartroom_youtube || 0) + (cls.smartroom_creative || 0);
   let creative = 0;
@@ -104,35 +105,46 @@ const AdminEvaluationTeachers = () => {
     if (!tableRef.current) return;
     
     try {
+      // Temporarily expand the overflow container to capture full table
+      const container = tableRef.current;
+      const overflowDiv = container.querySelector('[style*="overflow"]');
+      const originalOverflow = overflowDiv ? overflowDiv.style.overflow : '';
+      const originalMaxWidth = overflowDiv ? overflowDiv.style.maxWidth : '';
+      if (overflowDiv) {
+        overflowDiv.style.overflow = 'visible';
+        overflowDiv.style.maxWidth = 'none';
+      }
+      
       // Capture the table with html2canvas
-      const canvas = await html2canvas(tableRef.current, {
-        scale: 2, // Higher scale for better quality
+      const canvas = await html2canvas(container, {
+        scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
       });
       
-      // Calculate dimensions - use landscape for wide table
-      const imgWidth = 280;
+      // Restore original overflow styles
+      if (overflowDiv) {
+        overflowDiv.style.overflow = originalOverflow || 'auto';
+        overflowDiv.style.maxWidth = originalMaxWidth || '';
+      }
+      
+      const pageWidth = 297;
       const pageHeight = 210;
+      const margin = 8;
+      const imgWidth = pageWidth - margin * 2;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Create PDF in landscape mode
+      
       const pdf = new jsPDF('l', 'mm', 'a4');
+      let position = 0;
+      let remaining = imgHeight;
       
-      // If image fits on first page
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
-      
-      // If more than one page
-      while (heightLeft > pageHeight) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      while (remaining > 0) {
+        if (position < 0) pdf.addPage();
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, position, imgWidth, imgHeight);
+        position -= pageHeight;
+        remaining -= pageHeight;
       }
 
-      // Download the PDF
       pdf.save(`teacher-evaluation-summary-${selectedMonth}.pdf`);
     } catch (err) {
       console.error('Error generating PDF:', err);
@@ -340,30 +352,23 @@ const AdminEvaluationTeachers = () => {
                 <h1>Teachers Evaluation Summary</h1>
                 <p>Aggregated evaluation data per teacher for {selectedMonth}</p>
               </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  className="save-btn" 
-                  onClick={handleDownloadPDF} 
-                  style={{ 
-                    background: '#2563eb', 
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
+              <div className="header-actions">
+                <button
+                  className="btn-info"
+                  onClick={handleDownloadPDF}
                 >
                   <PrintIcon />
                   Download PDF
                 </button>
-                <button className="save-btn" onClick={() => navigate('/admin/evaluations')} style={{ background: '#6b7280', fontSize: '14px' }}>
+                <button className="btn-secondary" onClick={() => navigate('/admin/evaluations')}>
                   Back to Score View
                 </button>
               </div>
             </header>
 
-            <div className="pf-row" style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '15px', fontWeight: 600 }}>Select Month:</label>
-              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} style={{ padding: '10px 16px', borderRadius: '10px', border: '1.5px solid #d1d5db', fontSize: '14px' }}>
+            <div className="pf-row">
+              <label>Select Month:</label>
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
                 {months.map(m => (
                   <option key={m} value={m}>{m}</option>
                 ))}
@@ -372,11 +377,11 @@ const AdminEvaluationTeachers = () => {
 
             {loading ? (
               <div className="loader">
-                <div className="loading-spinner" style={{width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px'}}></div>
+                <div className="loading-spinner"></div>
                 <div>Loading evaluation data...</div>
               </div>
             ) : rows.length === 0 ? (
-              <div className="form-card" style={{ textAlign: 'center', padding: '60px', color: '#6b7280', fontSize: '16px' }}>
+              <div className="form-card empty-state">
                 No evaluation data found for {selectedMonth}.
               </div>
             ) : (
@@ -405,7 +410,7 @@ const AdminEvaluationTeachers = () => {
                     <table className="ptable">
                       <thead>
                         <tr>
-                          <th colSpan={22}>
+                          <th colSpan={20}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
                               <div style={{ fontSize: '14px', fontWeight: 600 }}>Name of the HOD: {(() => {
                                 // First try to find a HOD in teachers list
@@ -427,7 +432,6 @@ const AdminEvaluationTeachers = () => {
                           <th colSpan={2} style={{ background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' }}>Co-curricular Activities</th>
                           <th colSpan={3} style={{ background: 'linear-gradient(135deg, #ffe4e6 0%, #ffcdd2 100%)' }}>Moral</th>
                           <th rowSpan={2}>Status</th>
-                          <th rowSpan={2} style={{ minWidth: '150px' }}>HOD Remark</th>
                           <th rowSpan={2}>Total</th>
                           <th rowSpan={2}>Percentage</th>
                         </tr>
@@ -560,9 +564,6 @@ const AdminEvaluationTeachers = () => {
                               </div>
                             </td>
                             
-                            <td style={{ textAlign: 'center', fontSize: '12px', maxWidth: '160px', color: teacher.hod_remark ? '#4b5563' : '#d1d5db', fontStyle: teacher.hod_remark ? 'normal' : 'italic' }}>
-                              {teacher.hod_remark || '—'}
-                            </td>
                             <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '14px' }}>{teacher.totalScore.toFixed(1)}</td>
                             <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '14px' }}>{teacher.percentage}%</td>
                           </tr>

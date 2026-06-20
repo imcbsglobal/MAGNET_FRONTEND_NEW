@@ -147,9 +147,11 @@ const AdminEvaluationDashboard = () => {
                 <h1>Evaluation Dashboard</h1>
                 <p>View all teacher evaluations</p>
               </div>
-              <button className="save-btn" onClick={() => navigate('/admin/evaluations/teachers')} style={{ background: '#6b7280' }}>
-                View Teachers Entry Details
-              </button>
+              <div className="header-actions">
+                <button className="save-btn" onClick={() => navigate('/admin/evaluations/teachers')}>
+                  View Teachers Entry Details
+                </button>
+              </div>
             </header>
 
             <div className="form-card">
@@ -171,11 +173,11 @@ const AdminEvaluationDashboard = () => {
 
               {loading ? (
                 <div className="loader">
-                  <div className="loading-spinner" style={{width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px'}}></div>
+                  <div className="loading-spinner"></div>
                   <div>Loading evaluations...</div>
                 </div>
               ) : filteredEvaluations().length === 0 ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: '#6b7280', fontSize: '16px' }}>
+                <div className="empty-state">
                   No entries yet.
                 </div>
               ) : (
@@ -184,12 +186,13 @@ const AdminEvaluationDashboard = () => {
                   const teacher = teachers.find(t => t.id === evaluation.teacher_id);
                   return (
                     <div key={evaluation.id} className="tcard">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>
+                      <div className="tcard-top">
+                        <div className="tcard-teacher">
+                          <span className="tcard-avatar">{(teacher?.username || 'U').charAt(0).toUpperCase()}</span>
                           {teacher?.username || 'Unknown Teacher'}
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: '#6b7280' }}>{evaluation.month}</span>
+                        <div className="tcard-meta">
+                          <span className="tcard-month">{evaluation.month}</span>
                         </div>
                       </div>
 

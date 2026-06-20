@@ -501,18 +501,18 @@ const HODEvaluationDashboard = () => {
                 </div>
 
                 {!selectedTeacherId ? (
-                  <div style={{ padding: '60px', textAlign: 'center', color: '#6b7280', fontSize: '16px' }}>
+                  <div className="empty-state">
                     Select a teacher to begin.
                   </div>
                 ) : loading ? (
                   <div className="loader">
-                    <div className="loading-spinner" style={{width: '40px', height: '40px', border: '4px solid #e5e7eb', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px'}}></div>
+                    <div className="loading-spinner"></div>
                     <div>Loading evaluation...</div>
                   </div>
                 ) : (
                   <>
                     <div className="form-section">
-                      <h3>Academics - Lesson Plan (Max 5)</h3>
+                      <h3>Academics - Lesson Plan</h3>
                       <div className="row">
                         <div className="rlabel">Lesson Plan Submitted?</div>
                         <div className="fields">
@@ -523,8 +523,8 @@ const HODEvaluationDashboard = () => {
                               value={formData.lesson_plan_submitted}
                               onChange={handleChange}
                             >
-                              <option value={0}>No (0)</option>
-                              <option value={3}>Yes (3)</option>
+                              <option value={0}>No</option>
+                              <option value={3}>Yes</option>
                             </select>
                           </div>
                           <div className="fld">
@@ -534,19 +534,18 @@ const HODEvaluationDashboard = () => {
                               value={formData.lesson_plan_quality}
                               onChange={handleChange}
                             >
-                              <option value={0}>— if submitted —</option>
-                              <option value={2}>Excellent (+2)</option>
-                              <option value={1.5}>Good (+1.5)</option>
-                              <option value={1}>Average (+1)</option>
+                              <option value={0}>—</option>
+                              <option value={2}>Excellent</option>
+                              <option value={1.5}>Good</option>
+                              <option value={1}>Average</option>
                             </select>
                           </div>
                         </div>
-                        <div className="score-preview">Score: {calculateLessonPlanScore()}</div>
                       </div>
                     </div>
 
                     <div className="form-section">
-                      <h3>Academics - Subject Knowledge (Max 5)</h3>
+                      <h3>Academics - Subject Knowledge</h3>
                       <div className="row">
 <div className="rlabel">5 parameters - rate each (Exc=1, Good=0.75, Avg=0.5, Below Avg=0.25)</div>
                         <div className="fields">
@@ -567,12 +566,11 @@ const HODEvaluationDashboard = () => {
                             </div>
                           ))}
                         </div>
-                        <div className="score-preview">Score: {calculateSubjectKnowledgeScore()}</div>
                       </div>
                     </div>
 
                     <div className="form-section">
-                      <h3>Academics - Classroom Management (Max 5)</h3>
+                      <h3>Academics - Classroom Management</h3>
                       <div className="row">
                         <div className="fields">
                           <div className="fld">
@@ -583,11 +581,11 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={5}>Excellent (5)</option>
-                              <option value={4}>Very Good (4)</option>
-                              <option value={3}>Good (3)</option>
-                              <option value={2}>Average (2)</option>
-                              <option value={1}>Below Average (1)</option>
+                              <option value={5}>Excellent</option>
+                              <option value={4}>Very Good</option>
+                              <option value={3}>Good</option>
+                              <option value={2}>Average</option>
+                              <option value={1}>Below Average</option>
                             </select>
                           </div>
                         </div>
@@ -595,7 +593,7 @@ const HODEvaluationDashboard = () => {
                     </div>
 
                     <div className="form-section">
-                      <h3>Academics - Activity Based Class (Max 5)</h3>
+                      <h3>Academics - Activity Based Class</h3>
                       <div className="row">
                         <div className="fields">
                           <div className="fld">
@@ -606,11 +604,11 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={5}>Excellent (5)</option>
-                              <option value={4}>Very Good (4)</option>
-                              <option value={3}>Good (3)</option>
-                              <option value={2}>Average (2)</option>
-                              <option value={1}>Below Average (1)</option>
+                              <option value={5}>Excellent</option>
+                              <option value={4}>Very Good</option>
+                              <option value={3}>Good</option>
+                              <option value={2}>Average</option>
+                              <option value={1}>Below Average</option>
                             </select>
                           </div>
                         </div>
@@ -618,7 +616,7 @@ const HODEvaluationDashboard = () => {
                     </div>
 
                     <div className="form-section">
-                      <h3>Academics - Training (Max 5)</h3>
+                      <h3>Academics - Training</h3>
                       <div className="row">
                         <div className="rlabel">Total Training &amp; Training Attended</div>
                         <div className="fields">
@@ -627,10 +625,9 @@ const HODEvaluationDashboard = () => {
                             <input
                               type="number"
                               name="training_total"
-                              value={formData.training_total}
+                              value={formData.training_total || ''}
                               onChange={handleChange}
                               min="0"
-                              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit', fontSize: '14px' }}
                             />
                           </div>
                           <div className="fld">
@@ -638,21 +635,19 @@ const HODEvaluationDashboard = () => {
                             <input
                               type="number"
                               name="training_attended"
-                              value={formData.training_attended}
+                              value={formData.training_attended || ''}
                               onChange={handleChange}
                               min="0"
-                              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #d1d5db', fontFamily: 'inherit', fontSize: '14px' }}
                             />
                           </div>
                         </div>
-                        <div className="score-preview">Score: {calculateTrainingScore()}</div>
                       </div>
                     </div>
 
                     <div className="form-section">
-                      <h3>English Communication (Max 30)</h3>
+                      <h3>English Communication</h3>
                       <div className="row">
-                        <div className="rlabel">Classroom Communication - Max 10</div>
+                        <div className="rlabel">Classroom Communication</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -662,17 +657,17 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={10}>Excellent (10)</option>
-                              <option value={8}>Very Good (8)</option>
-                              <option value={6}>Good (6)</option>
-                              <option value={4}>Average (4)</option>
-                              <option value={2}>Below Average (2)</option>
+                              <option value={10}>Excellent</option>
+                              <option value={8}>Very Good</option>
+                              <option value={6}>Good</option>
+                              <option value={4}>Average</option>
+                              <option value={2}>Below Average</option>
                             </select>
                           </div>
                         </div>
                       </div>
                       <div className="row">
-                        <div className="rlabel">Informal Communication - Max 10</div>
+                        <div className="rlabel">Informal Communication</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -682,17 +677,17 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={10}>Excellent (10)</option>
-                              <option value={8}>Very Good (8)</option>
-                              <option value={6}>Good (6)</option>
-                              <option value={4}>Average (4)</option>
-                              <option value={2}>Below Average (2)</option>
+                              <option value={10}>Excellent</option>
+                              <option value={8}>Very Good</option>
+                              <option value={6}>Good</option>
+                              <option value={4}>Average</option>
+                              <option value={2}>Below Average</option>
                             </select>
                           </div>
                         </div>
                       </div>
                       <div className="row">
-                        <div className="rlabel">Fluency & Vocabulary - Max 10</div>
+                        <div className="rlabel">Fluency & Vocabulary</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -702,11 +697,11 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={10}>Excellent (10)</option>
-                              <option value={8}>Very Good (8)</option>
-                              <option value={6}>Good (6)</option>
-                              <option value={4}>Average (4)</option>
-                              <option value={2}>Below Average (2)</option>
+                              <option value={10}>Excellent</option>
+                              <option value={8}>Very Good</option>
+                              <option value={6}>Good</option>
+                              <option value={4}>Average</option>
+                              <option value={2}>Below Average</option>
                             </select>
                           </div>
                         </div>
@@ -714,9 +709,9 @@ const HODEvaluationDashboard = () => {
                     </div>
 
                     <div className="form-section">
-                      <h3>Co-Curricular Activities (Max 10)</h3>
+                      <h3>Co-Curricular Activities</h3>
                       <div className="row">
-                        <div className="rlabel">Extra Activity - Max 5</div>
+                        <div className="rlabel">Extra Activity</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -726,17 +721,17 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={5}>Excellent (5)</option>
-                              <option value={4}>Very Good (4)</option>
-                              <option value={3}>Good (3)</option>
-                              <option value={2}>Average (2)</option>
-                              <option value={1}>Below Average (1)</option>
+                              <option value={5}>Excellent</option>
+                              <option value={4}>Very Good</option>
+                              <option value={3}>Good</option>
+                              <option value={2}>Average</option>
+                              <option value={1}>Below Average</option>
                             </select>
                           </div>
                         </div>
                       </div>
                       <div className="row">
-                        <div className="rlabel">Reward - Max 5</div>
+                        <div className="rlabel">Reward</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -746,11 +741,11 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={5}>Excellent (5)</option>
-                              <option value={4}>Very Good (4)</option>
-                              <option value={3}>Good (3)</option>
-                              <option value={2}>Average (2)</option>
-                              <option value={1}>Below Average (1)</option>
+                              <option value={5}>Excellent</option>
+                              <option value={4}>Very Good</option>
+                              <option value={3}>Good</option>
+                              <option value={2}>Average</option>
+                              <option value={1}>Below Average</option>
                             </select>
                           </div>
                         </div>
@@ -758,9 +753,9 @@ const HODEvaluationDashboard = () => {
                     </div>
 
                     <div className="form-section">
-                      <h3>Moral (Max 10)</h3>
+                      <h3>Moral</h3>
                       <div className="row">
-                        <div className="rlabel">Discipline of Children - Max 4</div>
+                        <div className="rlabel">Discipline of Children</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -770,16 +765,16 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={4}>Excellent (4)</option>
-                              <option value={3}>Good (3)</option>
-                              <option value={2}>Average (2)</option>
-                              <option value={1}>Below Average (1)</option>
+                              <option value={4}>Excellent</option>
+                              <option value={3}>Good</option>
+                              <option value={2}>Average</option>
+                              <option value={1}>Below Average</option>
                             </select>
                           </div>
                         </div>
                       </div>
                       <div className="row">
-                        <div className="rlabel">Uniform - Max 3</div>
+                        <div className="rlabel">Uniform</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -789,15 +784,15 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={3}>Excellent (3)</option>
-                              <option value={2}>Good (2)</option>
-                              <option value={1}>Average (1)</option>
+                              <option value={3}>Excellent</option>
+                              <option value={2}>Good</option>
+                              <option value={1}>Average</option>
                             </select>
                           </div>
                         </div>
                       </div>
                       <div className="row">
-                        <div className="rlabel">Good Deeds - Max 3</div>
+                        <div className="rlabel">Good Deeds</div>
                         <div className="fields">
                           <div className="fld">
                             <label>Rating</label>
@@ -807,9 +802,9 @@ const HODEvaluationDashboard = () => {
                               onChange={handleChange}
                             >
                               <option value={0}>—</option>
-                              <option value={3}>Excellent (3)</option>
-                              <option value={2}>Good (2)</option>
-                              <option value={1}>Average (1)</option>
+                              <option value={3}>Excellent</option>
+                              <option value={2}>Good</option>
+                              <option value={1}>Average</option>
                             </select>
                           </div>
                         </div>
@@ -823,11 +818,11 @@ const HODEvaluationDashboard = () => {
                           <div className="fld" style={{ width: '100%' }}>
                             <label>Remark (optional)</label>
                             <textarea
+                              className="textarea"
                               name="hod_remark"
                               value={formData.hod_remark}
                               onChange={(e) => setFormData(prev => ({ ...prev, hod_remark: e.target.value }))}
                               rows={3}
-                              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #d1d5db', resize: 'vertical', fontFamily: 'inherit', fontSize: '14px' }}
                               placeholder="Enter any remarks..."
                             />
                           </div>
