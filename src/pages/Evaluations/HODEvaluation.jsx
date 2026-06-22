@@ -547,14 +547,23 @@ const HODEvaluationDashboard = () => {
                     <div className="form-section">
                       <h3>Academics - Subject Knowledge</h3>
                       <div className="row">
-<div className="rlabel">5 parameters - rate each (Exc=1, Good=0.75, Avg=0.5, Below Avg=0.25)</div>
-                        <div className="fields">
-                          {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="fld">
-                              <label>Param {i}</label>
+
+                        <div className="fields subject-knowledge-fields">
+                          {[
+                            { id: 1, name: 'Mastery of Subject Content', desc: 'Demonstrates accurate and in-depth knowledge of the subject.' },
+                            { id: 2, name: 'Concept Clarity', desc: 'Explains concepts clearly and correctly to students.' },
+                            { id: 3, name: 'Ability to Answer Students\' Questions', desc: 'Responds confidently and accurately to queries.' },
+                            { id: 4, name: 'Updated Knowledge', desc: 'Keeps up with recent developments, curriculum changes, and innovations in the subject.' },
+                            { id: 5, name: 'Application & Integration', desc: 'Relates subject knowledge to real-life situations and interdisciplinary learning.' },
+                          ].map(p => (
+                            <div key={p.id} className="fld param-card">
+                              <label>
+                                {p.name}
+                                <span className="info-icon" title={p.desc}>ⓘ</span>
+                              </label>
                               <select
-                                name={`subject_knowledge_${i}`}
-                                value={formData[`subject_knowledge_${i}`]}
+                                name={`subject_knowledge_${p.id}`}
+                                value={formData[`subject_knowledge_${p.id}`]}
                                 onChange={handleChange}
                               >
                                 <option value={0}>—</option>

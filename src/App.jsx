@@ -23,6 +23,7 @@ import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
 import SchoolInfo from './pages/SchoolInfo/SchoolInfo';
 import HouseGroupMaster from './pages/Masters/HouseGroupMaster';
 import TeacherHoursMaster from './pages/Masters/TeacherHoursMaster';
+import SubjectMaster from './pages/Masters/SubjectMaster';
 import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
 import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
@@ -78,6 +79,7 @@ function AppContent() {
         <Route path="/admin/school-info" element={<SchoolInfo />} />
         <Route path="/admin/masters/house-groups" element={<HouseGroupMaster />} />
         <Route path="/admin/masters/teacher-hours" element={<TeacherHoursMaster />} />
+        <Route path="/admin/masters/subjects" element={<SubjectMaster />} />
         <Route path="/admin/job-categories" element={<JobCategoriesList />} />
         <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
         <Route path="/admin-dashboard"     element={<AdminDashboard />} />
@@ -92,6 +94,7 @@ function AppContent() {
         <Route path="/admin/calendar"              element={<CalendarSetup />} />
         <Route path="/admin/school-info"           element={<SchoolInfo />} />
         <Route path="/admin/masters/house-groups"  element={<HouseGroupMaster />} />
+        <Route path="/admin/masters/subjects"      element={<SubjectMaster />} />
         <Route path="/admin/job-categories"        element={<JobCategoriesList />} />
         <Route path="/admin/job-categories/add"    element={<JobCategoryAdd />} />
         <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />

@@ -416,7 +416,7 @@ const TeacherEvaluationDashboard = () => {
                           <h3>Exam</h3>
                           <div className="row">
                             <div className="rlabel">Exam Conducted</div>
-                            <div className="rsub">If exam was conducted = 6 pts, plus performance up to 4 pts</div>
+
                             <div className="fields">
                               <div className="fld">
                                 <label>
@@ -487,7 +487,7 @@ const TeacherEvaluationDashboard = () => {
                           <h3>Notebook</h3>
                           <div className="row">
                             <div className="rlabel">Notebook Check</div>
-                            <div className="rsub">Select check level for 0, 3, or 6 points. Performance based on student grades.</div>
+
                             <div className="fields" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
                               <div className="fld">
                                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -583,7 +583,17 @@ const TeacherEvaluationDashboard = () => {
                           <h3>Smart Room</h3>
                           <div className="row">
                             <div className="rlabel">Smart Room Usage</div>
-                            <div className="rsub">{hoursConfig.required_hours} hrs/month reference. Above 30% usage = 3 pts. Creative content ≥70% = 2 pts.</div>
+                            <div className="fields" style={{ marginBottom: '12px' }}>
+                              <div className="fld">
+                                <label>Required Hours (Logged)</label>
+                                <input
+                                  type="number"
+                                  value={hoursConfig.required_hours || 110}
+                                  disabled
+                                  style={{ background: '#f0f0f0', fontWeight: 'bold' }}
+                                />
+                              </div>
+                            </div>
                             <div className="fields">
                               <div className="fld">
                                 <label>Hours Used</label>
