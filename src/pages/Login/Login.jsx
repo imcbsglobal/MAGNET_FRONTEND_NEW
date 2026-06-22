@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superadminLogin, administratorLogin, teacherLogin, parentLogin } from '../../services/api';
 import loginImage from '../../assets/loginpage.png';
@@ -18,6 +18,20 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('userType');
+    if (!token || !userType) return;
+
+    const dashboardMap = {
+      superuser: '/superuser-dashboard',
+      admin: '/admin-dashboard',
+      staff: localStorage.getItem('jobCategory') === 'Teacher' ? '/teacher/evaluation' : localStorage.getItem('jobCategory') === 'HOD' ? '/hod/evaluation' : '/staff-dashboard',
+      parent: '/parent-dashboard',
+    };
+    window.location.replace(dashboardMap[userType] || '/');
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(prev => !prev);
@@ -73,7 +87,7 @@ const Login = () => {
     }
 
     setTimeout(() => {
-      navigate(targetPath);
+      window.location.replace(targetPath);
     }, 1500);
   };
 

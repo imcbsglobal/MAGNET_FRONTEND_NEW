@@ -193,7 +193,7 @@ const StaffList = () => {
                         <th>Job Category</th>
                         <th>Primary Class</th>
                         <th>Primary Division</th>
-                        <th>Additional Assignments</th>
+                        <th>Assigned Classes</th>
                         <th>Reg Number</th>
                         <th>School Reg No</th>
                         <th>Address</th>

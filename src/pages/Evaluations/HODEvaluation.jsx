@@ -538,6 +538,7 @@ const HODEvaluationDashboard = () => {
                               <option value={2}>Excellent</option>
                               <option value={1.5}>Good</option>
                               <option value={1}>Average</option>
+                              <option value={0.25}>Below Average</option>
                             </select>
                           </div>
                         </div>

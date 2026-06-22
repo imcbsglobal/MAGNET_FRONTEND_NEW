@@ -9,7 +9,8 @@ import {
   fetchAllClassEvaluations,
   finishMonthEvaluation,
   fetchTeacherMonthEvaluation,
-  fetchTeacherHours
+  fetchTeacherHours,
+  fetchStudentsByClassDivision
 } from '../../services/api';
 import './Evaluations.scss';
 
@@ -28,15 +29,18 @@ const TeacherEvaluationDashboard = () => {
   const [finishing, setFinishing] = useState(false);
   const [finalScores, setFinalScores] = useState(null);
   const [hoursConfig, setHoursConfig] = useState({ required_hours: 110 });
+  const [studentCount, setStudentCount] = useState(0);
   
   const [formData, setFormData] = useState({
     exam_conducted: false,
+    exam_attended: 0,
     exam_excellent: 0,
     exam_good: 0,
     exam_average: 0,
     exam_below_average: 0,
     notebook_check1: false,
     notebook_check2: false,
+    notebook_submitted: 0,
     notebook_excellent: 0,
     notebook_good: 0,
     notebook_average: 0,
@@ -66,8 +70,20 @@ const TeacherEvaluationDashboard = () => {
   useEffect(() => {
     if (selectedClass && selectedDivision && teacherId) {
       loadClassEvaluation();
+      fetchStudentCount();
     }
   }, [selectedClass, selectedDivision, teacherId]);
+
+  const fetchStudentCount = async () => {
+    try {
+      const institutionId = localStorage.getItem('institutionId');
+      if (!institutionId || !selectedClass || !selectedDivision) return;
+      const res = await fetchStudentsByClassDivision(institutionId, selectedClass, selectedDivision);
+      setStudentCount(res.data.length || 0);
+    } catch (err) {
+      setStudentCount(0);
+    }
+  };
 
   const loadTeacherClasses = async () => {
     try {
@@ -143,12 +159,14 @@ const TeacherEvaluationDashboard = () => {
       
       setFormData({
         exam_conducted: data.exam_conducted || false,
+        exam_attended: data.exam_attended || 0,
         exam_excellent: data.exam_excellent || 0,
         exam_good: data.exam_good || 0,
         exam_average: data.exam_average || 0,
         exam_below_average: data.exam_below_average || 0,
         notebook_check1: check1,
         notebook_check2: check2,
+        notebook_submitted: data.notebook_submitted || 0,
         notebook_excellent: data.notebook_excellent || 0,
         notebook_good: data.notebook_good || 0,
         notebook_average: data.notebook_average || 0,
@@ -162,12 +180,14 @@ const TeacherEvaluationDashboard = () => {
       // Initialize with empty data if no evaluation exists yet
       setFormData({
         exam_conducted: false,
+        exam_attended: 0,
         exam_excellent: 0,
         exam_good: 0,
         exam_average: 0,
         exam_below_average: 0,
         notebook_check1: false,
         notebook_check2: false,
+        notebook_submitted: 0,
         notebook_excellent: 0,
         notebook_good: 0,
         notebook_average: 0,
@@ -200,10 +220,23 @@ const TeacherEvaluationDashboard = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : (value === '' ? 0 : parseFloat(value))
-    }));
+    const numVal = value === '' ? 0 : parseFloat(value);
+    setFormData(prev => {
+      const examFields = ['exam_excellent', 'exam_good', 'exam_average', 'exam_below_average'];
+      const notebookFields = ['notebook_excellent', 'notebook_good', 'notebook_average', 'notebook_below_average'];
+      let clamped = numVal;
+      if (examFields.includes(name)) {
+        const othersSum = examFields.filter(f => f !== name).reduce((s, f) => s + (prev[f] || 0), 0);
+        clamped = Math.min(numVal, Math.max(0, (prev.exam_attended || 0) - othersSum));
+      } else if (notebookFields.includes(name)) {
+        const othersSum = notebookFields.filter(f => f !== name).reduce((s, f) => s + (prev[f] || 0), 0);
+        clamped = Math.min(numVal, Math.max(0, (prev.notebook_submitted || 0) - othersSum));
+      }
+      return {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : clamped
+      };
+    });
   };
 
   const calculateFinalScores = (data) => {
@@ -370,6 +403,11 @@ const TeacherEvaluationDashboard = () => {
                     {/* Class and Division Selection */}
                     <div className="panel panel--step" style={{ opacity: isMonthFinished ? 0.7 : 1 }}>
                       <h3>Step 1: Select Class &amp; Division</h3>
+                      {selectedClass && selectedDivision && (
+                        <div className="score-preview" style={{ marginBottom: '12px', display: 'inline-flex' }}>
+                          👥 Total Students: {studentCount}
+                        </div>
+                      )}
                       <div className="fields">
                         <div className="fld">
                           <label>Select Class</label>
@@ -432,6 +470,23 @@ const TeacherEvaluationDashboard = () => {
                               </div>
                             </div>
                             {formData.exam_conducted && (
+                              <>
+                                <div className="score-preview" style={{ marginBottom: '12px', display: 'inline-flex' }}>
+                                  📝 Exam Attended: {(formData.exam_attended || 0)} / {studentCount}
+                                </div>
+                              <div className="fields">
+                                <div className="fld">
+                                  <label>Exam Attended Count</label>
+                                  <input
+                                    type="number"
+                                    name="exam_attended"
+                                    min="0"
+                                    value={formData.exam_attended || ''}
+                                    onChange={handleChange}
+                                    disabled={isMonthFinished}
+                                  />
+                                </div>
+                              </div>
                               <div className="fields">
                                 <div className="fld">
                                   <label>Excellent Students</label>
@@ -478,7 +533,7 @@ const TeacherEvaluationDashboard = () => {
                                   />
                                 </div>
                               </div>
-                            )}
+                            </>)}
                           </div>
                         </div>
 
@@ -499,7 +554,7 @@ const TeacherEvaluationDashboard = () => {
                                     onChange={(e) => handleNotebookCheckChange('0')}
                                     disabled={isMonthFinished}
                                   />
-                                  No Checks (0 pts)
+                                  No Checks
                                 </label>
                               </div>
                               <div className="fld">
@@ -512,7 +567,7 @@ const TeacherEvaluationDashboard = () => {
                                     onChange={(e) => handleNotebookCheckChange('3')}
                                     disabled={isMonthFinished}
                                   />
-                                  One Check (3 pts)
+                                  One Check
                                 </label>
                               </div>
                               <div className="fld">
@@ -525,8 +580,24 @@ const TeacherEvaluationDashboard = () => {
                                     onChange={(e) => handleNotebookCheckChange('6')}
                                     disabled={isMonthFinished}
                                   />
-                                  Two Checks (6 pts)
+                                  Two Checks
                                 </label>
+                              </div>
+                            </div>
+                            <div className="score-preview" style={{ marginBottom: '12px', display: 'inline-flex' }}>
+                              📓 Notebook Submitted: {(formData.notebook_submitted || 0)} / {studentCount}
+                            </div>
+                            <div className="fields">
+                              <div className="fld">
+                                <label>Notebook Submitted Count</label>
+                                <input
+                                  type="number"
+                                  name="notebook_submitted"
+                                  min="0"
+                                  value={formData.notebook_submitted || ''}
+                                  onChange={handleChange}
+                                  disabled={isMonthFinished}
+                                />
                               </div>
                             </div>
                             <div className="fields">

@@ -378,7 +378,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
           isOpen={showLogoutConfirm}
           title="Confirm Logout"
           message="Are you sure you want to log out of the system?"
-          onConfirm={() => { localStorage.clear(); window.location.href = '/'; }}
+          onConfirm={() => { localStorage.clear(); window.location.replace('/'); }}
           onCancel={() => setShowLogoutConfirm(false)}
           confirmText="Yes, Logout"
           type="danger"

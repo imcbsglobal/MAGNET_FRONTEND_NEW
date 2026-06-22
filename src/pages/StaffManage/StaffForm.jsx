@@ -207,7 +207,7 @@ const StaffForm = () => {
 
               <div className="form-section">
                 <div className="section-header">
-                  <h3>Class Assignments</h3>
+                  <h3>Class Incharge</h3>
                   <button 
                     type="button" 
                     className="add-btn" 
@@ -243,7 +243,7 @@ const StaffForm = () => {
                 {/* Additional Classes */}
                 {formData.additional_class_assignments.length > 0 && (
                   <div style={{ marginTop: '15px' }}>
-                    <h4 style={{ fontSize: '0.9rem', color: '#666', marginBottom: '10px', fontWeight: '600' }}>Additional Assignments</h4>
+                    <h4 style={{ fontSize: '0.9rem', color: '#666', marginBottom: '10px', fontWeight: '600' }}>Assigned Classes</h4>
                     {formData.additional_class_assignments.map((assignment, index) => (
                       <div key={index} className="form-grid" style={{ marginBottom: '12px' }}>
                         <div className="form-group">
