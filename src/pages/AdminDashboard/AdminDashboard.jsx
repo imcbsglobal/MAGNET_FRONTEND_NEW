@@ -42,9 +42,8 @@ const AdminDashboard = () => {
   const monthName = today.toLocaleString('default', { month: 'long' });
 
   useEffect(() => {
-    if (!institutionId) {
-      setError('Institution ID missing. Please log in again.');
-      setLoading(false);
+    if (!institutionId || !localStorage.getItem('token')) {
+      window.location.replace('/login');
       return;
     }
 

@@ -196,6 +196,16 @@ export const saveHouseGroup = (data) =>
 export const deleteHouseGroup = (groupId) =>
   api.delete(`id-card/house-groups-delete/${groupId}/`);
 
+// Subject Master
+export const fetchSubjects = (institutionId) =>
+  api.get(`subjects/${encodeURIComponent(institutionId)}/`);
+
+export const saveSubject = (data) =>
+  api.post('subjects/add/', data);
+
+export const deleteSubject = (subjectId) =>
+  api.delete(`subjects/delete/${subjectId}/`);
+
 // Chat
 export const fetchChatContacts = (params) => api.get('chat/contacts/', { params });
 export const getOrCreateChatRoom = (data) => api.post('chat/get-room/', data);
