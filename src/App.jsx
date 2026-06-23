@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/Login/Login';
+import SuperUserLogin from './pages/Login/SuperUserLogin';
 import SuperUserDashboard from './pages/SuperUserDashboard/SuperUserDashboard';
 import AdministratorsList from './pages/Administrators/AdministratorsList';
 import AdministratorForm from './pages/Administrators/AdministratorForm';
@@ -42,19 +43,21 @@ import './App.css';
 function AppContent() {
   const location = useLocation();
 
-  const isLandingPage = location.pathname === '/';
-  const isLoginPage   = location.pathname === '/login';
-  const isIDCardForm  = location.pathname.startsWith('/id-card/form');
+  const isLandingPage  = location.pathname === '/';
+  const isLoginPage    = location.pathname === '/login';
+  const isSuperUserLogin = location.pathname === '/login/suser';
+  const isIDCardForm   = location.pathname.startsWith('/id-card/form');
 
   // Hide the floating chat widget on landing, login, and ID card form pages
-  const hideChat = isLandingPage || isLoginPage || isIDCardForm;
+  const hideChat = isLandingPage || isLoginPage || isSuperUserLogin || isIDCardForm;
 
   return (
     <div className="App">
       <Routes>
         {/* Landing page is the first thing users see */}
-        <Route path="/"      element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/"           element={<LandingPage />} />
+        <Route path="/login"      element={<Login />} />
+        <Route path="/login/suser" element={<SuperUserLogin />} />
 
         {/* Dashboards */}
         <Route path="/superuser-dashboard" element={<SuperUserDashboard />} />

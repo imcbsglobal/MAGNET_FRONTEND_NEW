@@ -42,6 +42,10 @@ export const superadminLogin = (credentials) => {
   return api.post('superadmin-login/', credentials);
 };
 
+export const superuserLogin = (credentials) => {
+  return api.post('login/suser/', credentials);
+};
+
 export const administratorLogin = (credentials) => {
   return api.post('admin-login/', credentials);
 };
