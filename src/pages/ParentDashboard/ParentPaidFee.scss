@@ -1,0 +1,535 @@
+/* =========================================================
+   Parent Paid Fee – matches IDCardDetails.jsx UI
+   (same Inter / navy / indigo system as IDCard.scss)
+   Mobile: table → cards (month, particulars, amount + View)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$accent:         #4F46E5;
+$accent-light:   #EEF2FF;
+$ink:            #0F1E3D;
+$navy:           #1B2A4E;
+$subtext:        #6B7B96;
+$border:         #E5E9F0;
+$bg:             #F6F8FB;
+$head-bg:        #F8FAFC;
+$green:          #16A34A;
+$green-light:    #E8F8EE;
+$red:            #E11D48;
+$red-light:      #FDEAEE;
+$yellow:         #D97706;
+$yellow-light:   #FEF3E2;
+$grey:           #A4AEC2;
+$pill-bg:        #F1F2F5;
+$pill-border:    #E2E4E9;
+
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-pill: 100px;
+
+$shadow-card:    0 1px 2px rgba(15, 30, 62, 0.05), 0 1px 1px rgba(15, 30, 62, 0.04);
+$shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
+$shadow-card-lg: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+$shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
+
+/* ─── Shared Buttons ─────────────────────────────────────── */
+.primary-btn,
+.secondary-btn {
+  font-family: 'Inter', sans-serif;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  padding: 9px 18px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.primary-btn {
+  background: $accent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba($accent, 0.32);
+  &:hover    { background: darken($accent, 6%); box-shadow: 0 6px 16px rgba($accent, 0.42); transform: translateY(-1px); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+}
+.secondary-btn {
+  background: #fff;
+  color: $ink;
+  border-color: $border;
+  &:hover    { background: $bg; border-color: darken($border, 8%); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+}
+
+/* ─── Page ───────────────────────────────────────────────── */
+.fee-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: $bg;
+  min-height: 100%;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.fee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  background: #fff;
+  border: none;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card-lg;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 3px;
+    font-size: 1.32rem;
+    font-weight: 800;
+    color: $ink;
+    letter-spacing: -0.015em;
+  }
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: $subtext;
+
+    strong { color: $ink; font-weight: 700; }
+  }
+}
+
+.fee-header-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fee-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #34D399, #059669);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba($green, 0.38);
+
+  svg { width: 24px; height: 24px; stroke-width: 1.8; }
+}
+
+/* ─── Header pills ───────────────────────────────────────── */
+.fee-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.fee-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+.fee-pill--paid {
+  background: $green-light;
+  color: darken($green, 8%);
+  border-color: rgba($green, 0.3);
+  &::before { background: $green; }
+}
+
+/* ─── Error banner ───────────────────────────────────────── */
+.fee-error {
+  padding: 10px 16px;
+  border-radius: $radius-sm;
+  font-weight: 600;
+  font-size: 0.82rem;
+  background: $red-light;
+  color: darken($red, 5%);
+  border: 1px solid rgba($red, 0.3);
+}
+
+/* ─── Search bar ─────────────────────────────────────────── */
+.fee-search-bar {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-raised;
+  padding: 16px 20px;
+}
+
+.search-input-wrapper {
+  flex: 0 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &::before {
+    content: "Search";
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $subtext;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+.fee-search-bar input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border-radius: $radius-sm;
+  border: 1.5px solid $border;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;
+  color: $ink;
+  font-size: 0.85rem;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  box-sizing: border-box;
+
+  &::placeholder { color: $grey; }
+  &:focus {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba($accent, 0.12);
+  }
+}
+
+/* ─── Table card ─────────────────────────────────────────── */
+.fee-table-card {
+  background: #fff;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  box-shadow: $shadow-raised;
+  overflow: hidden;
+}
+
+.fee-empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: $grey;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: #fff;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  &::-webkit-scrollbar       { height: 6px; }
+  &::-webkit-scrollbar-track { background: $bg; }
+  &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
+}
+
+.fee-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1000px;
+
+  th, td {
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 1px solid $border;
+    border-right: 1px solid $border;
+    font-size: 0.81rem;
+    color: $ink;
+    vertical-align: middle;
+  }
+
+  th:last-child, td:last-child { border-right: none; }
+
+  th {
+    font-weight: 800;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $navy;
+    background: $head-bg;
+    white-space: nowrap;
+    border-bottom: 2px solid darken($border, 10%);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody tr {
+    transition: background 0.1s;
+    &:nth-child(even) { background: #FAFBFD; }
+    &:nth-child(odd)  { background: #fff; }
+    &:hover           { background: $accent-light; }
+    &:last-child td   { border-bottom: none; }
+  }
+
+  .no-col { width: 54px; color: $subtext; font-weight: 600; }
+
+  .money-col {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .txn-col { max-width: 160px; }
+}
+
+/* ─── Cell variants ──────────────────────────────────────── */
+.fine-cell {
+  color: darken($red, 4%);
+  font-weight: 600;
+
+  &.is-zero { color: $grey; font-weight: 500; }
+}
+.paid-amount-cell { color: $ink; font-weight: 600; }
+.total-cell       { color: $accent; font-weight: 800; }
+
+.txn-cell {
+  font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: $subtext;
+  word-break: break-all;
+}
+
+.datetime-cell {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+
+  .dt-date { font-weight: 600; color: $ink; }
+  .dt-time { font-size: 0.72rem; color: $subtext; font-variant-numeric: tabular-nums; }
+}
+
+/* ─── Status badge ───────────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.success { background: $green-light; color: darken($green, 8%); border: 1px solid rgba($green, 0.3); &::before { background: $green; } }
+  &.failed  { background: $red-light;   color: darken($red, 5%);   border: 1px solid rgba($red, 0.3);   &::before { background: $red; } }
+}
+
+/* ─── Mobile cards (hidden on desktop) ───────────────────── */
+.fee-cards { display: none; }
+
+.fee-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid $border;
+  background: #fff;
+
+  &:last-child { border-bottom: none; }
+}
+
+.fee-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fee-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fee-card-month {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: $ink;
+}
+
+.fee-card-particulars {
+  font-size: 0.8rem;
+  color: $subtext;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fee-card-amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: $accent;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.fee-card-view {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 9px 18px;
+  border-radius: $radius-sm;
+  border: 1px solid rgba($accent, 0.4);
+  background: #fff;
+  color: $accent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.12s;
+
+  &:hover  { background: $accent-light; border-color: $accent; }
+  &:active { transform: scale(0.97); }
+}
+
+/* ─── Detail modal ───────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 30, 62, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: $radius-lg;
+  width: min(440px, 100%);
+  border: 1px solid $border;
+  box-shadow: $shadow-modal;
+  overflow: hidden;
+  animation: modalIn 0.18s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid $border;
+  background: $head-bg;
+
+  h2 { margin: 0; font-size: 0.98rem; font-weight: 800; color: $ink; }
+}
+.modal-sub {
+  font-size: 0.75rem;
+  color: $subtext;
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+}
+.modal-close {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: $subtext;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover { background: $pill-bg; border-color: darken($border, 8%); color: $ink; }
+}
+
+.modal-body {
+  padding: 8px 22px;
+  display: flex;
+  flex-direction: column;
+}
+.modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid $border;
+
+  &:last-child { border-bottom: none; }
+}
+.modal-label {
+  font-size: 0.73rem;
+  color: $subtext;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.modal-value {
+  font-size: 0.84rem;
+  color: $ink;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+
+  &--total { color: $accent; font-weight: 800; }
+  &--mono  { font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace; font-size: 0.78rem; }
+}
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid $border;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: $head-bg;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .fee-header           { flex-direction: column; align-items: flex-start; }
+  .fee-search-bar       { padding: 14px; }
+  .search-input-wrapper { flex: 1; }
+
+  /* swap table → cards */
+  .table-responsive     { display: none; }
+  .fee-cards            { display: block; }
+
+  .modal-footer         { flex-direction: column; }
+  .modal-footer .secondary-btn { width: 100%; text-align: center; }
+}
