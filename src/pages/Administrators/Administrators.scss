@@ -209,6 +209,34 @@ $text-muted: #a3aed0;
     color: $dark-blue;
   }
 
+  .password-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: monospace;
+    font-size: 0.82rem;
+  }
+
+  .password-eye-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: $text-muted;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+
+    &:hover {
+      background: #eef2ff;
+      color: $primary-blue;
+    }
+  }
+
   .password-toggle-btn {
     display: inline-flex;
     align-items: center;

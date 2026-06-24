@@ -50,7 +50,7 @@ const AdministratorForm = () => {
           phone_number:     data.phone_number     || '',
           institution_id:   data.institution_id   || '',
           username:         data.username         || '',
-          password:         data.password         || '',
+          password:         data.password === '********' ? '' : (data.password || ''),
           has_payment:      data.has_payment      ?? false,   // ← add this
         });
       } catch (err) {
