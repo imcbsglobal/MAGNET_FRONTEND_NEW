@@ -33,6 +33,7 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
   gap: 28px;
   background: $bg;
   min-height: 100%;
+  min-width: 0;
 
   /* ── Shared buttons (scoped) ── */
   .primary-btn, .secondary-btn {
@@ -115,17 +116,30 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
     align-items: center;
   }
 
-  /* ── Table card ── */
+  /* ── Table card: overflow: hidden removed — it clips .table-responsive
+     and prevents horizontal scrolling. min-width: 0 added so this flex
+     child doesn't blow out its container. ── */
   .category-table-card {
     background: #fff;
     border-radius: $radius-md;
     border: 1px solid $border;
     box-shadow: $shadow-card-lg;
-    overflow: hidden;
+    min-width: 0;
   }
 
+  /* display: block + min-width: 0 needed so this flex descendant can
+     actually shrink and register as a scroll container on mobile.
+     touch-action: pan-x is explicit because Android Chrome nested inside
+     flex ancestors doesn't always infer it from overflow-x: auto alone. */
   .table-responsive {
+    display: block;
+    width: 100%;
+    min-width: 0;
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    border-radius: $radius-md;
     &::-webkit-scrollbar       { height: 6px; }
     &::-webkit-scrollbar-track { background: $bg; }
     &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
@@ -318,5 +332,26 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
   @media (max-width: 640px) {
     .category-header { flex-direction: column; align-items: flex-start; }
     .category-table-controls { flex-direction: column; align-items: flex-start; }
+  }
+}
+
+/* ── Mobile shell override: scoped to this page only ──────────────────────
+   Forces the shared dashboard shell ancestors open on mobile so they can't
+   clip .table-responsive, which is the sole scroll owner. Scoped under
+   .job-categories-page so it never leaks onto other pages. */
+@media (max-width: 1024px) {
+  .dashboard-wrapper,
+  .dashboard-main {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .job-categories-page,
+  .job-categories-page .category-table-card {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .job-categories-page .table-responsive {
+    overflow-x: auto !important;
+    min-width: 0 !important;
   }
 }
