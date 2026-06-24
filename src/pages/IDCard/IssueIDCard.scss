@@ -392,6 +392,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 /* No-selection placeholder */
@@ -778,10 +779,69 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
 }
 
 @media (max-width: 640px) {
-  .idcard-header    { flex-direction: column; align-items: flex-start; }
+  .idcard-page { padding: 12px 12px 28px; gap: 14px; }
+
+  .idcard-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 14px;
+
+    h1 { font-size: 1.05rem; }
+    p  { font-size: 0.78rem; }
+  }
+  .idcard-header-main { gap: 10px; }
+  .idcard-header-icon { width: 36px; height: 36px; svg { width: 18px; height: 18px; } }
+
+  .idcard-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .idcard-header-actions .secondary-btn,
+  .idcard-header-actions .primary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .idcard-edit-grid { grid-template-columns: 1fr; }
-  .issue-selected-banner { gap: 10px; }
-  .issue-selected-actions { width: 100%; justify-content: flex-end; }
-  .idcard-header-actions { width: 100%; }
-  .idcard-header-actions .secondary-btn { flex: 1; justify-content: center; }
+
+  /* Selected banner — stack neatly */
+  .issue-selected-banner {
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .issue-selected-info { flex: 1 1 auto; }
+  .issue-selected-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .issue-selected-actions .primary-btn { flex: 1; justify-content: center; }
+
+  /* Preview cards centered + stacked */
+  .issue-preview-card { padding: 14px; }
+  .idt-preview-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  /* Edit panel */
+  .idcard-edit-panel { padding: 14px 14px; }
+  .idcard-edit-actions { flex-direction: column; }
+  .idcard-edit-actions .primary-btn,
+  .idcard-edit-actions .secondary-btn { width: 100%; justify-content: center; }
+
+  .idcard-edit-panel-header { flex-wrap: wrap; gap: 4px; }
+}
+
+@media (max-width: 380px) {
+  .issue-list-header { padding: 10px 12px; }
+  .issue-student-row { padding: 9px 10px; gap: 8px; }
+
+  /* Scale ID cards down slightly so they never overflow tiny screens */
+  .idt-card {
+    width: 220px;
+    height: 348px;
+  }
 }

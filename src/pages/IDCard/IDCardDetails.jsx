@@ -415,15 +415,15 @@ const IDCardDetails = () => {
                   <tbody>
                     {filtered.map((student, index) => (
                       <tr key={`${student.admno}-${index}`}>
-                        <td>{index + 1}</td>
-                        <td>{student.admno}</td>
-                        <td>{(student.student_name  || '').toUpperCase()}</td>
-                        <td>{(student.student_class || '').toUpperCase()}</td>
-                        <td>{(student.div           || '').toUpperCase()}</td>
-                        <td>{(student.details?.house_group || '-').toUpperCase()}</td>
-                        <td>{student.mobile || '-'}</td>
-                        <td>{statusBadge(student.link_status, isAdmin)}</td>
-                        <td>
+                        <td data-label="No">{index + 1}</td>
+                        <td data-label="Adm No">{student.admno}</td>
+                        <td data-label="Student">{(student.student_name  || '').toUpperCase()}</td>
+                        <td data-label="Class">{(student.student_class || '').toUpperCase()}</td>
+                        <td data-label="Div">{(student.div           || '').toUpperCase()}</td>
+                        <td data-label="House Group">{(student.details?.house_group || '-').toUpperCase()}</td>
+                        <td data-label="Mobile">{student.mobile || '-'}</td>
+                        <td data-label="Status">{statusBadge(student.link_status, isAdmin)}</td>
+                        <td data-label="Actions">
                           {(student.parent_submitted || isAdmin) && (
                             <div className="idcard-actions-cell">
                               <button
