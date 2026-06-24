@@ -324,6 +324,36 @@ $red-border: #FBD2DA;
     }
   }
 
+  /* ── Assigned Teachers (HOD) ── */
+  .assigned-teachers-section {
+    .section-desc {
+      margin: -8px 0 16px;
+      font-size: 0.82rem;
+      color: $subtext;
+      font-weight: 500;
+    }
+
+    .subject-tag {
+      background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+      color: #2E7D32;
+      border-color: #A5D6A7;
+
+      .subject-tag-remove {
+        color: #43A047;
+
+        &:hover {
+          background: $red;
+          color: #fff;
+        }
+      }
+    }
+
+    .subjects-tags:has(.subject-tag) {
+      border-color: #C8E6C9;
+      background: linear-gradient(135deg, #F1F8E9, #F9FBE7);
+    }
+  }
+
   /* ── Responsive ── */
   @media (max-width: 1024px) {
     .form-header { flex-direction: column; align-items: flex-start; }

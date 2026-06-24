@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import { fetchTeachers, fetchTeacherMonthEvaluation, fetchAllClassEvaluations, saveEvaluation, fetchTeacherHours } from '../../services/api';
+import { fetchTeachers, fetchTeacherById, fetchTeacherMonthEvaluation, fetchAllClassEvaluations, saveEvaluation, fetchTeacherHours } from '../../services/api';
 import './Evaluations.scss';
 
 const HODEvaluationDashboard = () => {
@@ -71,11 +71,18 @@ const HODEvaluationDashboard = () => {
 
   const loadTeachers = async () => {
     try {
-      const [teacherResponse, hoursResponse] = await Promise.all([
+      const hodUserId = localStorage.getItem('userId');
+      const [teacherResponse, hoursResponse, hodResponse] = await Promise.all([
         fetchTeachers(institutionId),
         fetchTeacherHours(institutionId),
+        hodUserId ? fetchTeacherById(hodUserId) : Promise.resolve({ data: { assigned_teachers: [] } }),
       ]);
-      const teacherOnly = teacherResponse.data.filter(teacher => teacher.job_category && teacher.job_category.toLowerCase() === 'Teacher'.toLowerCase());
+      const allTeachers = teacherResponse.data || [];
+      const hodAssigned = hodResponse.data?.assigned_teachers || [];
+      const assignedIds = hodAssigned.map(t => String(t.id));
+      const teacherOnly = allTeachers.filter(
+        t => t.job_category === 'Teacher' && assignedIds.includes(String(t.id))
+      );
       setTeachers(teacherOnly);
       setHoursConfigs(hoursResponse.data);
     } catch (err) {

@@ -282,11 +282,9 @@ const StaffForm = () => {
               </div>
 
               {formData.job_category === 'HOD' && (
-                <div className="form-section">
+                <div className="form-section subjects-section assigned-teachers-section">
                   <h3>Assigned Teachers</h3>
-                  <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '15px' }}>
-                    Select the teachers under this HOD's supervision
-                  </p>
+                  <p className="section-desc">Select the teachers under this HOD's supervision</p>
                   <div className="subjects-picker">
                     <div className="subjects-select-wrapper form-group">
                       <label>Select Teachers</label>
@@ -315,7 +313,7 @@ const StaffForm = () => {
                       <span className="subjects-empty">No teachers assigned yet.</span>
                     ) : (
                       formData.assigned_teachers.map((t, idx) => (
-                        <span key={idx} className="subject-tag" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                        <span key={idx} className="subject-tag">
                           {t.name}
                           <button
                             type="button"
