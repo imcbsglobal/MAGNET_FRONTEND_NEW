@@ -43,9 +43,8 @@ const ParentDashboard = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!institutionId || !admno) {
-      setError('Student details are missing. Please log in again.');
-      setLoading(false);
+    if (!institutionId || !admno || !localStorage.getItem('token')) {
+      window.location.replace('/login');
       return;
     }
 

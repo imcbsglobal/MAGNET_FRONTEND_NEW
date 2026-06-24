@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { superadminLogin, administratorLogin, teacherLogin, parentLogin } from '../../services/api';
+import React, { useState, useEffect } from 'react';
+import { administratorLogin, teacherLogin, parentLogin } from '../../services/api';
 import loginImage from '../../assets/loginpage.png';
 import './Login.scss';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [role, setRole] = useState('parent'); // 'parent', 'staff', 'admin', or 'superadminn'
+  const [role, setRole] = useState('parent'); // 'parent', 'staff', or 'admin'
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -18,6 +16,20 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('userType');
+    if (!token || !userType) return;
+
+    const dashboardMap = {
+      superuser: '/superuser-dashboard',
+      admin: '/admin-dashboard',
+      staff: localStorage.getItem('jobCategory') === 'Teacher' ? '/teacher/evaluation' : localStorage.getItem('jobCategory') === 'HOD' ? '/hod/evaluation' : '/staff-dashboard',
+      parent: '/parent-dashboard',
+    };
+    window.location.replace(dashboardMap[userType] || '/');
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(prev => !prev);
@@ -73,7 +85,7 @@ const Login = () => {
     }
 
     setTimeout(() => {
-      navigate(targetPath);
+      window.location.replace(targetPath);
     }, 1500);
   };
 
@@ -86,15 +98,7 @@ const Login = () => {
 
     try {
       let response;
-      if (role === 'superadmin') {
-        response = await superadminLogin({
-          username: formData.username,
-          password: formData.password
-        });
-        if (response.data.status) {
-          handleSuccess('superuser', response.data, '/superuser-dashboard');
-        }
-      } else if (role === 'admin') {
+      if (role === 'admin') {
         response = await administratorLogin({
           institution_id: formData.institutionId,
           username: formData.username,
@@ -133,7 +137,7 @@ const Login = () => {
   };
 
   // Purely cosmetic helper for the dynamic subtitle/button label — does not change submit logic
-  const roleLabel = role === 'admin' ? 'ADMINISTRATOR' : (role === 'staff' ? 'STAFF' : (role === 'parent' ? 'PARENT' : role.toUpperCase()));
+  const roleLabel = role === 'admin' ? 'ADMINISTRATOR' : (role === 'staff' ? 'STAFF' : 'PARENT');
 
   return (
     <div className="login-page-wrapper">
@@ -158,63 +162,49 @@ const Login = () => {
         </div>
 
         <div className="login-right-section">
-          <div className={`login-card ${shake ? 'shake-animation' : ''} ${isSuccess ? 'success-state' : ''} ${role === 'superadmin' ? 'superadmin-mode' : ''}`}>
+          <div className={`login-card ${shake ? 'shake-animation' : ''} ${isSuccess ? 'success-state' : ''}`}>
             {error && <div className="error-message">{error}</div>}
 
-            {role === 'superadmin' ? (
-              <div className="superadmin-header">
-                <div className="security-badge">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                </div>
-                <h2 className="header-title">SUPERADMIN</h2>
-                <p className="header-subtitle">Secure Authentication Portal</p>
+            <>
+              <div className="form-header">
+                <h2>Sign In</h2>
+                <p>Access your {roleLabel.toLowerCase()} dashboard</p>
               </div>
-            ) : (
-              <>
-                <div className="form-header">
-                  <h2>Sign In</h2>
-                  <p>Access your {roleLabel.toLowerCase()} dashboard</p>
-                </div>
 
-                <div className="role-toggle">
-                  <button
-                    className={role === 'parent' ? 'active' : ''}
-                    onClick={() => setRole('parent')}
-                  >
-                    PARENT
-                  </button>
-                  <button
-                    className={role === 'staff' ? 'active' : ''}
-                    onClick={() => setRole('staff')}
-                  >
-                    STAFF
-                  </button>
-                  <button
-                    className={role === 'admin' ? 'active' : ''}
-                    onClick={() => setRole('admin')}
-                  >
-                    ADMINISTRATOR
-                  </button>
-                </div>
-              </>
-            )}
+              <div className="role-toggle">
+                <button
+                  className={role === 'parent' ? 'active' : ''}
+                  onClick={() => setRole('parent')}
+                >
+                  PARENT
+                </button>
+                <button
+                  className={role === 'staff' ? 'active' : ''}
+                  onClick={() => setRole('staff')}
+                >
+                  STAFF
+                </button>
+                <button
+                  className={role === 'admin' ? 'active' : ''}
+                  onClick={() => setRole('admin')}
+                >
+                  ADMINISTRATOR
+                </button>
+              </div>
+            </>
             <form onSubmit={handleSubmit} className="login-form">
-              {role !== 'superadmin' && (
-                <div className="input-group">
-                  <label htmlFor="institutionId">Institution ID</label>
-                  <input
-                    type="text"
-                    id="institutionId"
-                    name="institutionId"
-                    value={formData.institutionId}
-                    onChange={handleChange}
-                    placeholder="Enter your institution ID"
-                    required
-                  />
-                </div>
-              )}
+              <div className="input-group">
+                <label htmlFor="institutionId">Institution ID</label>
+                <input
+                  type="text"
+                  id="institutionId"
+                  name="institutionId"
+                  value={formData.institutionId}
+                  onChange={handleChange}
+                  placeholder="Enter your institution ID"
+                  required
+                />
+              </div>
               <div className="input-group">
                 <label htmlFor="username">{role === 'parent' ? 'Admission ID' : 'Username'}</label>
                 <input
@@ -259,9 +249,7 @@ const Login = () => {
                     )}
                   </button>
                 </div>
-                {role !== 'superadmin' && (
-                  <a href="#forgot" className="forgot-link">Forgot password?</a>
-                )}
+                <a href="#forgot" className="forgot-link">Forgot password?</a>
               </div>
               <button
                 type="submit"
@@ -283,19 +271,6 @@ const Login = () => {
                 )}
               </button>
             </form>
-            <div className="login-footer">
-              <button
-                type="button"
-                className={`superadmin-toggle ${role === 'superadmin' ? 'active' : ''}`}
-                onClick={() => setRole(role === 'superadmin' ? 'staff' : 'superadmin')}
-              >
-                {role === 'superadmin' ? (
-                  <><svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Staff Login</>
-                ) : (
-                  <><svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Superadmin Access</>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       </div>

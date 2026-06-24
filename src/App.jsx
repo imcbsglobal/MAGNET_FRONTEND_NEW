@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/Login/Login';
+import SuperUserLogin from './pages/Login/SuperUserLogin';
 import SuperUserDashboard from './pages/SuperUserDashboard/SuperUserDashboard';
 import AdministratorsList from './pages/Administrators/AdministratorsList';
 import AdministratorForm from './pages/Administrators/AdministratorForm';
@@ -23,6 +24,7 @@ import ParentPaidFee from './pages/ParentDashboard/ParentPaidFee';
 import SchoolInfo from './pages/SchoolInfo/SchoolInfo';
 import HouseGroupMaster from './pages/Masters/HouseGroupMaster';
 import TeacherHoursMaster from './pages/Masters/TeacherHoursMaster';
+import SubjectMaster from './pages/Masters/SubjectMaster';
 import IDCardDetails from './pages/IDCard/IDCardDetails';
 import IssueIDCard from './pages/IDCard/IssueIDCard';
 import IDCardFormByClientId from './pages/IDCard/IDCardFormByClientId';
@@ -41,19 +43,21 @@ import './App.css';
 function AppContent() {
   const location = useLocation();
 
-  const isLandingPage = location.pathname === '/';
-  const isLoginPage   = location.pathname === '/login';
-  const isIDCardForm  = location.pathname.startsWith('/id-card/form');
+  const isLandingPage  = location.pathname === '/';
+  const isLoginPage    = location.pathname === '/login';
+  const isSuperUserLogin = location.pathname === '/login/suser';
+  const isIDCardForm   = location.pathname.startsWith('/id-card/form');
 
   // Hide the floating chat widget on landing, login, and ID card form pages
-  const hideChat = isLandingPage || isLoginPage || isIDCardForm;
+  const hideChat = isLandingPage || isLoginPage || isSuperUserLogin || isIDCardForm;
 
   return (
     <div className="App">
       <Routes>
         {/* Landing page is the first thing users see */}
-        <Route path="/"      element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/"           element={<LandingPage />} />
+        <Route path="/login"      element={<Login />} />
+        <Route path="/login/suser" element={<SuperUserLogin />} />
 
         {/* Dashboards */}
         <Route path="/superuser-dashboard" element={<SuperUserDashboard />} />
@@ -78,6 +82,7 @@ function AppContent() {
         <Route path="/admin/school-info" element={<SchoolInfo />} />
         <Route path="/admin/masters/house-groups" element={<HouseGroupMaster />} />
         <Route path="/admin/masters/teacher-hours" element={<TeacherHoursMaster />} />
+        <Route path="/admin/masters/subjects" element={<SubjectMaster />} />
         <Route path="/admin/job-categories" element={<JobCategoriesList />} />
         <Route path="/admin/job-categories/add" element={<JobCategoryAdd />} />
         <Route path="/admin-dashboard"     element={<AdminDashboard />} />
@@ -92,6 +97,7 @@ function AppContent() {
         <Route path="/admin/calendar"              element={<CalendarSetup />} />
         <Route path="/admin/school-info"           element={<SchoolInfo />} />
         <Route path="/admin/masters/house-groups"  element={<HouseGroupMaster />} />
+        <Route path="/admin/masters/subjects"      element={<SubjectMaster />} />
         <Route path="/admin/job-categories"        element={<JobCategoriesList />} />
         <Route path="/admin/job-categories/add"    element={<JobCategoryAdd />} />
         <Route path="/admin/job-categories/edit/:id" element={<JobCategoryAdd />} />
