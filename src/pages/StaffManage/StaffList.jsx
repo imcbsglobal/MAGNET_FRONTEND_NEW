@@ -140,6 +140,17 @@ const StaffList = () => {
     );
   };
 
+  const renderAssignedTeachers = (teachers) => {
+    if (!teachers || teachers.length === 0) return '-';
+    return (
+      <div className="staff-assignments-list">
+        {teachers.map((t, i) => (
+          <div key={i} className="staff-assignment-chip" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>{t.name}</div>
+        ))}
+      </div>
+    );
+  };
+
   const filteredStaff = staff.filter((s) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
@@ -207,6 +218,7 @@ const StaffList = () => {
                         <th>Primary Division</th>
                         <th>Assigned Classes</th>
                         <th>Subjects</th>
+                        <th>Assigned Teachers</th>
                         <th>Reg Number</th>
                         <th>School Reg No</th>
                         <th>Address</th>
@@ -251,6 +263,7 @@ const StaffList = () => {
                           <td className="staff-plain-cell">{member.assigned_division || '-'}</td>
                           <td>{renderAdditionalAssignments(member.additional_class_assignments)}</td>
                           <td>{renderSubjects(member.subjects)}</td>
+                          <td>{renderAssignedTeachers(member.assigned_teachers)}</td>
                           <td className="staff-plain-cell">{member.reg_number || '-'}</td>
                           <td className="staff-plain-cell">{member.school_reg_number || '-'}</td>
                           <td className="staff-address-cell">{member.address || '-'}</td>
