@@ -4,6 +4,13 @@
    On mobile the sidebar slides off-screen (position:fixed, left: -220px)
    but --sidebar-width CSS var stays 220px, pushing .dashboard-main right.
    Zero the offsets so content fills the full viewport width.
+
+   NOTE: overflow-x: visible is forced back on here because a shared rule
+   in IDCard.scss sets `.dashboard-wrapper .dashboard-main { overflow-x: hidden }`
+   on mobile, which leaks into every page using the dashboard shell and
+   silently kills horizontal touch-scrolling on .table-responsive below.
+   This override keeps this page working regardless of what other page
+   stylesheets do upstream.
 ─────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .dashboard-wrapper {
@@ -11,6 +18,7 @@
     padding-left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .dashboard-main {
@@ -18,6 +26,57 @@
     padding-left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: visible !important;
+  }
+
+  /* The whole flex chain down to the table must allow shrinking,
+     or the browser can silently refuse to treat .table-responsive
+     as a real scroll container on some mobile browsers, even though
+     overflow-x is set correctly on it. Every ancestor down to and
+     INCLUDING .table-responsive itself needs min-width: 0 — a flex
+     item defaults to min-width: auto, which means it will refuse to
+     shrink below its content size and can block the scroll container
+     above it from ever clipping/scrolling that content. */
+  .dashboard-content,
+  .staff-student-list,
+  .fee-table-card,
+  .table-responsive {
+    min-width: 0 !important;
+  }
+
+  /* ── Belt-and-suspenders override ──────────────────────────────────────
+     At 768px and 425px the table still cut off at "Div" with no scroll
+     affordance, while 768px-and-above showed a working scrollbar. That
+     pattern (works wide, breaks narrow) means some OTHER stylesheet is
+     setting overflow-x: hidden on an ancestor inside its own narrower
+     media query (e.g. max-width: 768px) — separate from the 1024px
+     .dashboard-main rule already overridden above. Rather than keep
+     hunting for that file, this targets every likely ancestor directly,
+     scoped with .dashboard-content.staff-student-list so it can never
+     leak onto other pages, with !important so load order can't matter. */
+  .dashboard-wrapper,
+  .dashboard-main,
+  .dashboard-content.staff-student-list {
+    overflow-x: visible !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-wrapper,
+  .dashboard-main,
+  .dashboard-content.staff-student-list,
+  .dashboard-content.staff-student-list .fee-table-card {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+
+  /* This element is the one that's actually meant to scroll — it must
+     stay overflow-x: auto, never visible/hidden, regardless of what
+     the rule above forces on its ancestors. */
+  .dashboard-content.staff-student-list .table-responsive {
+    overflow-x: auto !important;
+    min-width: 0 !important;
   }
 }
 
@@ -172,12 +231,23 @@
     }
   }
 
-  /* ── Table card: clip corners but allow internal scroll ── */
+  /* ── Table card: rounded corners WITHOUT clipping scroll ──
+     overflow: hidden here was the actual bug: a parent with
+     overflow: hidden clips its content to its own box — it does not
+     pass scroll behavior down to a scrollable child. So instead of
+     .table-responsive becoming scrollable, the table was simply being
+     cut off at the card's edge. overflow: hidden and "let my child
+     scroll horizontally" cannot both be true on the same element.
+
+     Fix: drop overflow: hidden from this element entirely. Border
+     radius is moved onto .table-responsive itself below, so corner
+     rounding still applies visually but the element that owns
+     overflow-x: auto is the one doing its own corner clipping —
+     not a separate ancestor fighting it. */
   .fee-table-card {
     background: #fff;
     border-radius: 6px;
     border: 1px solid #dfe1e6;
-    overflow: hidden; /* keeps rounded corners on card */
   }
 
   .error-message {
@@ -195,19 +265,48 @@
     p { margin: 0; font-size: 0.9rem; }
   }
 
-  /* ── THIS is what makes the table scroll horizontally ── */
+  /* ── THIS is what makes the table scroll horizontally ──
+     overflow-x: auto + touch-action: pan-x, set explicitly rather than
+     left for the browser to infer.
+
+     Two changes from the previous version, both fixing real mobile
+     scroll-capture bugs:
+
+     1. will-change: scroll-position REMOVED. On a number of Android
+        Chrome / WebView builds this property forces the element onto
+        its own compositor layer in a way that makes the browser treat
+        it as non-interactive for touch — the layer paints, but drag
+        gestures don't get captured by it. Removing it costs nothing
+        (we don't need a scroll-perf hint on a table this size) and
+        restores native touch scrolling.
+
+     2. touch-action: pan-x ADDED explicitly. Previously this was left
+        for the browser to infer purely from overflow-x: auto, which
+        works on desktop and iOS Safari but is inconsistently honored
+        on Android Chrome when this element sits inside several nested
+        flex containers — the inferred touch-action can resolve to
+        "auto" (meaning the parent's pan-y wins) instead of "pan-x".
+        Setting it explicitly removes that ambiguity. */
   .table-responsive {
     display: block;
     width: 100%;
-    overflow-x: scroll;
+    min-width: 0;
+    overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x;
+    border-radius: 6px; /* card's rounding moved here since .fee-table-card no longer clips */
   }
 
   .fee-table {
+    /* width: max-content removed — combined with min-width: 1400px this
+       could leave the browser undecided about whether the table is
+       actually wider than its scroll container on some mobile engines,
+       which is enough for the scroll container to never register a
+       scrollable overflow in the first place. min-width alone is
+       sufficient: the table will never shrink below 1400px, and with
+       no width set it's still free to grow if content needs more. */
     min-width: 1400px;
-    width: max-content;
     border-collapse: collapse;
     font-size: 0.85rem;
     white-space: nowrap;

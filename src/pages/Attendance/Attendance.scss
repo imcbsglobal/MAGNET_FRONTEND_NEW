@@ -192,24 +192,71 @@ $jira-grey-light:   #EBECF0;
   }
 }
 
-/* ── Table card ───────────────────────────────────────── */
+/* ── Table card: rounded corners WITHOUT clipping scroll ──
+   overflow: hidden here was clipping the table instead of letting
+   .table-responsive below handle horizontal scroll — a parent with
+   overflow: hidden clips content to its own box, it does not pass
+   scroll behavior down to a scrollable child. Removed. Corner
+   rounding is preserved on .table-responsive itself instead, since
+   that's the element that actually needs to clip+scroll together. */
 .att-table-wrapper {
-  border-radius: 3px; overflow: hidden; border: 1px solid $jira-border;
+  border-radius: 3px; border: 1px solid $jira-border;
 }
 .fee-table-card {
   border-radius: 3px !important;
-  overflow: hidden;
   border: 1px solid $jira-border;
   box-shadow: none !important;
   margin: 0 12px 12px;
 }
 
-/* ── Scrollbar ────────────────────────────────────────── */
+/* ── Scrollbar / horizontal scroll container ──────────────────────────
+   min-width: 0 and touch-action: pan-x added: a flex/grid descendant
+   defaults to min-width: auto and can refuse to shrink below its
+   content size, which silently blocks this element from ever
+   registering as a real scroll container on mobile even with
+   overflow-x: auto set correctly. touch-action: pan-x is set
+   explicitly rather than left for the browser to infer from
+   overflow-x alone, since that inference is inconsistently honored
+   on Android Chrome when nested inside several flex containers
+   (.dashboard-content > .fee-table-card > .table-responsive here). */
 .table-responsive {
+  display: block;
+  width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  border-radius: 3px;
   &::-webkit-scrollbar       { height: 5px; }
   &::-webkit-scrollbar-track { background: $jira-bg; }
   &::-webkit-scrollbar-thumb { background: $jira-grey; border-radius: 10px; }
+}
+
+/* ── Mobile: same belt-and-suspenders fix applied to StaffStudentList ──
+   This page imports SuperUserDashboard.scss and FeePages.scss alongside
+   this file — if either of those sets overflow-x: hidden on an ancestor
+   (.dashboard-wrapper / .dashboard-main / .dashboard-content) inside its
+   own mobile media query, it can win regardless of import order if it's
+   more specific or uses !important. This forces every ancestor open on
+   mobile, scoped so it can never leak: requires .dashboard-content to be
+   a direct parent in this component's actual DOM structure. */
+@media (max-width: 1024px) {
+  .dashboard-wrapper,
+  .dashboard-main {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .dashboard-content,
+  .dashboard-content .fee-table-card,
+  .dashboard-content .att-table-wrapper {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .dashboard-content .table-responsive {
+    overflow-x: auto !important;
+    min-width: 0 !important;
+  }
 }
 
 /* ── Main table ───────────────────────────────────────── */
