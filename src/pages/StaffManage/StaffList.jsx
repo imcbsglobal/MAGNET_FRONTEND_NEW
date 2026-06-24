@@ -129,10 +129,22 @@ const StaffList = () => {
     );
   };
 
+  const renderSubjects = (subjects) => {
+    if (!subjects || subjects.length === 0) return '-';
+    return (
+      <div className="staff-assignments-list">
+        {subjects.map((s, i) => (
+          <div key={i} className="staff-assignment-chip" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>{s.name}</div>
+        ))}
+      </div>
+    );
+  };
+
   const filteredStaff = staff.filter((s) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return [s.username, s.staff_id, s.job_category, s.assigned_class, s.assigned_division, s.reg_number, s.nationality]
+    const searchableSubjects = s.subjects ? s.subjects.map(sub => sub.name).join(' ') : '';
+    return [s.username, s.staff_id, s.job_category, s.assigned_class, s.assigned_division, s.reg_number, s.nationality, searchableSubjects]
       .some((v) => v && String(v).toLowerCase().includes(q));
   });
 
@@ -194,6 +206,7 @@ const StaffList = () => {
                         <th>Primary Class</th>
                         <th>Primary Division</th>
                         <th>Assigned Classes</th>
+                        <th>Subjects</th>
                         <th>Reg Number</th>
                         <th>School Reg No</th>
                         <th>Address</th>
@@ -237,6 +250,7 @@ const StaffList = () => {
                           <td className="staff-plain-cell">{member.assigned_class || '-'}</td>
                           <td className="staff-plain-cell">{member.assigned_division || '-'}</td>
                           <td>{renderAdditionalAssignments(member.additional_class_assignments)}</td>
+                          <td>{renderSubjects(member.subjects)}</td>
                           <td className="staff-plain-cell">{member.reg_number || '-'}</td>
                           <td className="staff-plain-cell">{member.school_reg_number || '-'}</td>
                           <td className="staff-address-cell">{member.address || '-'}</td>
