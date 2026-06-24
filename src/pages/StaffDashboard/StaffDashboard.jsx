@@ -127,9 +127,8 @@ const StaffDashboard = () => {
   const monthName = today.toLocaleString('default', { month: 'long' });
 
   useEffect(() => {
-    if (!institutionId || !assignedClass || !assignedDivision) {
-      setError('No class or division is assigned to your account.');
-      setLoading(false);
+    if (!institutionId || !assignedClass || !assignedDivision || !localStorage.getItem('token')) {
+      window.location.replace('/login');
       return;
     }
 
