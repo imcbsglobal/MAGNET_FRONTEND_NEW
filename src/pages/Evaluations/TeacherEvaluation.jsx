@@ -412,19 +412,24 @@ const TeacherEvaluationDashboard = () => {
                         <div className="fld">
                           <label>Select Class</label>
                           <select
-                            value={selectedClass || ''}
+                            value={selectedClass && selectedDivision ? `${selectedClass}|${selectedDivision}` : ''}
                             onChange={(e) => {
-                              const cls = e.target.value;
+                              const val = e.target.value;
+                              if (!val) {
+                                setSelectedClass(null);
+                                setSelectedDivision(null);
+                                return;
+                              }
+                              const [cls, div] = val.split('|');
                               setSelectedClass(cls);
-                              const classObj = classes.find(c => c.class === cls);
-                              if (classObj) setSelectedDivision(classObj.division);
+                              setSelectedDivision(div);
                             }}
                             disabled={isMonthFinished}
                             required
                           >
                             <option value="">-- Select Class --</option>
                             {classes.map((cls, idx) => (
-                              <option key={idx} value={cls.class}>
+                              <option key={idx} value={`${cls.class}|${cls.division}`}>
                                 {cls.class} - {cls.division}
                               </option>
                             ))}
