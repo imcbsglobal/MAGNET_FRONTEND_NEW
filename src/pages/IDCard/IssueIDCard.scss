@@ -70,6 +70,10 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   gap: 18px;
   background: $jira-bg;
   min-height: 100%;
+  min-width: 0;
+  /* prevents this page's content from ever pushing the dashboard shell
+     into horizontal overflow on narrow phones */
+  overflow-x: hidden;
 }
 
 /* ─── Header ────────────────────────────────────────────────────────────── */
@@ -104,6 +108,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   display: flex;
   align-items: flex-start;
   gap: 14px;
+  min-width: 0;
 }
 
 .idcard-header-icon {
@@ -147,6 +152,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border: 1px solid transparent;
+  white-space: nowrap;
 
   &::before {
     content: "";
@@ -235,6 +241,8 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &::before {
     content: "";
@@ -273,6 +281,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   grid-template-columns: 300px 1fr;
   gap: 20px;
   align-items: flex-start;
+  min-width: 0;
 }
 
 /* ── Left panel ─────────────────────────────────────────────────────────── */
@@ -282,6 +291,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   gap: 12px;
   position: sticky;
   top: 16px;
+  min-width: 0;
 }
 
 .issue-list-card {
@@ -290,6 +300,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   border: 1px solid $jira-border;
   box-shadow: $shadow-card;
   overflow: hidden;
+  min-width: 0;
 }
 
 .issue-list-header {
@@ -299,6 +310,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   padding: 11px 16px;
   background: linear-gradient(90deg, #162040 0%, #1e2f5a 100%);
   border-bottom: 1px solid rgba(255,255,255,0.07);
+  gap: 8px;
 }
 .issue-list-title {
   font-size: 0.75rem;
@@ -306,6 +318,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  white-space: nowrap;
 }
 .issue-list-count {
   font-size: 0.73rem;
@@ -315,6 +328,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   border: 1px solid rgba(79,110,247,0.3);
   border-radius: 999px;
   padding: 2px 10px;
+  flex-shrink: 0;
 }
 
 .issue-student-list {
@@ -322,12 +336,19 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   flex-direction: column;
   max-height: calc(100vh - 320px);
   overflow-y: auto;
+  min-width: 0;
 
   &::-webkit-scrollbar       { width: 4px; }
   &::-webkit-scrollbar-track { background: #f1f5f9; }
   &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 }
 
+/* ── Student row ──────────────────────────────────────────────────────────
+   min-width: 0 added on the row and on .issue-student-info so the name/meta
+   text is allowed to actually shrink and ellipsis instead of forcing the row
+   wider than its container — that's what was pushing .issue-student-actions
+   (badge + download button) off the right edge on narrow phones. Actions
+   column gets flex-shrink: 0 so it's never the thing that gets squeezed. */
 .issue-student-row {
   display: flex;
   align-items: center;
@@ -337,6 +358,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   border-bottom: 1px solid #f1f5f9;
   transition: background 0.15s;
   border-left: 3px solid transparent;
+  min-width: 0;
 
   &:last-child     { border-bottom: none; }
   &:hover          { background: #f8fafc; }
@@ -357,7 +379,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
 
 .issue-student-info { flex: 1; min-width: 0; }
 .issue-student-name { font-weight: 700; color: #111827; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.issue-student-meta { font-size: 0.7rem; color: $jira-subtext; margin-top: 1px; }
+.issue-student-meta { font-size: 0.7rem; color: $jira-subtext; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .issue-student-actions {
   display: flex;
@@ -380,6 +402,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   justify-content: center;
   transition: all 0.15s ease;
   box-shadow: 0 1px 4px rgba($jira-blue, 0.3);
+  flex-shrink: 0;
 
   svg { width: 14px; height: 14px; }
 
@@ -439,6 +462,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   border-left: 4px solid $jira-blue;
   box-shadow: $shadow-card;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .issue-selected-avatar {
@@ -486,6 +510,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   border-radius: $radius-md;
   box-shadow: $shadow-card;
   padding: 20px;
+  min-width: 0;
 }
 
 .issue-preview-label {
@@ -501,6 +526,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* ─── Edit panel ─────────────────────────────────────────────────────────── */
@@ -510,6 +536,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   background: #fff;
   border: 1px solid $jira-border;
   box-shadow: $shadow-card;
+  min-width: 0;
 }
 
 .idcard-edit-panel-header {
@@ -542,6 +569,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 
   label {
     color: $jira-subtext;
@@ -551,6 +579,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
     letter-spacing: 0.05em;
   }
   input {
+    width: 100%;
     padding: 7px 10px;
     border-radius: $radius-sm;
     border: 1.5px solid $jira-border;
@@ -559,6 +588,7 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
     font-size: 0.82rem;
     outline: none;
     transition: border-color 0.12s, box-shadow 0.12s;
+    box-sizing: border-box;
 
     &:focus    { border-color: $jira-blue; box-shadow: 0 0 0 2px rgba($jira-blue, 0.2); }
     &:disabled { opacity: 0.6; cursor: not-allowed; background: $jira-bg; }
@@ -833,11 +863,57 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   .idcard-edit-actions .secondary-btn { width: 100%; justify-content: center; }
 
   .idcard-edit-panel-header { flex-wrap: wrap; gap: 4px; }
+
+  /* ── Student rows: the actual fix for the cut-off badges/buttons ──
+     Below 640px there's no room for avatar + name/meta + badge + download
+     button all on one line at full size. Rather than letting flex squeeze
+     or clip the actions column (which is what was happening), shrink the
+     non-essential pieces and let text truncate via the min-width: 0 +
+     ellipsis already set on .issue-student-info above, so the actions
+     column (badge + button) always stays fully visible. */
+  .issue-student-row {
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .issue-student-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  .issue-student-name { font-size: 0.78rem; }
+  .issue-student-meta { font-size: 0.66rem; }
+  .issue-student-actions { gap: 4px; }
+  .badge {
+    padding: 2px 7px;
+    font-size: 0.6rem;
+  }
+  .issue-download-btn {
+    width: 26px;
+    height: 26px;
+    svg { width: 12px; height: 12px; }
+  }
+
+  .issue-list-header { padding: 10px 12px; }
+  .issue-list-title { font-size: 0.7rem; }
 }
 
 @media (max-width: 380px) {
   .issue-list-header { padding: 10px 12px; }
   .issue-student-row { padding: 9px 10px; gap: 8px; }
+
+  /* At the narrowest phone widths even the trimmed-down row from the
+     640px block above is tight. Drop the badge text size further and
+     let the row's own flex-wrap take over only as a last resort — the
+     actions column itself never wraps onto its own line, it just gets
+     as compact as possible while staying fully visible. */
+  .issue-student-avatar { width: 30px; height: 30px; }
+  .issue-student-name { font-size: 0.74rem; }
+  .issue-student-meta { font-size: 0.62rem; }
+  .badge {
+    padding: 2px 6px;
+    font-size: 0.56rem;
+    gap: 3px;
+  }
+  .issue-download-btn { width: 24px; height: 24px; svg { width: 11px; height: 11px; } }
 
   /* Scale ID cards down slightly so they never overflow tiny screens */
   .idt-card {
