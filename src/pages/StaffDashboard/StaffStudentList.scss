@@ -1,5 +1,27 @@
 /* StaffStudentList.scss - Jira styled */
 
+/* ── Mobile layout fix ─────────────────────────────────────────────────────
+   On mobile the sidebar slides off-screen (position:fixed, left: -220px)
+   but --sidebar-width CSS var stays 220px, pushing .dashboard-main right.
+   Zero the offsets so content fills the full viewport width.
+─────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dashboard-wrapper {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ── Page wrapper ──────────────────────────────── */
 .staff-student-list {
   padding: 20px;
   margin-top: 20px;
@@ -7,6 +29,7 @@
   border-radius: 12px;
   border: 1px solid #ebecf0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* CRITICAL: must not have overflow-x: hidden — table scroll lives inside here */
 
   .welcome-section {
     display: flex;
@@ -39,38 +62,36 @@
     }
   }
 
- .fee-summary-banner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #dfe1e6;
-  background: #fff;
-
-  span {
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #6b778c;
-  }
-
-  strong {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #172b4d;
-  }
-
-  &.paid-banner {
+  .fee-summary-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #dfe1e6;
     background: #fff;
-    border-color: #dfe1e6;
+
+    span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #6b778c;
+    }
 
     strong {
+      font-size: 1rem;
+      font-weight: 700;
       color: #172b4d;
     }
+
+    &.paid-banner {
+      background: #fff;
+      border-color: #dfe1e6;
+
+      strong { color: #172b4d; }
+    }
   }
-}
 
   .top-filter-bar {
     display: flex;
@@ -82,6 +103,11 @@
     background: #f7f8fa;
     border: none;
     border-radius: 8px;
+
+    input {
+      width: 320px;
+      max-width: 100%;
+    }
   }
 
   .table-filter {
@@ -137,9 +163,7 @@
       color: #172b4d;
       background: transparent;
 
-      &::placeholder {
-        color: #97a0af;
-      }
+      &::placeholder { color: #97a0af; }
     }
 
     &:focus-within {
@@ -148,11 +172,12 @@
     }
   }
 
+  /* ── Table card: clip corners but allow internal scroll ── */
   .fee-table-card {
     background: #fff;
     border-radius: 6px;
     border: 1px solid #dfe1e6;
-    overflow: hidden;
+    overflow: hidden; /* keeps rounded corners on card */
   }
 
   .error-message {
@@ -167,18 +192,22 @@
     text-align: center;
     color: #97a0af;
 
-    p {
-      margin: 0;
-      font-size: 0.9rem;
-    }
+    p { margin: 0; font-size: 0.9rem; }
   }
 
+  /* ── THIS is what makes the table scroll horizontally ── */
   .table-responsive {
-    overflow-x: auto;
+    display: block;
+    width: 100%;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
   }
 
   .fee-table {
-    width: 100%;
+    min-width: 1400px;
+    width: max-content;
     border-collapse: collapse;
     font-size: 0.85rem;
     white-space: nowrap;
@@ -198,9 +227,7 @@
       top: 0;
       z-index: 1;
 
-      &:last-child {
-        border-right: none;
-      }
+      &:last-child { border-right: none; }
     }
 
     tbody td {
@@ -209,22 +236,12 @@
       border-bottom: 1px solid #ebecf0;
       border-right: 1px solid #ebecf0;
 
-      &:last-child {
-        border-right: none;
-      }
+      &:last-child { border-right: none; }
     }
 
-    tbody tr:nth-child(even) {
-      background: #fafbfc;
-    }
-
-    tbody tr:hover {
-      background: #e9f2ff;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
+    tbody tr:nth-child(even) { background: #fafbfc; }
+    tbody tr:hover           { background: #e9f2ff; }
+    tbody tr:last-child td   { border-bottom: none; }
   }
 
   .table-controls {
@@ -283,20 +300,106 @@
 }
 
 /* ── Responsive ────────────────────────────────── */
+
 @media (max-width: 768px) {
   .staff-student-list {
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 8px;
+
     .welcome-section {
       flex-direction: column;
       align-items: flex-start;
+      gap: 12px;
+
+      h2 { font-size: 1.15rem; }
+      p  { font-size: 0.82rem; }
     }
 
-    .search-input-wrapper {
-      min-width: 100%;
+    .fee-summary-banner {
+      width: 100%;
+      justify-content: space-between;
+      padding: 10px 14px;
+    }
+
+    .top-filter-bar {
+      padding: 12px;
+      gap: 10px;
+
+      input {
+        width: 100% !important;
+        font-size: 0.85rem;
+      }
+    }
+
+    .search-input-wrapper { min-width: 100%; }
+
+    .fee-table {
+      font-size: 0.78rem;
+
+      thead th { padding: 10px 10px; font-size: 0.68rem; }
+      tbody td { padding: 10px 10px; }
     }
 
     .table-controls {
       flex-direction: column;
       align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+    }
+
+    .table-filter {
+      flex-direction: row;
+      align-items: center;
+      max-width: 100%;
+      gap: 10px;
+
+      label { white-space: nowrap; font-size: 0.8rem; }
+      select { flex: 1; }
+    }
+
+    .table-pagination {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      span { font-size: 0.78rem; padding: 6px 10px; }
+    }
+
+    .pagination-buttons button {
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      min-height: 36px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-student-list {
+    padding: 10px;
+    border-radius: 6px;
+
+    .welcome-section h2 { font-size: 1rem; }
+
+    .top-filter-bar { padding: 10px; }
+
+    .fee-table {
+      font-size: 0.75rem;
+
+      thead th { padding: 8px 8px; }
+      tbody td { padding: 8px 8px; }
+    }
+
+    .table-pagination {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .pagination-buttons {
+      width: 100%;
+
+      button { flex: 1; text-align: center; }
     }
   }
 }

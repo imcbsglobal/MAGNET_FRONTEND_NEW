@@ -567,6 +567,11 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   box-shadow: $shadow-modal;
   overflow: hidden;
   animation: modalIn 0.18s ease;
+
+  /* Pin header/footer in place; only the body scrolls when content overflows */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
 }
 @keyframes modalIn {
   from { opacity: 0; transform: translateY(12px) scale(0.99); }
@@ -580,6 +585,7 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   padding: 18px 22px 14px;
   border-bottom: 1px solid $border;
   background: $head-bg;
+  flex-shrink: 0;
 
   h2 {
     margin: 0;
@@ -619,6 +625,11 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   display: flex;
   flex-direction: column;
   gap: 0;
+
+  /* Scrollable middle section */
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
 }
 .modal-row {
   display: flex;
@@ -657,12 +668,20 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   justify-content: flex-end;
   gap: 8px;
   background: $head-bg;
+  flex-shrink: 0;
 }
 
 /* ─── Edit modal ─────────────────────────────────────────────────────────── */
 .modal-card--wide { width: min(680px, 100%); }
 
-.modal-edit-body { padding: 14px 22px 18px; }
+.modal-edit-body {
+  padding: 14px 22px 18px;
+
+  /* Scrollable middle section (edit modal has its own body class) */
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
 
 .modal-edit-grid {
   display: grid;
@@ -1102,6 +1121,16 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   .search-input-wrapper { flex: 1; }
   .status-filter-wrapper { align-self: stretch; }
   .status-filter-btn    { font-size: 0.75rem; padding: 7px 10px; flex: 1; }
+
+  /* ── Modal: cap height to viewport, allow internal scroll ───────────── */
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+  .modal-card {
+    max-height: calc(100vh - 24px);
+    width: 100%;
+  }
 
   /* ── Force the whole table chain into visible block layout ──────────── */
   .idcard-table-card {

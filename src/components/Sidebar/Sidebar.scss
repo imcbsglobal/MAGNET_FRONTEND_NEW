@@ -221,7 +221,6 @@ $item-radius: 8px;
     transition: background 0.13s ease, color 0.13s ease;
     user-select: none;
 
-    /* Slim left-border active indicator (hidden by default) */
     &::before {
       content: '';
       position: absolute;
@@ -280,17 +279,14 @@ $item-radius: 8px;
       flex-shrink: 0;
     }
 
-    /* Hover */
     &:hover {
       background: $jira-bg;
       color: $jira-text;
-
       .item-icon { opacity: 0.9; }
     }
 
     &:active { background: $jira-grey-light; }
 
-    /* ── Active state — slim left border + subtle bg ── */
     &.active {
       background: $accent-light;
       color: $jira-text;
@@ -312,7 +308,6 @@ $item-radius: 8px;
     }
   }
 
-  /* ── Nav item group (wraps parent + submenu) ── */
   .nav-item-group {
     display: flex;
     flex-direction: column;
@@ -325,7 +320,6 @@ $item-radius: 8px;
     }
   }
 
-  /* ── Submenu ── */
   .nav-submenu {
     display: flex;
     flex-direction: column;
@@ -350,7 +344,6 @@ $item-radius: 8px;
     }
   }
 
-  /* ── Sub item ── */
   .sub-item {
     padding: 6px 10px;
     background: transparent;
@@ -389,7 +382,6 @@ $item-radius: 8px;
 
     &:hover {
       background: $jira-bg;
-
       &::before { background: $text-dim; }
       .item-label { color: $jira-text; }
       .item-icon { opacity: 0.85; }
@@ -397,22 +389,12 @@ $item-radius: 8px;
 
     &.active {
       background: $accent-light;
-
       &::before { background: $accent; }
-
-      .item-icon {
-        opacity: 1;
-        color: $accent;
-      }
-
-      .item-label {
-        color: $jira-text;
-        font-weight: 700;
-      }
+      .item-icon { opacity: 1; color: $accent; }
+      .item-label { color: $jira-text; font-weight: 700; }
     }
   }
 
-  /* ── Submenu arrow ── */
   .submenu-arrow {
     margin-left: auto;
     font-size: 0.75rem;
@@ -436,7 +418,6 @@ $item-radius: 8px;
   position: relative;
 }
 
-/* ── User profile card ─────────────────────────── */
 .sidebar-user {
   display: flex;
   align-items: center;
@@ -492,7 +473,6 @@ $item-radius: 8px;
   margin-top: 1px;
 }
 
-/* ── Footer divider ────────────────────────────── */
 .sidebar-footer-divider {
   height: 1px;
   background: $jira-border;
@@ -501,7 +481,6 @@ $item-radius: 8px;
   z-index: 1;
 }
 
-/* ── Logout ────────────────────────────────────── */
 .logout-card {
   display: flex;
   align-items: center;
@@ -519,7 +498,6 @@ $item-radius: 8px;
   &:hover {
     background: $jira-red-light;
     border-color: rgba(225, 29, 72, 0.3);
-
     .logout-icon-container { color: $jira-red; }
     .logout-btn { color: $jira-red; font-weight: 600; }
   }
@@ -607,6 +585,11 @@ $item-radius: 8px;
 
 /* ── Responsive ────────────────────────────────── */
 @media (max-width: 1024px) {
+  /* ── KEY FIX: zero out --sidebar-width so layout wrappers lose their offset ── */
+  :root {
+    --sidebar-width: 0px !important;
+  }
+
   .mobile-toggle { display: flex; }
 
   .sidebar-collapse-toggle { display: none; }
