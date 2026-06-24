@@ -64,10 +64,7 @@ const ParentPendingFee = () => {
     return result;
   }, [filterType, search, visibleFees]);
 
-  const totalPages        = Math.max(1, Math.ceil(filteredFees.length / pageSize));
-  const firstIndex        = (currentPage - 1) * pageSize;
-  const lastIndex         = Math.min(filteredFees.length, firstIndex + pageSize);
-  const paginatedFees     = filteredFees.slice(firstIndex, lastIndex);
+  const paginatedFees = filteredFees;
 
   // total due = ALL fees (not just visible) for the banner
   const totalDue          = sortedFees.reduce((sum, f) => sum + parseFloat(f.amount) + parseFloat(f.fine), 0);
@@ -103,10 +100,6 @@ const ParentPendingFee = () => {
     setPaymentMessage(`Payment failed: ${err}`);
     setTimeout(() => setPaymentMessage(''), 5000);
   };
-
-  React.useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
 
   useEffect(() => {
     if (!institutionId || !admno) {
@@ -233,7 +226,7 @@ const ParentPendingFee = () => {
                             <td className="checkbox-col" onClick={e => e.stopPropagation()}>
                               <input type="checkbox" checked={isSelected} onChange={() => handleFeeSelection(fee.id)} />
                             </td>
-                            <td className="no-col">{firstIndex + index + 1}</td>
+                            <td className="no-col">{index + 1}</td>
                             <td>
                               <span className={isFuture ? 'future-date-badge' : ''}>
                                 {formatDate(fee.date)}
@@ -251,6 +244,60 @@ const ParentPendingFee = () => {
                       })}
                     </tbody>
                   </table>
+                </div>
+
+                {/* ── Mobile Card List ── */}
+                <div className="fee-card-list">
+                  <div className="fee-card-selectall">
+                    <label className="fee-card-checkbox">
+                      <input type="checkbox" checked={allOnPageSelected} onChange={handleSelectAllPage} />
+                      <span>Select All ({paginatedFees.length})</span>
+                    </label>
+                  </div>
+
+                  {paginatedFees.map((fee) => {
+                    const fineValue  = parseFloat(fee.fine)   || 0;
+                    const feeTotal   = parseFloat(fee.amount) + fineValue;
+                    const isSelected = selectedFees.includes(fee.id);
+                    const isFuture   = new Date(fee.date) > TODAY;
+                    return (
+                      <div
+                        key={fee.id}
+                        className={`fee-card ${isSelected ? 'selected' : ''} ${isFuture ? 'future' : ''}`}
+                      >
+                        <div className="fee-card-top">
+                          <div className="fee-card-title">
+                            <span className="fee-card-month">{fee.month}</span>
+                            <span className={`fee-card-date ${isFuture ? 'future-date-badge' : ''}`}>
+                              {formatDate(fee.date)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="fee-card-body">
+                          <input
+                            type="checkbox"
+                            className="fee-card-check"
+                            checked={isSelected}
+                            onChange={() => handleFeeSelection(fee.id)}
+                          />
+                          <div className="fee-card-info">
+                            <span className="fee-card-particulars">{fee.particulars || '-'}</span>
+                            <span className="fee-card-amount">₹{feeTotal.toFixed(2)}</span>
+                            {fineValue > 0 && (
+                              <span className="fee-card-fine">Fine: ₹{fineValue.toFixed(2)}</span>
+                            )}
+                          </div>
+                          <button
+                            className="fee-card-view-btn"
+                            onClick={() => handleFeeSelection(fee.id)}
+                          >
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* ── Show Future toggle ── */}
