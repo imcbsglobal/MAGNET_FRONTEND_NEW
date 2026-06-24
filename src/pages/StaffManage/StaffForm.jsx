@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createTeacher, fetchTeacherById, updateTeacher, fetchJobCategories, fetchClassesDivisions } from '../../services/api';
+import { createTeacher, fetchTeacherById, updateTeacher, fetchTeachers, fetchJobCategories, fetchClassesDivisions, fetchSubjects } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './StaffForm.scss';
@@ -33,15 +33,23 @@ const StaffForm = () => {
     assigned_class: '',
     assigned_division: '',
     additional_class_assignments: [],
+    subjects: [],
+    assigned_teachers: [],
   });
   const [categories, setCategories] = useState([]);
   const [classes, setClasses] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [subjectsList, setSubjectsList] = useState([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState('');
+  const [teachersList, setTeachersList] = useState([]);
+  const [selectedTeacherId, setSelectedTeacherId] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadCategories();
     loadClassesDivisions();
+    loadSubjects();
+    loadTeachers();
     if (isEdit) loadStaff();
   }, [id]);
 
@@ -51,6 +59,29 @@ const StaffForm = () => {
       setCategories(res.data);
     } catch (err) {
       console.error('Failed to fetch categories:', err);
+    }
+  };
+
+  const loadTeachers = async () => {
+    try {
+      const res = await fetchTeachers(institutionId);
+      const allTeachers = res.data || [];
+      if (isEdit) {
+        setTeachersList(allTeachers.filter(t => String(t.id) !== String(id)));
+      } else {
+        setTeachersList(allTeachers);
+      }
+    } catch (err) {
+      console.error('Failed to fetch teachers:', err);
+    }
+  };
+
+  const loadSubjects = async () => {
+    try {
+      const res = await fetchSubjects(institutionId);
+      setSubjectsList(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch subjects:', err);
     }
   };
 
@@ -81,6 +112,8 @@ const StaffForm = () => {
         assigned_class: d.assigned_class || '',
         assigned_division: d.assigned_division || '',
         additional_class_assignments: d.additional_class_assignments || [],
+        subjects: d.subjects || [],
+        assigned_teachers: d.assigned_teachers || [],
       });
     } catch (err) {
       console.error('Failed to fetch staff:', err);
@@ -88,7 +121,50 @@ const StaffForm = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.value;
+    if (e.target.name === 'job_category' && value !== 'HOD') {
+      setFormData({ ...formData, [e.target.name]: value, assigned_teachers: [] });
+    } else {
+      setFormData({ ...formData, [e.target.name]: value });
+    }
+  };
+
+  const handleAddTeacher = () => {
+    if (!selectedTeacherId) return;
+    const teacher = teachersList.find(t => String(t.id) === String(selectedTeacherId));
+    if (!teacher) return;
+    if (formData.assigned_teachers.some(t => String(t.id) === String(teacher.id))) return;
+    setFormData({
+      ...formData,
+      assigned_teachers: [...formData.assigned_teachers, { id: teacher.id, name: teacher.name || teacher.username }],
+    });
+    setSelectedTeacherId('');
+  };
+
+  const handleRemoveTeacher = (index) => {
+    setFormData({
+      ...formData,
+      assigned_teachers: formData.assigned_teachers.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleAddSubject = () => {
+    if (!selectedSubjectId) return;
+    const subject = subjectsList.find(s => String(s.id) === String(selectedSubjectId));
+    if (!subject) return;
+    if (formData.subjects.some(s => String(s.id) === String(subject.id))) return;
+    setFormData({
+      ...formData,
+      subjects: [...formData.subjects, { id: subject.id, name: subject.name }],
+    });
+    setSelectedSubjectId('');
+  };
+
+  const handleRemoveSubject = (index) => {
+    setFormData({
+      ...formData,
+      subjects: formData.subjects.filter((_, i) => i !== index),
+    });
   };
 
   const handleAddAdditionalClass = () => {
@@ -205,9 +281,59 @@ const StaffForm = () => {
                 </div>
               </div>
 
+              {formData.job_category === 'HOD' && (
+                <div className="form-section">
+                  <h3>Assigned Teachers</h3>
+                  <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '15px' }}>
+                    Select the teachers under this HOD's supervision
+                  </p>
+                  <div className="subjects-picker">
+                    <div className="subjects-select-wrapper form-group">
+                      <label>Select Teachers</label>
+                      <select
+                        value={selectedTeacherId}
+                        onChange={(e) => setSelectedTeacherId(e.target.value)}
+                      >
+                        <option value="">Select Teacher</option>
+                        {teachersList
+                          .filter(t => t.job_category === 'Teacher')
+                          .map((t) => (
+                            <option key={t.id} value={t.id}>{t.name || t.username}</option>
+                          ))}
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      className="add-btn"
+                      onClick={handleAddTeacher}
+                    >
+                      + Add
+                    </button>
+                  </div>
+                  <div className="subjects-tags">
+                    {formData.assigned_teachers.length === 0 ? (
+                      <span className="subjects-empty">No teachers assigned yet.</span>
+                    ) : (
+                      formData.assigned_teachers.map((t, idx) => (
+                        <span key={idx} className="subject-tag" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                          {t.name}
+                          <button
+                            type="button"
+                            className="subject-tag-remove"
+                            onClick={() => handleRemoveTeacher(idx)}
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="form-section">
                 <div className="section-header">
-                  <h3>Class Assignments</h3>
+                  <h3>Class Incharge</h3>
                   <button 
                     type="button" 
                     className="add-btn" 
@@ -243,7 +369,7 @@ const StaffForm = () => {
                 {/* Additional Classes */}
                 {formData.additional_class_assignments.length > 0 && (
                   <div style={{ marginTop: '15px' }}>
-                    <h4 style={{ fontSize: '0.9rem', color: '#666', marginBottom: '10px', fontWeight: '600' }}>Additional Assignments</h4>
+                    <h4 style={{ fontSize: '0.9rem', color: '#666', marginBottom: '10px', fontWeight: '600' }}>Assigned Classes</h4>
                     {formData.additional_class_assignments.map((assignment, index) => (
                       <div key={index} className="form-grid" style={{ marginBottom: '12px' }}>
                         <div className="form-group">
@@ -319,6 +445,51 @@ const StaffForm = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="form-section subjects-section">
+                <div className="section-header">
+                  <h3>Subjects</h3>
+                </div>
+                <div className="subjects-picker">
+                  <div className="subjects-select-wrapper form-group">
+                    <label>Assign Subjects</label>
+                    <select
+                      value={selectedSubjectId}
+                      onChange={(e) => setSelectedSubjectId(e.target.value)}
+                    >
+                      <option value="">Select Subject</option>
+                      {subjectsList.map((sub) => (
+                        <option key={sub.id} value={sub.id}>{sub.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    className="add-btn"
+                    onClick={handleAddSubject}
+                  >
+                    + Add
+                  </button>
+                </div>
+                <div className="subjects-tags">
+                  {formData.subjects.length === 0 ? (
+                    <span className="subjects-empty">No subjects assigned yet. Select a subject and click Add.</span>
+                  ) : (
+                    formData.subjects.map((sub, idx) => (
+                      <span key={idx} className="subject-tag">
+                        {sub.name}
+                        <button
+                          type="button"
+                          className="subject-tag-remove"
+                          onClick={() => handleRemoveSubject(idx)}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
               </div>
 
               <div className="form-section">

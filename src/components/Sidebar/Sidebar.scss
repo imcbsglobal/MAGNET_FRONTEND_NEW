@@ -221,7 +221,6 @@ $item-radius: 8px;
     transition: background 0.13s ease, color 0.13s ease;
     user-select: none;
 
-    /* Slim left-border active indicator (hidden by default) */
     &::before {
       content: '';
       position: absolute;
@@ -280,17 +279,14 @@ $item-radius: 8px;
       flex-shrink: 0;
     }
 
-    /* Hover */
     &:hover {
       background: $jira-bg;
       color: $jira-text;
-
       .item-icon { opacity: 0.9; }
     }
 
     &:active { background: $jira-grey-light; }
 
-    /* ── Active state — slim left border + subtle bg ── */
     &.active {
       background: $accent-light;
       color: $jira-text;
@@ -312,7 +308,6 @@ $item-radius: 8px;
     }
   }
 
-  /* ── Nav item group (wraps parent + submenu) ── */
   .nav-item-group {
     display: flex;
     flex-direction: column;
@@ -325,7 +320,6 @@ $item-radius: 8px;
     }
   }
 
-  /* ── Submenu ── */
   .nav-submenu {
     display: flex;
     flex-direction: column;
@@ -350,7 +344,6 @@ $item-radius: 8px;
     }
   }
 
-  /* ── Sub item ── */
   .sub-item {
     padding: 6px 10px;
     background: transparent;
@@ -389,7 +382,6 @@ $item-radius: 8px;
 
     &:hover {
       background: $jira-bg;
-
       &::before { background: $text-dim; }
       .item-label { color: $jira-text; }
       .item-icon { opacity: 0.85; }
@@ -397,22 +389,12 @@ $item-radius: 8px;
 
     &.active {
       background: $accent-light;
-
       &::before { background: $accent; }
-
-      .item-icon {
-        opacity: 1;
-        color: $accent;
-      }
-
-      .item-label {
-        color: $jira-text;
-        font-weight: 700;
-      }
+      .item-icon { opacity: 1; color: $accent; }
+      .item-label { color: $jira-text; font-weight: 700; }
     }
   }
 
-  /* ── Submenu arrow ── */
   .submenu-arrow {
     margin-left: auto;
     font-size: 0.75rem;
@@ -436,7 +418,6 @@ $item-radius: 8px;
   position: relative;
 }
 
-/* ── User profile card ─────────────────────────── */
 .sidebar-user {
   display: flex;
   align-items: center;
@@ -492,7 +473,6 @@ $item-radius: 8px;
   margin-top: 1px;
 }
 
-/* ── Footer divider ────────────────────────────── */
 .sidebar-footer-divider {
   height: 1px;
   background: $jira-border;
@@ -501,7 +481,6 @@ $item-radius: 8px;
   z-index: 1;
 }
 
-/* ── Logout ────────────────────────────────────── */
 .logout-card {
   display: flex;
   align-items: center;
@@ -519,7 +498,6 @@ $item-radius: 8px;
   &:hover {
     background: $jira-red-light;
     border-color: rgba(225, 29, 72, 0.3);
-
     .logout-icon-container { color: $jira-red; }
     .logout-btn { color: $jira-red; font-weight: 600; }
   }
@@ -575,7 +553,7 @@ $item-radius: 8px;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  transition: background 0.13s ease, border-color 0.13s ease;
+  transition: background 0.13s ease, border-color 0.13s ease, left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 
   &:hover {
@@ -586,9 +564,10 @@ $item-radius: 8px;
   &:active { background: $jira-grey-light; }
 
   &.open {
-    left: calc(#{$sidebar-width} + 14px);
-    background: $accent-light;
-    border-color: $accent;
+    left: calc(#{$sidebar-width} + 8px);
+    background: $sidebar-bg;
+    border-color: $jira-border;
+    color: $jira-text;
   }
 }
 
@@ -597,8 +576,8 @@ $item-radius: 8px;
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15, 30, 62, 0.5);
-  backdrop-filter: blur(3px);
+  background: rgba(15, 30, 62, 0.6);
+  backdrop-filter: blur(2px);
   z-index: 199;
   animation: fadeIn 0.2s ease;
 
@@ -607,40 +586,111 @@ $item-radius: 8px;
 
 /* ── Responsive ────────────────────────────────── */
 @media (max-width: 1024px) {
+  /* Zero out sidebar offset so the main content fills the full viewport */
+  :root {
+    --sidebar-width: 0px !important;
+  }
+
   .mobile-toggle { display: flex; }
 
   .sidebar-collapse-toggle { display: none; }
 
+  /* ── Main content area: full width, no left offset ── */
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    /* DO NOT set overflow-x: hidden here — that breaks table scrolling.
+       Table scroll fix is handled per-page via the individual SCSS overrides. */
+  }
+
+  .dashboard-wrapper {
+    min-width: 0 !important;
+  }
+
+  /* ── Sidebar slides in from the left as a drawer ── */
   .dashboard-sidebar {
     left: -#{$sidebar-width};
-    width: $sidebar-width;
-    min-width: $sidebar-width;
-    overflow: hidden;
+    width: $sidebar-width !important;
+    min-width: $sidebar-width !important;
+    height: 100vh;
+    height: 100dvh; /* accounts for mobile browser chrome shifting viewport */
+    overflow: hidden; /* sidebar itself doesn't scroll; .sidebar-nav does */
+    display: flex;
+    flex-direction: column;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 0;
+    box-shadow: none;
+    z-index: 400;
 
-    &.mobile-open { left: 0; }
+    &.mobile-open {
+      left: 0;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45);
+    }
 
+    /* On mobile, collapsed state is ignored — always show full sidebar */
     &.collapsed {
-      width: $sidebar-width;
-      min-width: $sidebar-width;
+      width: $sidebar-width !important;
+      min-width: $sidebar-width !important;
 
       .brand-text { display: flex; }
       .brand-mini { display: none; }
 
       .item-label,
       .submenu-arrow,
-      .active-dot,
-      .sidebar-user-info,
-      .logout-btn { display: initial; }
+      .active-dot { display: initial; }
 
       .sidebar-user-info { display: flex; }
-      .nav-item { justify-content: flex-start; padding: 8px 10px; }
-      .sidebar-user, .logout-card { justify-content: flex-start; gap: 10px; }
-      .nav-item::after, .sidebar-user::after, .logout-card::after { display: none; }
+      .logout-btn { display: initial; }
+
+      .nav-item {
+        justify-content: flex-start;
+        padding: 8px 10px;
+      }
+
+      .sidebar-user {
+        justify-content: flex-start;
+        gap: 9px;
+        padding: 8px 9px;
+      }
+
+      .logout-card {
+        justify-content: flex-start;
+        gap: 10px;
+      }
+
+      /* Hide tooltips on mobile — labels are already visible */
+      .nav-item::after,
+      .sidebar-user::after,
+      .logout-card::after { display: none; }
     }
 
-    .sidebar-brand { padding-top: 60px; }
+    /* Sidebar is a flex column — it must fill exactly 100vh so the
+       footer never scrolls off-screen. overflow-y on .sidebar-nav
+       handles long nav lists internally; the footer stays pinned. */
+
+    /* Just enough top padding to clear the 38px hamburger + 14px top + 4px gap */
+    .sidebar-brand { padding-top: 14px; padding-bottom: 14px; }
+
+    /* Nav takes all remaining space and scrolls if items overflow */
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 4px;
+    }
+
+    /* Footer always visible at bottom — never pushed off screen */
+    .sidebar-footer {
+      flex-shrink: 0;
+    }
+  }
+
+  /* Overlay sits behind sidebar but above main content */
+  .sidebar-overlay {
+    z-index: 399;
   }
 }
 

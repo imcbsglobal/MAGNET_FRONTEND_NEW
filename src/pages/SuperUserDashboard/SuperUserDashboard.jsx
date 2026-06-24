@@ -14,6 +14,10 @@ const SuperUserDashboard = () => {
   const [showLogo, setShowLogo] = useState(true); // Default to showing logo for superuser
 
   useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      window.location.replace('/login');
+      return;
+    }
     const loadAdministrators = async () => {
       setLoading(true);
       setError('');

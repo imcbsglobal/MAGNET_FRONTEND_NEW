@@ -1,6 +1,6 @@
 /* =========================================================
    Staff Form – matches StaffList.scss admin style
-   Self-contained: does not depend on Administrators.scss
+   Self-contained: does not depend on Administrators.scsss
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -239,6 +239,89 @@ $red-border: #FBD2DA;
     justify-content: flex-end;
 
     .save-btn { min-width: 160px; padding: 10px 24px; }
+  }
+
+  /* ── Subjects tag picker ── */
+  .subjects-section {
+    .subjects-picker {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+
+      .subjects-select-wrapper {
+        flex: 1;
+      }
+    }
+
+    .subjects-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 16px 14px;
+      background: #F8FAFC;
+      border: 1.5px dashed $border;
+      border-radius: 10px;
+      min-height: 52px;
+      transition: border-color 0.15s, background 0.15s;
+
+      &:has(.subject-tag) {
+        border-style: solid;
+        background: #fff;
+      }
+    }
+
+    .subject-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px 6px 14px;
+      background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+      color: #4338CA;
+      border: 1px solid #C7D2FE;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: box-shadow 0.15s, transform 0.15s;
+
+      &:hover {
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+        transform: translateY(-1px);
+      }
+
+      .subject-tag-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #6366F1;
+        font-size: 1.05rem;
+        line-height: 1;
+        padding: 0;
+        transition: background 0.12s, color 0.12s;
+
+        &:hover {
+          background: #E11D48;
+          color: #fff;
+        }
+      }
+    }
+
+    .subjects-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      color: #A4AEC2;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
   }
 
   /* ── Responsive ── */

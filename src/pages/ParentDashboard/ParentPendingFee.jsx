@@ -1,14 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import EasebuzzPayment from '../../components/Payment/EasebuzzPayment';
 import { fetchPendingFees, fetchSchoolInfo } from '../../services/api';
-import './FeePages.scss';
+import './ParentPendingFee.scss';
 
 const TODAY = new Date();
 TODAY.setHours(23, 59, 59, 999); // include all of today
 
+const ReceiptIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 2v20l2-1.5L8 22l2-1.5L12 22l2-1.5L16 22l2-1.5L20 22V2l-2 1.5L16 2l-2 1.5L12 2l-2 1.5L8 2 6 3.5 4 2z" />
+    <path d="M8 7h8" />
+    <path d="M8 11h8" />
+    <path d="M8 15h5" />
+  </svg>
+);
+
+const FILTER_TABS = [
+  { value: 'all',     label: 'All'      },
+  { value: 'vehicle', label: 'Vehicle'  },
+  { value: 'feeItem', label: 'Fee Item' },
+];
+
 const ParentPendingFee = () => {
+  const [isMobile, setIsMobile]           = useState(() => window.innerWidth <= 768);
   const [fees, setFees]                   = useState([]);
   const [error, setError]                 = useState('');
   const [loading, setLoading]             = useState(true);
@@ -23,6 +39,7 @@ const ParentPendingFee = () => {
   const [institutionName, setInstitutionName] = useState('');
   const [studentName, setStudentName]     = useState('Student');
   const [showFuture, setShowFuture]       = useState(false);
+  const [viewFee, setViewFee]             = useState(null);
 
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno         = localStorage.getItem('admno')         || '';
@@ -89,6 +106,7 @@ const ParentPendingFee = () => {
 
   const handlePaySelected    = () => { setPaymentFees(fees.filter(f => selectedFees.includes(f.id))); setShowPayment(true); };
   const handlePayAll         = () => { setPaymentFees(filteredFees); setShowPayment(true); };
+  const handlePaySingle      = (fee) => { setPaymentFees([fee]); setShowPayment(true); };
   const handlePaymentSuccess = (paymentData) => {
     setShowPayment(false);
     setSelectedFees([]);
@@ -134,63 +152,88 @@ const ParentPendingFee = () => {
       <Sidebar userType="parent" />
       <main className="dashboard-main">
         <Navbar />
-        <div className="dashboard-content fee-page-content">
+        <div className="fee-page">
 
           {/* ── Header ── */}
-          <section className="welcome-section">
-            <div>
-              <h2>Pending Fee — {studentName}</h2>
-              <p>
-                {institutionName
-                  ? <><strong>{institutionName}</strong> | Adm No: <strong>{admno}</strong></>
-                  : <>Institution: <strong>{institutionId}</strong> | Adm No: <strong>{admno}</strong></>
-                }
-              </p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-              <div className="fee-summary-banner">
-                <span>Due Now</span>
-                <strong>₹{dueTodayTotal.toFixed(2)}</strong>
+          <div className="fee-header">
+            <div className="fee-header-main">
+              <div className="fee-header-icon"><ReceiptIcon /></div>
+              <div>
+                <h1>Pending Fee — {studentName}</h1>
+                <p>
+                  {institutionName
+                    ? <><strong>{institutionName}</strong> · Adm No: <strong>{admno}</strong></>
+                    : <>Institution: <strong>{institutionId}</strong> · Adm No: <strong>{admno}</strong></>
+                  }
+                </p>
+                <div className="fee-pill-row">
+                  <span className="fee-pill fee-pill--due">
+                    Due Now · ₹{dueTodayTotal.toFixed(2)}
+                  </span>
+                  {futureFees.length > 0 && (
+                    <span className="fee-pill fee-pill--future">
+                      Upcoming · ₹{(totalDue - dueTodayTotal).toFixed(2)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </section>
+            <div className="fee-actions">
+              {someSelected && (
+                <button type="button" className="secondary-btn" onClick={handlePaySelected}>
+                  Pay Selected ({selectedFees.length}) · ₹{selectedTotal.toFixed(2)}
+                </button>
+              )}
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={handlePayAll}
+                disabled={filteredFees.length === 0}
+              >
+                Pay All · ₹{totalDue.toFixed(2)}
+              </button>
+            </div>
+          </div>
 
+          {error && <div className="fee-error">{error}</div>}
           {paymentMessage && (
-            <div className={`payment-message ${paymentMessage.startsWith('Payment of') ? 'success' : 'error'}`}>
+            <div className={paymentMessage.startsWith('Payment of') ? 'fee-status' : 'fee-error'}>
               {paymentMessage}
             </div>
           )}
 
-          {/* ── Filter Bar ── */}
-          <div className="top-filter-bar">
-            <select
-              value={filterType}
-              onChange={e => { setFilterType(e.target.value); setCurrentPage(1); }}
-              className="filter-select"
-            >
-              <option value="all">All</option>
-              <option value="vehicle">Vehicle</option>
-              <option value="feeItem">Fee Item</option>
-            </select>
-            <div className="fee-search-box">
-              <span className="fee-search-icon">🔍</span>
+          {/* ── Search bar ── */}
+          <div className="fee-search-bar">
+            <div className="search-input-wrapper">
               <input
                 type="text"
-                placeholder="Search by Month, Particulars, Ref No..."
                 value={search}
+                placeholder="Search by Month, Particulars, Ref No, Remark"
                 onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
               />
             </div>
+            <div className="status-filter-wrapper">
+              {FILTER_TABS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`status-filter-btn${filterType === value ? ' status-filter-btn--active' : ''}`}
+                  onClick={() => { setFilterType(value); setCurrentPage(1); }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* ── Table ── */}
+          {/* ── Table / Cards ── */}
           <div className="fee-table-card">
             {loading ? (
-              <div className="loading-state">Loading pending fees…</div>
+              <div className="fee-empty">Loading pending fees…</div>
             ) : error ? (
-              <div className="error-message">{error}</div>
+              <div className="fee-empty">{error}</div>
             ) : filteredFees.length === 0 ? (
-              <div className="empty-state"><p>No pending fee records found.</p></div>
+              <div className="fee-empty">No pending fee records found.</div>
             ) : (
               <>
                 <div className="table-responsive">
@@ -342,6 +385,63 @@ const ParentPendingFee = () => {
 
         </div>
       </main>
+
+      {/* ── Fee detail modal (mobile "View") ── */}
+      {viewFee && (() => {
+        const fineValue  = parseFloat(viewFee.fine) || 0;
+        const feeTotal   = parseFloat(viewFee.amount) + fineValue;
+        const isFuture   = new Date(viewFee.date) > TODAY;
+        const isSelected = selectedFees.includes(viewFee.id);
+        const rows = [
+          ['Date', formatDate(viewFee.date)],
+          ['Month/Term', viewFee.month || '-'],
+          ['Particulars', viewFee.particulars || '-'],
+          ['Ref No', viewFee.refno || '-'],
+          ['Fine', `₹${fineValue.toFixed(2)}`],
+          ['Amount', `₹${Number(viewFee.amount).toFixed(2)}`],
+          ['Total', `₹${feeTotal.toFixed(2)}`],
+          ['Remark', viewFee.remark || '-'],
+        ];
+        return (
+          <div className="modal-overlay" onClick={() => setViewFee(null)}>
+            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <h2>{viewFee.month || 'Fee Details'}</h2>
+                  <span className="modal-sub">{viewFee.particulars || '-'}</span>
+                </div>
+                <button className="modal-close" onClick={() => setViewFee(null)}>✕</button>
+              </div>
+              <div className="modal-body">
+                {rows.map(([label, value]) => (
+                  <div className="modal-row" key={label}>
+                    <span className="modal-label">{label}</span>
+                    <span className={`modal-value ${label === 'Total' ? 'modal-value--total' : ''}`}>
+                      {label === 'Date' && isFuture
+                        ? <span className="future-date-badge">{value}</span>
+                        : value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="secondary-btn"
+                  onClick={() => { handleFeeSelection(viewFee.id); }}
+                >
+                  {isSelected ? 'Remove from Selection' : 'Add to Selection'}
+                </button>
+                <button
+                  className="primary-btn"
+                  onClick={() => { const f = viewFee; setViewFee(null); handlePaySingle(f); }}
+                >
+                  Pay This · ₹{feeTotal.toFixed(2)}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showPayment && (
         <EasebuzzPayment

@@ -1,0 +1,426 @@
+/* =========================================================
+   Teacher Hours Master – Inter / navy / indigo admin style
+   (matches IDCard.scss design system)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$accent:         #4F46E5;
+$accent-light:   #EEF2FF;
+$ink:            #0F1E3D;
+$navy:           #1B2A4E;
+$subtext:        #6B7B96;
+$border:         #E5E9F0;
+$bg:             #F6F8FB;
+$head-bg:        #F8FAFC;
+$green:          #16A34A;
+$green-light:    #E8F8EE;
+$red:            #E11D48;
+$red-light:      #FDEAEE;
+$blue:           #2563EB;
+$blue-light:     #EAF2FE;
+$purple:         #7C3AED;
+$purple-light:   #F3EEFF;
+$grey:           #A4AEC2;
+$pill-bg:        #F1F2F5;
+$pill-border:    #E2E4E9;
+
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-pill: 100px;
+
+$shadow-card:    0 1px 2px rgba(15, 30, 62, 0.05), 0 1px 1px rgba(15, 30, 62, 0.04);
+$shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0.05);
+$shadow-card-lg: 0 1px 2px rgba(15, 30, 62, 0.04), 0 10px 28px rgba(15, 30, 62, 0.07);
+$shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
+
+/* ─── Shared Buttons ─────────────────────────────────────── */
+.primary-btn,
+.secondary-btn {
+  font-family: 'Inter', sans-serif;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  padding: 9px 18px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+  line-height: 1.4;
+}
+.primary-btn {
+  background: $accent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba($accent, 0.32);
+  &:hover    { background: darken($accent, 6%); box-shadow: 0 6px 16px rgba($accent, 0.42); transform: translateY(-1px); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+}
+.secondary-btn {
+  background: #fff;
+  color: $ink;
+  border-color: $border;
+  &:hover    { background: $bg; border-color: darken($border, 8%); }
+  &:active   { transform: translateY(0); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+}
+
+/* ─── Page ───────────────────────────────────────────────── */
+.thm-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: $bg;
+  min-height: 100%;
+  min-width: 0;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.thm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  background: #fff;
+  border: none;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card-lg;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 3px;
+    font-size: 1.32rem;
+    font-weight: 800;
+    color: $ink;
+    letter-spacing: -0.015em;
+  }
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: $subtext;
+  }
+}
+
+.thm-header-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.thm-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366F1, #4338CA);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba($accent, 0.38);
+
+  svg { width: 24px; height: 24px; stroke-width: 1.8; }
+}
+
+.thm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ─── Error banner ───────────────────────────────────────── */
+.thm-error {
+  padding: 10px 16px;
+  border-radius: $radius-sm;
+  font-weight: 600;
+  font-size: 0.82rem;
+  background: $red-light;
+  color: darken($red, 5%);
+  border: 1px solid rgba($red, 0.3);
+}
+
+/* ─── Table card: overflow: hidden removed — it clips .table-responsive
+   and prevents horizontal scrolling. min-width: 0 added so this flex
+   child doesn't blow out its container. ─── */
+.thm-table-card {
+  background: #fff;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  box-shadow: $shadow-raised;
+  min-width: 0;
+}
+
+/* display: block + min-width: 0 needed so this flex descendant can
+   actually shrink and register as a scroll container on mobile.
+   touch-action: pan-x is explicit because Android Chrome nested inside
+   flex ancestors doesn't always infer it from overflow-x: auto alone. */
+.table-responsive {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  border-radius: $radius-md;
+  &::-webkit-scrollbar       { height: 6px; }
+  &::-webkit-scrollbar-track { background: $bg; }
+  &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
+}
+
+.thm-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 640px;
+
+  th, td {
+    padding: 13px 16px;
+    text-align: left;
+    border-bottom: 1px solid $border;
+    border-right: 1px solid $border;
+    font-size: 0.81rem;
+    color: $ink;
+    vertical-align: middle;
+  }
+
+  th:last-child, td:last-child { border-right: none; }
+
+  th {
+    font-weight: 800;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $navy;
+    background: $head-bg;
+    white-space: nowrap;
+    border-bottom: 2px solid darken($border, 10%);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody tr {
+    transition: background 0.1s;
+    &:nth-child(even) { background: #FAFBFD; }
+    &:nth-child(odd)  { background: #fff; }
+    &:hover           { background: $accent-light !important; }
+    &:last-child td   { border-bottom: none; }
+  }
+}
+
+/* ─── Badges ─────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge--purple { background: $purple-light; color: darken($purple, 6%); border: 1px solid rgba($purple, 0.3); }
+.badge--blue   { background: $blue-light;   color: darken($blue, 6%);   border: 1px solid rgba($blue, 0.3); }
+
+/* ─── Action buttons ─────────────────────────────────────── */
+.thm-actions-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-sm;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.12s;
+
+  &:hover    { transform: translateY(-1px); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+}
+.edit-btn   { color: $blue; background: $blue-light; &:hover:not(:disabled) { background: darken($blue-light, 4%); } }
+.delete-btn { color: $red;  background: $red-light;  &:hover:not(:disabled) { background: darken($red-light, 4%); } }
+
+.thm-empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: $grey;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: #fff;
+}
+
+/* ─── Modal ──────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 30, 62, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: $radius-lg;
+  width: min(480px, 100%);
+  border: 1px solid $border;
+  box-shadow: $shadow-modal;
+  overflow: hidden;
+  animation: modalIn 0.18s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid $border;
+  background: $head-bg;
+
+  h2 {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: $ink;
+  }
+}
+.modal-sub {
+  font-size: 0.75rem;
+  color: $subtext;
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+}
+.modal-close {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: $subtext;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover { background: $pill-bg; border-color: darken($border, 8%); color: $ink; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.modal-edit-body {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $subtext;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input {
+    padding: 8px 10px;
+    border: 1.5px solid $border;
+    border-radius: $radius-sm;
+    background: $head-bg;
+    color: $ink;
+    font-size: 0.82rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+
+    &:focus    { border-color: $accent; background: #fff; box-shadow: 0 0 0 3px rgba($accent, 0.12); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; background: $pill-bg; }
+  }
+}
+
+.modal-select {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border-radius: $radius-sm;
+  border: 1.5px solid $border;
+  background: #fff;
+  color: $ink;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  transition: border-color 0.12s;
+
+  &:focus    { border-color: $accent; box-shadow: 0 0 0 3px rgba($accent, 0.12); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; background-color: $pill-bg; }
+}
+
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid $border;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: $head-bg;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .thm-header   { flex-direction: column; align-items: flex-start; }
+  .modal-header,
+  .modal-edit-body,
+  .modal-footer { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ── Mobile shell override: scoped to this page only ──────────────────────
+   Forces the shared dashboard shell ancestors open on mobile so they can't
+   clip .table-responsive, which is the sole scroll owner. Scoped under
+   .thm-page so it never leaks onto other pages. */
+@media (max-width: 1024px) {
+  .dashboard-wrapper,
+  .dashboard-main {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .thm-page,
+  .thm-table-card {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .thm-page .table-responsive {
+    overflow-x: auto !important;
+    min-width: 0 !important;
+  }
+}

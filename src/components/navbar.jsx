@@ -46,18 +46,18 @@ export default function Navbar() {
           <img src={logo} alt="MAGNET" />
         </a>
 
-        <nav className="fnav__links">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="fnav__link"
-              onClick={(e) => handleNavClick(e, l.href)}
-            >
-              {l.label}
-            </a>
-          ))}
-        </nav>
+       <nav className="fnav__links">
+  {NAV_LINKS.map((l) => (
+    <a
+      key={l.label}
+      href={l.href}
+      className="fnav__link"
+      onClick={(e) => handleNavClick(e, l.href)}
+    >
+      {l.label}
+    </a>
+  ))}
+</nav>
 
         <button className="fnav__cta" onClick={goToLogin}>
           Login
@@ -75,23 +75,26 @@ export default function Navbar() {
       </div>
 
       {/* ── mobile drawer ── */}
-      {menuOpen && (
-        <div className="fnav__drawer">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="fnav__drawer-link"
-              onClick={(e) => handleNavClick(e, l.href)}
-            >
-              {l.label}
-            </a>
-          ))}
-          <button className="fnav__drawer-cta" onClick={goToLogin}>
-            Get a demo
-          </button>
-        </div>
-      )}
+     {menuOpen && (
+  <div className="fnav__drawer">
+    {NAV_LINKS.map((l) => (
+      <a
+        key={l.label}
+        href={l.href}
+        className="fnav__drawer-link"
+        onClick={(e) => handleNavClick(e, l.href)}
+      >
+        {l.label}
+      </a>
+    ))}
+    <button
+      className="fnav__drawer-cta"
+      onClick={goToLogin}
+    >
+      Login
+    </button>
+  </div>
+)}
 
     </header>
   );
