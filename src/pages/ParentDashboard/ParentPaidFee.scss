@@ -74,6 +74,7 @@ $shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
   gap: 24px;
   background: $bg;
   min-height: 100%;
+  min-width: 0;
 }
 
 /* ─── Header ─────────────────────────────────────────────── */
@@ -221,13 +222,14 @@ $shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
   }
 }
 
-/* ─── Table card ─────────────────────────────────────────── */
+/* ─── Table card: overflow: hidden removed — clips .table-responsive
+   preventing horizontal scroll. min-width: 0 stops flex blowout. ─── */
 .fee-table-card {
   background: #fff;
   border-radius: $radius-md;
   border: 1px solid $border;
   box-shadow: $shadow-raised;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .fee-empty {
@@ -239,8 +241,19 @@ $shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
   background: #fff;
 }
 
+/* display: block + min-width: 0 needed so this flex descendant registers
+   as a real scroll container. touch-action: pan-x is explicit because
+   Android Chrome inside flex ancestors doesn't always infer it from
+   overflow-x: auto alone. */
 .table-responsive {
+  display: block;
+  width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  border-radius: $radius-md;
   &::-webkit-scrollbar       { height: 6px; }
   &::-webkit-scrollbar-track { background: $bg; }
   &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
@@ -526,10 +539,30 @@ $shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
   .fee-search-bar       { padding: 14px; }
   .search-input-wrapper { flex: 1; }
 
-  /* swap table → cards */
+  /* swap table → cards on mobile */
   .table-responsive     { display: none; }
   .fee-cards            { display: block; }
 
   .modal-footer         { flex-direction: column; }
   .modal-footer .secondary-btn { width: 100%; text-align: center; }
+}
+
+/* ── Mobile shell override: scoped to this page only ──────────────────────
+   Forces dashboard shell ancestors open on mobile so they can't clip
+   .table-responsive. Scoped under .fee-page so it never leaks elsewhere. */
+@media (max-width: 1024px) {
+  .dashboard-wrapper,
+  .dashboard-main {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .fee-page,
+  .fee-page .fee-table-card {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .fee-page .table-responsive {
+    overflow-x: auto !important;
+    min-width: 0 !important;
+  }
 }

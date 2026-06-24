@@ -71,9 +71,9 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
   gap: 28px;
   background: $bg;
   min-height: 100%;
+  min-width: 0;
 }
 
-/* ─── Header ────────────────────────────────────────────────────────────── */
 /* ─── Header ────────────────────────────────────────────────────────────── */
 .staff-header {
   display: flex;
@@ -130,12 +130,15 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
 }
 
 /* ─── Table card ─────────────────────────────────────────────────────────── */
+/* overflow: hidden removed — it clips .table-responsive and prevents
+   horizontal scrolling. Border-radius is preserved on .table-responsive
+   itself instead. */
 .staff-table-card {
   background: #fff;
   border-radius: $radius-md;
   border: 1px solid $border;
   box-shadow: $shadow-card-lg;
-  overflow: hidden;
+  min-width: 0;
 }
 
 /* ─── Toolbar (search) ───────────────────────────────────────────────────── */
@@ -180,8 +183,20 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
   }
 }
 
+/* min-width: 0 + touch-action: pan-x: flex descendants default to
+   min-width: auto which can block the scroll container from registering
+   on mobile. touch-action: pan-x is explicit because Android Chrome
+   nested inside flex ancestors doesn't always infer it from
+   overflow-x: auto alone. */
 .table-responsive {
+  display: block;
+  width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  border-radius: $radius-md;
   &::-webkit-scrollbar       { height: 6px; }
   &::-webkit-scrollbar-track { background: $bg; }
   &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
@@ -446,5 +461,29 @@ $shadow-card-lg: 0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
   .staff-table-controls {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ── Mobile shell override: scoped to staff page only ─────────────────────
+   If the shared dashboard shell sets overflow-x: hidden on
+   .dashboard-wrapper / .dashboard-main inside its own mobile media query,
+   it wins over everything inside .staff-page regardless of import order.
+   This forces those ancestors open on mobile, while keeping
+   .table-responsive as the sole scroll owner — scoped so it can't
+   leak onto other pages that don't use this stylesheet. */
+@media (max-width: 1024px) {
+  .dashboard-wrapper,
+  .dashboard-main {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .staff-page,
+  .staff-table-card {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  .staff-page .table-responsive {
+    overflow-x: auto !important;
+    min-width: 0 !important;
   }
 }
