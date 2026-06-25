@@ -555,3 +555,32 @@ $jira-grey-light:   #EBECF0;
   }
   span { color: $jira-grey; font-size: 0.9rem; }
 }
+
+
+/* ── Mobile support: adjust spacing ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .welcome-section {
+    margin: 66px 8px 8px;
+    padding: 8px 12px;
+  }
+
+  .att-summary-row {
+    margin: 0 8px 8px;
+  }
+
+  .att-box {
+    min-width: 120px;
+    padding: 12px 10px;
+  }
+
+  .fee-table-card {
+    margin: 0 8px 8px !important;
+  }
+
+  .att-table {
+    thead th {
+      padding: 6px 2px;
+      font-size: 0.56rem;
+    }
+  }
+}

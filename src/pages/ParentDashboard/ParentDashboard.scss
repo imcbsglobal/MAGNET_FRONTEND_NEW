@@ -811,9 +811,8 @@ $shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
     grid-template-columns: 1fr;
   }
 
-  .parent-stats-row,
   .parent-attendance-summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .parent-attendance-graph {
@@ -835,5 +834,272 @@ $shadow-raised:  0 4px 10px rgba(15, 30, 62, 0.07), 0 1px 3px rgba(15, 30, 62, 0
 
   .parent-record-list em {
     grid-column: 2;
+  }
+}
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .parent-dashboard-content {
+    padding: 14px 14px 32px;
+    gap: 16px;
+  }
+
+  .parent-hero {
+    padding: 20px 18px;
+    gap: 18px;
+    grid-template-columns: 1fr;
+  }
+
+  .parent-hero h2 {
+    font-size: 1.55rem;
+  }
+
+  .welcome-copy p {
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+  }
+
+  .welcome-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primary-action,
+  .secondary-action {
+    width: 100%;
+    text-align: center;
+    padding: 12px 16px;
+  }
+
+  .parent-profile-card {
+    min-height: 120px;
+    padding: 18px;
+  }
+
+  .parent-logo-display {
+    height: 120px;
+
+    img {
+      max-height: 80px;
+    }
+  }
+
+  .parent-stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .parent-stat-card {
+    padding: 16px;
+  }
+
+  .parent-stat-card strong {
+    font-size: clamp(1.1rem, 4vw, 1.5rem);
+  }
+
+  .parent-dashboard-grid,
+  .parent-dashboard-grid.bottom {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .parent-panel {
+    padding: 18px 16px;
+  }
+
+  .parent-panel-header h3 {
+    font-size: 0.98rem;
+  }
+
+  .parent-attendance-graph {
+    grid-template-columns: repeat(6, minmax(24px, 1fr));
+    gap: 7px;
+    min-height: 120px;
+  }
+
+  .parent-day-pill {
+    height: 76px;
+    font-size: 0.72rem;
+  }
+
+  .parent-attendance-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .parent-attendance-summary div {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 0.78rem;
+  }
+
+  .parent-fee-donut-wrap {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .parent-fee-donut {
+    width: 120px;
+    height: 120px;
+  }
+
+  .parent-fee-donut::after {
+    width: 85px;
+    height: 85px;
+  }
+
+  .parent-fee-donut span {
+    font-size: 1.1rem;
+  }
+
+  .parent-fee-list {
+    width: 100%;
+  }
+
+  .parent-leaves-list {
+    max-height: 280px;
+  }
+
+  .parent-record-list button {
+    padding: 11px 12px;
+    gap: 10px;
+  }
+
+  .parent-record-list strong {
+    font-size: 0.87rem;
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .parent-dashboard-content {
+    padding: 12px 12px 28px;
+    gap: 14px;
+  }
+
+  .parent-hero {
+    padding: 18px 16px;
+  }
+
+  .parent-hero h2 {
+    font-size: 1.35rem;
+  }
+
+  .parent-stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .parent-stat-card {
+    padding: 14px 12px;
+  }
+
+  .parent-stat-card span {
+    font-size: 0.7rem;
+  }
+
+  .parent-stat-card strong {
+    font-size: 1.2rem;
+  }
+
+  .parent-stat-card p {
+    font-size: 0.75rem;
+    margin-top: 6px;
+  }
+
+  .parent-panel {
+    padding: 16px 14px;
+  }
+
+  .parent-attendance-graph {
+    grid-template-columns: repeat(6, minmax(20px, 1fr));
+    gap: 5px;
+  }
+
+  .parent-day-pill {
+    height: 64px;
+    font-size: 0.65rem;
+    max-width: 36px;
+  }
+
+  .parent-day-bar small {
+    font-size: 0.68rem;
+  }
+
+  .parent-attendance-summary {
+    gap: 6px;
+  }
+
+  .parent-fee-donut-wrap {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 14px;
+  }
+
+  .parent-fee-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .parent-leave-item {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .parent-leave-day {
+    font-size: 1rem;
+  }
+
+  .parent-record-list button {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .parent-record-list button > span {
+    width: 36px;
+    height: 36px;
+  }
+
+  .parent-record-list em {
+    grid-column: 2;
+    font-size: 0.88rem;
+  }
+
+  .parent-kicker {
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+  }
+
+  /* Ensure dashboard main fills width on mobile */
+  .dashboard-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+}
+
+/* ── Mobile shell override ── */
+@media (max-width: 1024px) {
+  .dashboard-wrapper,
+  .dashboard-main {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ── Push content below fixed mobile toggle ────────────────
+   The .mobile-toggle is position:fixed at top:14px, height:38px.
+   Add top padding so the hero/content isn't hidden behind it. */
+@media (max-width: 1024px) {
+  .parent-dashboard-content {
+    padding-top: 72px;
   }
 }

@@ -72,6 +72,12 @@ $grad-head: linear-gradient(135deg, #f8f9fd 0%, #f0f2fa 100%);
   * { box-sizing: border-box; }
 }
 
+@media (max-width: 1024px) {
+  .evaluation-page {
+    padding: 66px 16px 48px;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1187,8 +1193,8 @@ input[type="radio"]:disabled {
 // ---------------------------------------------------------------------------
 // Responsive
 // ---------------------------------------------------------------------------
-@media (max-width: 768px) {
-  .evaluation-page { padding: 14px 14px 36px; }
+@media (max-width: 1024px) {
+  .evaluation-page { padding: 80px 16px 48px; }
 
   .page-header {
     flex-direction: column;

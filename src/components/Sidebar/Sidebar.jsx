@@ -17,8 +17,10 @@ const Sidebar = ({ userType = 'superuser' }) => {
   const jobCategory = localStorage.getItem('jobCategory') || '';
 
   // User info for footer profile card
-  const username = localStorage.getItem('username') || 'User';
   const storedUserType = localStorage.getItem('userType') || userType;
+  const username = storedUserType === 'parent'
+    ? (localStorage.getItem('studentName') || localStorage.getItem('username') || 'User')
+    : (localStorage.getItem('username') || 'User');
 
   const getRoleLabel = () => {
     switch (storedUserType) {
@@ -259,7 +261,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
   return (
     <>
       <button className={`mobile-toggle ${isMobileOpen ? 'open' : ''}`} onClick={toggleMobile}>
-        {isMobileOpen ? '✕' : '☰'}
+        ☰
       </button>
 
       {isMobileOpen && <div className="sidebar-overlay show" onClick={toggleMobile}></div>}

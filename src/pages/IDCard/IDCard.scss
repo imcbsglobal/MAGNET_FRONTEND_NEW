@@ -54,6 +54,8 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
   line-height: 1.4;
+  white-space: nowrap;
+  min-width: 0;
 }
 .primary-btn {
   background: $accent;
@@ -85,11 +87,18 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   min-width: 0;
 }
 
+@media (max-width: 1024px) {
+  .idcard-page {
+    padding: 80px 16px 36px !important;
+    margin-top: 0 !important;
+  }
+}
+
 /* ─── Header ────────────────────────────────────────────────────────────── */
 .idcard-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   padding: 22px 28px;
   background: #fff;
@@ -97,6 +106,7 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   border-radius: $radius-lg;
   box-shadow: $shadow-card-lg;
   flex-wrap: wrap;
+  min-width: 0; // Prevent flex children overflow
 
   h1 {
     margin: 0 0 3px;
@@ -138,6 +148,16 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  justify-content: flex-end;
+
+  .primary-btn,
+  .secondary-btn {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 
 /* ─── Status / Error banners ─────────────────────────────────────────────── */
@@ -318,6 +338,8 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   outline: none;
   cursor: pointer;
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7B96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -325,6 +347,13 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   transition: border-color 0.12s;
 
   &:focus { border-color: $accent; box-shadow: 0 0 0 3px rgba($accent, 0.12); }
+  
+  /* Ensure selected text is visible */
+  option {
+    color: $ink;
+    background: #fff;
+    padding: 4px 8px;
+  }
 }
 
 /* ─── Table card ─────────────────────────────────────────────────────────── */
@@ -496,6 +525,14 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   margin-top: 16px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.idcard-edit-actions .primary-btn,
+.idcard-edit-actions .secondary-btn {
+  flex: 1;
+  min-width: 120px;
+  justify-content: center;
 }
 
 /* ─── Modal overlay ──────────────────────────────────────────────────────── */
@@ -507,7 +544,7 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
   padding: 20px;
 }
 
@@ -565,7 +602,8 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   width: min(520px, 100%);
   border: 1px solid $border;
   box-shadow: $shadow-modal;
-  overflow: hidden;
+  /* overflow: hidden removed — it clips native <select> dropdowns */
+  overflow: visible;
   animation: modalIn 0.18s ease;
 
   /* Pin header/footer in place; only the body scrolls when content overflows */
@@ -586,6 +624,9 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   border-bottom: 1px solid $border;
   background: $head-bg;
   flex-shrink: 0;
+  border-top-left-radius: $radius-lg;
+  border-top-right-radius: $radius-lg;
+  overflow: hidden;
 
   h2 {
     margin: 0;
@@ -669,6 +710,9 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   gap: 8px;
   background: $head-bg;
   flex-shrink: 0;
+  border-bottom-left-radius: $radius-lg;
+  border-bottom-right-radius: $radius-lg;
+  overflow: hidden;
 }
 
 /* ─── Edit modal ─────────────────────────────────────────────────────────── */
@@ -1085,6 +1129,156 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
   box-shadow: none;
 }
 
+/* ─── Crop Editor Modal Styles ────────────────────────────────────────── */
+.modal-crop {
+  width: min(720px, 100%);
+}
+
+.modal-crop-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.crop-editor-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+}
+
+.crop-canvas-wrapper {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  border: 2px solid $border;
+  border-radius: $radius-md;
+  background: $head-bg;
+  overflow: hidden;
+  cursor: move;
+  max-width: 100%;
+  box-shadow: $shadow-card;
+}
+
+.crop-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.crop-box {
+  position: absolute;
+  border: 2px dashed $accent;
+  background: rgba($accent, 0.05);
+  box-shadow: inset 0 0 0 1px rgba($accent, 0.2);
+  cursor: grab;
+
+  &:active { cursor: grabbing; }
+}
+
+.crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: $accent;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba($accent, 0.5);
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  transition: transform 0.1s, box-shadow 0.1s;
+
+  &:hover { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 4px 12px rgba($accent, 0.6); }
+}
+
+.crop-handle--nw { top: 0; left: 0; cursor: nwse-resize; }
+.crop-handle--ne { top: 0; right: 0; cursor: nesw-resize; }
+.crop-handle--sw { bottom: 0; left: 0; cursor: nesw-resize; }
+.crop-handle--se { bottom: 0; right: 0; cursor: nwse-resize; }
+
+.crop-overlay-center {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  z-index: 5;
+
+  &:active { cursor: grabbing; }
+}
+
+.crop-preview-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+
+  label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $subtext;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+  }
+}
+
+.crop-preview-container {
+  width: 140px;
+  height: 140px;
+  border: 2px solid $border;
+  border-radius: $radius-md;
+  background: $head-bg;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-card;
+}
+
+.crop-preview-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid $border;
+  image-rendering: pixelated;
+}
+
+.crop-instructions {
+  width: 100%;
+  padding: 12px 14px;
+  background: $accent-light;
+  border-radius: $radius-sm;
+  font-size: 0.78rem;
+  color: darken($accent, 6%);
+  border: 1px solid rgba($accent, 0.25);
+  line-height: 1.6;
+
+  strong { 
+    color: darken($accent, 12%);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  li { margin: 4px 0; }
+}
+
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .idcard-edit-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1098,14 +1292,15 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
     min-width: 0 !important;
     max-width: 100vw !important;
     overflow-x: hidden;
+    padding-top: 0 !important;
   }
 
-  .idcard-page          { padding: 14px 12px 28px; gap: 16px; min-width: 0; }
+  .idcard-page          { padding: 80px 12px 28px !important; gap: 16px; min-width: 0; margin-top: 0 !important; }
   .idcard-header        { flex-direction: column; align-items: flex-start; padding: 18px 16px; }
   .idcard-header h1     { font-size: 1.15rem; }
-  .idcard-actions       { width: 100%; }
+  .idcard-actions       { width: 100%; justify-content: flex-start; }
   .idcard-actions .primary-btn,
-  .idcard-actions .secondary-btn { flex: 1; min-width: 140px; text-align: center; }
+  .idcard-actions .secondary-btn { flex: 1 1 auto; min-width: 120px; text-align: center; }
 
   .idcard-edit-grid     { grid-template-columns: 1fr; }
   .pf-grid--2,
@@ -1206,5 +1401,63 @@ $shadow-modal:  0 16px 40px rgba(15, 30, 62, 0.25);
 
     /* Actions cell — keep buttons pushed right */
     .idcard-actions-cell { justify-content: flex-end; }
+  }
+
+  /* ── Crop modal responsive ──────────────────────────────────────────── */
+  .modal-crop {
+    width: 100% !important;
+  }
+
+  .modal-crop-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .crop-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .crop-canvas-wrapper {
+    width: 100%;
+    max-width: 280px;
+    aspect-ratio: 1;
+    position: relative;
+    border: 2px solid $border;
+    border-radius: $radius-md;
+    background: $head-bg;
+    overflow: hidden;
+    cursor: move;
+  }
+
+  .crop-preview-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .crop-preview-container {
+    width: 110px;
+    height: 110px;
+  }
+
+  .crop-preview-canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .crop-instructions {
+    font-size: 0.73rem;
+
+    strong { font-size: 0.75rem; }
+
+    ul { padding-left: 16px; }
+
+    li { margin: 2px 0; font-size: 0.72rem; }
   }
 }

@@ -19,6 +19,14 @@ const ParentPaidFee = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [viewFee, setViewFee] = useState(null);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  // Keep isMobile in sync with window resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno = localStorage.getItem('admno') || '';
@@ -97,18 +105,11 @@ const ParentPaidFee = () => {
           <div className="fee-header">
             <div className="fee-header-main">
               <div className="fee-header-icon"><ReceiptIcon /></div>
-              <div>
-                <h1>Paid Fee — {studentName}</h1>
-                <p>
-                  Institution: <strong>{institutionId}</strong> · Adm No: <strong>{admno}</strong>
-                </p>
-                <div className="fee-pill-row">
-                  <span className="fee-pill fee-pill--paid">
-                    Total Paid · ₹{totalPaid.toFixed(2)}
-                  </span>
-                </div>
-              </div>
+              <h1>Paid Fee</h1>
             </div>
+            <span className="fee-pill fee-pill--paid">
+              Total Paid · ₹{totalPaid.toFixed(2)}
+            </span>
           </div>
 
           {error && <div className="fee-error">{error}</div>}
@@ -136,88 +137,92 @@ const ParentPaidFee = () => {
             ) : (
               <>
                 {/* ── Desktop table ── */}
-                <div className="table-responsive">
-                  <table className="fee-table">
-                    <thead>
-                      <tr>
-                        <th className="no-col">No</th>
-                        <th>Month/Term</th>
-                        <th>Particulars</th>
-                        <th>Ref No</th>
-                        <th className="money-col">Fine</th>
-                        <th className="money-col">Amount</th>
-                        <th className="money-col">Total</th>
-                        <th className="txn-col">Txn ID</th>
-                        <th>Payment Date</th>
-                        <th>Status</th>
-                        <th>Remark</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredFees.map((fee, index) => {
-                        const fineValue = Number(fee.fine || 0);
-                        const isSuccess = fee.payment_status === 'SUCCESS';
-                        return (
-                          <tr key={fee.id}>
-                            <td className="no-col">{index + 1}</td>
-                            <td>{fee.month || '-'}</td>
-                            <td>{fee.particulars || '-'}</td>
-                            <td>{fee.refno || '-'}</td>
-                            <td className={`money-col fine-cell ${fineValue === 0 ? 'is-zero' : ''}`}>₹{fineValue.toFixed(2)}</td>
-                            <td className="money-col paid-amount-cell">₹{Number(fee.amount || 0).toFixed(2)}</td>
-                            <td className="money-col total-cell">
-                              ₹{(Number(fee.amount || 0) + fineValue).toFixed(2)}
-                            </td>
-                            <td className="txn-cell txn-col">{fee.txnid || '-'}</td>
-                            <td>
-                              {(() => {
-                                const { date, time } = formatDateTime(fee.payment_date);
-                                return (
-                                  <div className="datetime-cell">
-                                    <span className="dt-date">{date}</span>
-                                    {time && <span className="dt-time">{time}</span>}
-                                  </div>
-                                );
-                              })()}
-                            </td>
-                            <td>
+                {!isMobile && (
+                  <div className="table-responsive">
+                    <table className="fee-table">
+                      <thead>
+                        <tr>
+                          <th className="no-col">No</th>
+                          <th>Month/Term</th>
+                          <th>Particulars</th>
+                          <th>Ref No</th>
+                          <th className="money-col">Fine</th>
+                          <th className="money-col">Amount</th>
+                          <th className="money-col">Total</th>
+                          <th className="txn-col">Txn ID</th>
+                          <th>Payment Date</th>
+                          <th>Status</th>
+                          <th>Remark</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredFees.map((fee, index) => {
+                          const fineValue = Number(fee.fine || 0);
+                          const isSuccess = fee.payment_status === 'SUCCESS';
+                          return (
+                            <tr key={fee.id}>
+                              <td className="no-col">{index + 1}</td>
+                              <td>{fee.month || '-'}</td>
+                              <td>{fee.particulars || '-'}</td>
+                              <td>{fee.refno || '-'}</td>
+                              <td className={`money-col fine-cell ${fineValue === 0 ? 'is-zero' : ''}`}>₹{fineValue.toFixed(2)}</td>
+                              <td className="money-col paid-amount-cell">₹{Number(fee.amount || 0).toFixed(2)}</td>
+                              <td className="money-col total-cell">
+                                ₹{(Number(fee.amount || 0) + fineValue).toFixed(2)}
+                              </td>
+                              <td className="txn-cell txn-col">{fee.txnid || '-'}</td>
+                              <td>
+                                {(() => {
+                                  const { date, time } = formatDateTime(fee.payment_date);
+                                  return (
+                                    <div className="datetime-cell">
+                                      <span className="dt-date">{date}</span>
+                                      {time && <span className="dt-time">{time}</span>}
+                                    </div>
+                                  );
+                                })()}
+                              </td>
+                              <td>
+                                <span className={`status-badge ${isSuccess ? 'success' : 'failed'}`}>
+                                  {fee.payment_status || '-'}
+                                </span>
+                              </td>
+                              <td>{fee.remark || '-'}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* ── Mobile cards ── */}
+                {isMobile && (
+                  <div className="fee-cards">
+                    {filteredFees.map((fee) => {
+                      const fineValue = Number(fee.fine || 0);
+                      const feeTotal  = Number(fee.amount || 0) + fineValue;
+                      const isSuccess = fee.payment_status === 'SUCCESS';
+                      return (
+                        <div key={fee.id} className="fee-card">
+                          <div className="fee-card-info">
+                            <div className="fee-card-top">
+                              <span className="fee-card-month">{fee.month || '-'}</span>
                               <span className={`status-badge ${isSuccess ? 'success' : 'failed'}`}>
                                 {fee.payment_status || '-'}
                               </span>
-                            </td>
-                            <td>{fee.remark || '-'}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* ── Mobile cards ── */}
-                <div className="fee-cards">
-                  {filteredFees.map((fee) => {
-                    const fineValue = Number(fee.fine || 0);
-                    const feeTotal  = Number(fee.amount || 0) + fineValue;
-                    const isSuccess = fee.payment_status === 'SUCCESS';
-                    return (
-                      <div key={fee.id} className="fee-card">
-                        <div className="fee-card-info">
-                          <div className="fee-card-top">
-                            <span className="fee-card-month">{fee.month || '-'}</span>
-                            <span className={`status-badge ${isSuccess ? 'success' : 'failed'}`}>
-                              {fee.payment_status || '-'}
-                            </span>
+                            </div>
+                            <div className="fee-card-particulars">{fee.particulars || '-'}</div>
+                            <div className="fee-card-amount">₹{feeTotal.toFixed(2)}</div>
                           </div>
-                          <div className="fee-card-particulars">{fee.particulars || '-'}</div>
-                          <div className="fee-card-amount">₹{feeTotal.toFixed(2)}</div>
+                          <button type="button" className="fee-card-view" onClick={() => setViewFee(fee)}>
+                            View
+                          </button>
                         </div>
-                        <button type="button" className="fee-card-view" onClick={() => setViewFee(fee)}>
-                          View
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </>
             )}
           </div>

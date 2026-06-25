@@ -1,0 +1,200 @@
+// Photo Crop Editor — compact modal style
+
+// Overlay backdrop
+.crop-editor-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+
+// The modal card
+.crop-editor-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: cropModalIn 0.22s ease;
+}
+
+@keyframes cropModalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+// Top section — image crop area (roughly half the modal height)
+.crop-editor-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;   // square, so the circle sits nicely
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.crop-editor-circle-mask {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.crop-image-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+
+  &:active { cursor: grabbing; }
+}
+
+.crop-editor-image {
+  // width & height driven by JS (fitZoom * naturalSize)
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transform-origin: center center;
+  pointer-events: none;
+  display: block;
+}
+
+// Circle guide ring
+.crop-circle-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 82%;
+  height: 82%;
+  border: 2px solid rgba(99, 102, 241, 0.9);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.55),
+    inset 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.crop-circle-label {
+  position: absolute;
+  bottom: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+// Bottom section — controls
+.crop-editor-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #1a1a2e;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.crop-zoom-indicator {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.crop-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  flex: 0 0 auto;
+
+  &:active { transform: scale(0.97); }
+}
+
+.crop-btn--primary {
+  background: #4F46E5;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+
+  &:hover {
+    background: #4338CA;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.5);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.crop-btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// Hidden canvas used for generating the final crop blob
+.crop-preview-canvas {
+  display: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .crop-editor-modal {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .crop-editor-controls {
+    gap: 6px;
+    padding: 10px 12px;
+
+    // Two rows: [Cancel] [Reset] on top, [Zoom] [Crop & Upload] on bottom
+    .crop-btn--secondary { flex: 1; }
+    .crop-zoom-indicator { order: 3; flex: 1; text-align: center; font-size: 0.72rem; }
+    .crop-btn--primary   { order: 4; flex: 1; }
+  }
+
+  .crop-btn {
+    font-size: 0.75rem;
+    padding: 8px 10px;
+  }
+}

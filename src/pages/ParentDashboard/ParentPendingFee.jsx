@@ -44,6 +44,13 @@ const ParentPendingFee = () => {
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno         = localStorage.getItem('admno')         || '';
 
+  // Keep isMobile in sync with window resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const formatDate = (value) => {
     if (!value) return '-';
     const date = new Date(value);
@@ -158,41 +165,11 @@ const ParentPendingFee = () => {
           <div className="fee-header">
             <div className="fee-header-main">
               <div className="fee-header-icon"><ReceiptIcon /></div>
-              <div>
-                <h1>Pending Fee — {studentName}</h1>
-                <p>
-                  {institutionName
-                    ? <><strong>{institutionName}</strong> · Adm No: <strong>{admno}</strong></>
-                    : <>Institution: <strong>{institutionId}</strong> · Adm No: <strong>{admno}</strong></>
-                  }
-                </p>
-                <div className="fee-pill-row">
-                  <span className="fee-pill fee-pill--due">
-                    Due Now · ₹{dueTodayTotal.toFixed(2)}
-                  </span>
-                  {futureFees.length > 0 && (
-                    <span className="fee-pill fee-pill--future">
-                      Upcoming · ₹{(totalDue - dueTodayTotal).toFixed(2)}
-                    </span>
-                  )}
-                </div>
-              </div>
+              <h1>Pending Fee</h1>
             </div>
-            <div className="fee-actions">
-              {someSelected && (
-                <button type="button" className="secondary-btn" onClick={handlePaySelected}>
-                  Pay Selected ({selectedFees.length}) · ₹{selectedTotal.toFixed(2)}
-                </button>
-              )}
-              <button
-                type="button"
-                className="primary-btn"
-                onClick={handlePayAll}
-                disabled={filteredFees.length === 0}
-              >
-                Pay All · ₹{totalDue.toFixed(2)}
-              </button>
-            </div>
+            <span className="fee-pill fee-pill--due">
+              Due Now · ₹{dueTodayTotal.toFixed(2)}
+            </span>
           </div>
 
           {error && <div className="fee-error">{error}</div>}
@@ -236,112 +213,119 @@ const ParentPendingFee = () => {
               <div className="fee-empty">No pending fee records found.</div>
             ) : (
               <>
-                <div className="table-responsive">
-                  <table className="fee-table">
-                    <thead>
-                      <tr>
-                        <th className="checkbox-col">
-                          <input type="checkbox" checked={allOnPageSelected} onChange={handleSelectAllPage} title="Select all on this page" />
-                        </th>
-                        <th className="no-col">No</th>
-                        <th>Date</th>
-                        <th>Month/Term</th>
-                        <th>Particulars</th>
-                        <th>Ref No</th>
-                        <th className="money-col">Fine</th>
-                        <th className="money-col">Amount</th>
-                        <th className="money-col">Total</th>
-                        <th>Remark</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedFees.map((fee, index) => {
-                        const fineValue   = parseFloat(fee.fine)   || 0;
-                        const feeTotal    = parseFloat(fee.amount) + fineValue;
-                        const isSelected  = selectedFees.includes(fee.id);
-                        const isFuture    = new Date(fee.date) > TODAY;
-                        return (
-                          <tr
-                            key={fee.id}
-                            className={`is-clickable ${isSelected ? 'selected-row' : ''} ${isFuture ? 'future-row' : ''}`}
-                            onClick={() => handleFeeSelection(fee.id)}
-                          >
-                            <td className="checkbox-col" onClick={e => e.stopPropagation()}>
-                              <input type="checkbox" checked={isSelected} onChange={() => handleFeeSelection(fee.id)} />
-                            </td>
-                            <td className="no-col">{index + 1}</td>
-                            <td>
-                              <span className={isFuture ? 'future-date-badge' : ''}>
-                                {formatDate(fee.date)}
-                              </span>
-                            </td>
-                            <td>{fee.month}</td>
-                            <td>{fee.particulars || '-'}</td>
-                            <td>{fee.refno}</td>
-                            <td className={`money-col fine-cell ${fineValue === 0 ? 'is-zero' : ''}`}>₹{fineValue.toFixed(2)}</td>
-                            <td className="money-col amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
-                            <td className="money-col total-cell">₹{feeTotal.toFixed(2)}</td>
-                            <td>{fee.remark || '-'}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                {/* ── Desktop table ── */}
+                {!isMobile && (
+                  <div className="table-responsive">
+                    <table className="fee-table">
+                      <thead>
+                        <tr>
+                          <th className="checkbox-col">
+                            <input type="checkbox" checked={allOnPageSelected} onChange={handleSelectAllPage} title="Select all on this page" />
+                          </th>
+                          <th className="no-col">No</th>
+                          <th>Date</th>
+                          <th>Month/Term</th>
+                          <th>Particulars</th>
+                          <th>Ref No</th>
+                          <th className="money-col">Fine</th>
+                          <th className="money-col">Amount</th>
+                          <th className="money-col">Total</th>
+                          <th>Remark</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedFees.map((fee, index) => {
+                          const fineValue   = parseFloat(fee.fine)   || 0;
+                          const feeTotal    = parseFloat(fee.amount) + fineValue;
+                          const isSelected  = selectedFees.includes(fee.id);
+                          const isFuture    = new Date(fee.date) > TODAY;
+                          return (
+                            <tr
+                              key={fee.id}
+                              className={`is-clickable ${isSelected ? 'selected-row' : ''} ${isFuture ? 'future-row' : ''}`}
+                              onClick={() => handleFeeSelection(fee.id)}
+                            >
+                              <td className="checkbox-col" onClick={e => e.stopPropagation()}>
+                                <input type="checkbox" checked={isSelected} onChange={() => handleFeeSelection(fee.id)} />
+                              </td>
+                              <td className="no-col">{index + 1}</td>
+                              <td>
+                                <span className={isFuture ? 'future-date-badge' : ''}>
+                                  {formatDate(fee.date)}
+                                </span>
+                              </td>
+                              <td>{fee.month}</td>
+                              <td>{fee.particulars || '-'}</td>
+                              <td>{fee.refno}</td>
+                              <td className={`money-col fine-cell ${fineValue === 0 ? 'is-zero' : ''}`}>₹{fineValue.toFixed(2)}</td>
+                              <td className="money-col amount-cell">₹{Number(fee.amount).toFixed(2)}</td>
+                              <td className="money-col total-cell">₹{feeTotal.toFixed(2)}</td>
+                              <td>{fee.remark || '-'}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
                 {/* ── Mobile Card List ── */}
-                <div className="fee-card-list">
-                  <div className="fee-card-selectall">
-                    <label className="fee-card-checkbox">
-                      <input type="checkbox" checked={allOnPageSelected} onChange={handleSelectAllPage} />
-                      <span>Select All ({paginatedFees.length})</span>
-                    </label>
-                  </div>
+                {isMobile && (
+                  <div className="fee-card-list">
+                    <div className="fee-card-selectall">
+                      <label className="fee-card-checkbox">
+                        <input type="checkbox" checked={allOnPageSelected} onChange={handleSelectAllPage} />
+                        <span>Select All ({paginatedFees.length})</span>
+                      </label>
+                    </div>
 
-                  {paginatedFees.map((fee) => {
-                    const fineValue  = parseFloat(fee.fine)   || 0;
-                    const feeTotal   = parseFloat(fee.amount) + fineValue;
-                    const isSelected = selectedFees.includes(fee.id);
-                    const isFuture   = new Date(fee.date) > TODAY;
-                    return (
-                      <div
-                        key={fee.id}
-                        className={`fee-card ${isSelected ? 'selected' : ''} ${isFuture ? 'future' : ''}`}
-                      >
-                        <div className="fee-card-top">
-                          <div className="fee-card-title">
-                            <span className="fee-card-month">{fee.month}</span>
-                            <span className={`fee-card-date ${isFuture ? 'future-date-badge' : ''}`}>
-                              {formatDate(fee.date)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="fee-card-body">
+                    {paginatedFees.map((fee) => {
+                      const fineValue  = parseFloat(fee.fine)   || 0;
+                      const feeTotal   = parseFloat(fee.amount) + fineValue;
+                      const isSelected = selectedFees.includes(fee.id);
+                      const isFuture   = new Date(fee.date) > TODAY;
+                      return (
+                        <div
+                          key={fee.id}
+                          className={`fee-card ${isSelected ? 'selected' : ''} ${isFuture ? 'future' : ''}`}
+                        >
+                          {/* Checkbox — left end */}
                           <input
                             type="checkbox"
                             className="fee-card-check"
                             checked={isSelected}
                             onChange={() => handleFeeSelection(fee.id)}
                           />
-                          <div className="fee-card-info">
-                            <span className="fee-card-particulars">{fee.particulars || '-'}</span>
-                            <span className="fee-card-amount">₹{feeTotal.toFixed(2)}</span>
-                            {fineValue > 0 && (
-                              <span className="fee-card-fine">Fine: ₹{fineValue.toFixed(2)}</span>
-                            )}
+
+                          {/* Main content */}
+                          <div className="fee-card-content">
+                            <div className="fee-card-top">
+                              <span className="fee-card-month">{fee.month}</span>
+                              <span className={`fee-card-date ${isFuture ? 'future-date-badge' : ''}`}>
+                                {formatDate(fee.date)}
+                              </span>
+                            </div>
+                            <div className="fee-card-body">
+                              <div className="fee-card-info">
+                                <span className="fee-card-particulars">{fee.particulars || '-'}</span>
+                                <span className="fee-card-amount">₹{feeTotal.toFixed(2)}</span>
+                                {fineValue > 0 && (
+                                  <span className="fee-card-fine">Fine: ₹{fineValue.toFixed(2)}</span>
+                                )}
+                              </div>
+                              <button
+                                className="fee-card-view-btn"
+                                onClick={() => setViewFee(fee)}
+                              >
+                                View
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            className="fee-card-view-btn"
-                            onClick={() => handleFeeSelection(fee.id)}
-                          >
-                            View
-                          </button>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* ── Show Future toggle ── */}
                 {futureFees.length > 0 && (
