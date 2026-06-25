@@ -89,6 +89,15 @@
   border: 1px solid #ebecf0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   /* CRITICAL: must not have overflow-x: hidden — table scroll lives inside here */
+}
+
+@media (max-width: 1024px) {
+  .staff-student-list {
+    padding: 16px;
+    margin-top: 66px;
+    border-radius: 0;
+  }
+}
 
   .welcome-section {
     display: flex;
@@ -396,7 +405,6 @@
       }
     }
   }
-}
 
 /* ── Responsive ────────────────────────────────── */
 

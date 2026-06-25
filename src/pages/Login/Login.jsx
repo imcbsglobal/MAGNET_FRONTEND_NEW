@@ -71,9 +71,9 @@ const Login = () => {
 
       // Navigate to appropriate dashboard based on job category
       if (data.job_category === 'Teacher') {
-        targetPath = '/teacher/evaluation';
+        targetPath = '/staff-dashboard';
       } else if (data.job_category === 'HOD') {
-        targetPath = '/hod/evaluation';
+        targetPath = '/staff-dashboard';
       }
     } else if (userType === 'parent') {
       localStorage.setItem('userId', data.id);

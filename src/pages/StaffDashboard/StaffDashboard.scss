@@ -84,6 +84,12 @@ $shadow-md: 0 4px 10px rgba(9, 30, 66, 0.1);
   color: $ink;
 }
 
+@media (max-width: 1024px) {
+  .staff-dashboard-content {
+    padding-top: 66px;
+  }
+}
+
 // ─────────────────────────────────────────────
 // Hero
 // ─────────────────────────────────────────────

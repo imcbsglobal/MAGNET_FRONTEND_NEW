@@ -113,6 +113,11 @@ const IDCardFront = ({ student, school, photoUrl }) => {
         <div className="idt-class">
           {(student?.student_class || '')} {(student?.div || '')}
         </div>
+        {d.house_group && (
+          <div className="idt-house-group-badge">
+            {d.house_group.toUpperCase()}
+          </div>
+        )}
         <div className="idt-info-table">
           <div className="idt-info-row">
             <span className="idt-info-label">Ad No</span>
@@ -303,7 +308,8 @@ const captureCardToPdf = async (pdf, student, school, logoB64, isFirst) => {
         </div>
         <div style="padding:24px 20px;text-align:center;background:#ffffff;">
           <div style="font-size:18px;font-weight:900;color:#1f2937;margin-bottom:2px;text-transform:uppercase;">${studentName}</div>
-          <div style="font-size:16px;font-weight:700;color:#7c3aed;margin-bottom:18px;">${(student?.student_class || '')}${(student?.div || '')}</div>
+          <div style="font-size:16px;font-weight:700;color:#7c3aed;margin-bottom:8px;">${(student?.student_class || '')}${(student?.div || '')}</div>
+          ${d.house_group ? `<div style="display:inline-block;background:#4527a0;color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:100px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">${d.house_group.toUpperCase()}</div>` : ''}
           <div style="text-align:left;display:flex;flex-direction:column;gap:10px;">
             <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">Ad No</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;">${(student?.admno || '').toUpperCase()}</span></div>
             <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">Phone</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;">${(d.phone || student?.mobile || '-').toUpperCase()}</span></div>
@@ -394,6 +400,8 @@ const IssueIDCard = () => {
   const [saveMsg, setSaveMsg]               = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  // mobile: 'list' shows the student list, 'detail' shows preview+edit
+  const [mobilePane, setMobilePane]         = useState('list');
   const photoInputRef = useRef(null);
   const cardFrontRef  = useRef(null);
   const cardBackRef   = useRef(null);
@@ -426,6 +434,7 @@ const IssueIDCard = () => {
     setSelected(student);
     setEditForm({ ...(student.details || {}) });
     setSaveMsg('');
+    setMobilePane('detail'); // switch to detail view on mobile
   };
 
   const handleEditChange = (e) => {
@@ -624,9 +633,20 @@ const IssueIDCard = () => {
             </div>
           )}
 
-          <div className="issue-layout">
+          <div className={`issue-layout${mobilePane === 'detail' ? ' issue-layout--mobile-detail' : ''}`}>
+            {/* ── Mobile: back button (only visible on mobile when detail view is shown) ── */}
+            {mobilePane === 'detail' && (
+              <button
+                type="button"
+                className="issue-mobile-back-btn"
+                onClick={() => { setSelected(null); setMobilePane('list'); }}
+              >
+                ← Back to List
+              </button>
+            )}
+
             {/* ── Left: student list ── */}
-            <div className="issue-list-panel">
+            <div className={`issue-list-panel${mobilePane === 'detail' ? ' issue-list-panel--hidden' : ''}`}>
               <div className="idcard-search-bar">
                 <input
                   type="text"
@@ -690,7 +710,7 @@ const IssueIDCard = () => {
             </div>
 
             {/* ── Right: preview + edit ── */}
-            <div className="issue-preview-panel">
+            <div className={`issue-preview-panel${mobilePane === 'list' ? ' issue-preview-panel--hidden' : ''}`}>
               {!selected ? (
                 <div className="issue-no-selection">
                   <div className="issue-no-selection-icon"><IssueCardIcon /></div>
@@ -785,7 +805,7 @@ const IssueIDCard = () => {
                         </button>
                         <button
                           className="secondary-btn"
-                          onClick={() => { setSelected(null); setSaveMsg(''); }}
+                          onClick={() => { setSelected(null); setSaveMsg(''); setMobilePane('list'); }}
                         >
                           Close
                         </button>

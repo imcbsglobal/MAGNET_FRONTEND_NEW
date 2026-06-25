@@ -23,8 +23,9 @@ $text-muted: #a3aed0;
   flex-direction: column;
   padding: 0 24px 24px;
   min-width: 0;
-  margin-left: 210px;
+  margin-left: var(--sidebar-width, 220px);
   overflow-x: hidden;
+  transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-content {
@@ -276,15 +277,27 @@ $text-muted: #a3aed0;
 
 @media (max-width: 1024px) {
   .dashboard-main {
-    margin-left: 0;
-    width: 100%;
-    padding: 60px 14px 20px;
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 62px 14px 20px;
   }
 
   .superuser-hero,
   .superuser-summary-row,
   .superuser-dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .superuser-hero {
+    padding: 20px;
+  }
+
+  .superuser-hero h2 {
+    font-size: 1.5rem;
+  }
+
+  .superuser-summary-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -44,6 +44,13 @@ const ParentPendingFee = () => {
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno         = localStorage.getItem('admno')         || '';
 
+  // Keep isMobile in sync with window resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const formatDate = (value) => {
     if (!value) return '-';
     const date = new Date(value);
@@ -81,10 +88,7 @@ const ParentPendingFee = () => {
     return result;
   }, [filterType, search, visibleFees]);
 
-  const totalPages        = Math.max(1, Math.ceil(filteredFees.length / pageSize));
-  const firstIndex        = (currentPage - 1) * pageSize;
-  const lastIndex         = Math.min(filteredFees.length, firstIndex + pageSize);
-  const paginatedFees     = filteredFees.slice(firstIndex, lastIndex);
+  const paginatedFees = filteredFees;
 
   // total due = ALL fees (not just visible) for the banner
   const totalDue          = sortedFees.reduce((sum, f) => sum + parseFloat(f.amount) + parseFloat(f.fine), 0);
@@ -121,19 +125,6 @@ const ParentPendingFee = () => {
     setPaymentMessage(`Payment failed: ${err}`);
     setTimeout(() => setPaymentMessage(''), 5000);
   };
-
-  React.useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
-
-  // track mobile breakpoint — drives conditional render (no CSS-only hide)
-  useLayoutEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
-    const handler = (e) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    setIsMobile(mq.matches);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
 
   useEffect(() => {
     if (!institutionId || !admno) {
@@ -174,41 +165,11 @@ const ParentPendingFee = () => {
           <div className="fee-header">
             <div className="fee-header-main">
               <div className="fee-header-icon"><ReceiptIcon /></div>
-              <div>
-                <h1>Pending Fee — {studentName}</h1>
-                <p>
-                  {institutionName
-                    ? <><strong>{institutionName}</strong> · Adm No: <strong>{admno}</strong></>
-                    : <>Institution: <strong>{institutionId}</strong> · Adm No: <strong>{admno}</strong></>
-                  }
-                </p>
-                <div className="fee-pill-row">
-                  <span className="fee-pill fee-pill--due">
-                    Due Now · ₹{dueTodayTotal.toFixed(2)}
-                  </span>
-                  {futureFees.length > 0 && (
-                    <span className="fee-pill fee-pill--future">
-                      Upcoming · ₹{(totalDue - dueTodayTotal).toFixed(2)}
-                    </span>
-                  )}
-                </div>
-              </div>
+              <h1>Pending Fee</h1>
             </div>
-            <div className="fee-actions">
-              {someSelected && (
-                <button type="button" className="secondary-btn" onClick={handlePaySelected}>
-                  Pay Selected ({selectedFees.length}) · ₹{selectedTotal.toFixed(2)}
-                </button>
-              )}
-              <button
-                type="button"
-                className="primary-btn"
-                onClick={handlePayAll}
-                disabled={filteredFees.length === 0}
-              >
-                Pay All · ₹{totalDue.toFixed(2)}
-              </button>
-            </div>
+            <span className="fee-pill fee-pill--due">
+              Due Now · ₹{dueTodayTotal.toFixed(2)}
+            </span>
           </div>
 
           {error && <div className="fee-error">{error}</div>}
@@ -252,7 +213,7 @@ const ParentPendingFee = () => {
               <div className="fee-empty">No pending fee records found.</div>
             ) : (
               <>
-                {/* ── Desktop table (never mounts on mobile) ── */}
+                {/* ── Desktop table ── */}
                 {!isMobile && (
                   <div className="table-responsive">
                     <table className="fee-table">
@@ -287,7 +248,7 @@ const ParentPendingFee = () => {
                               <td className="checkbox-col" onClick={e => e.stopPropagation()}>
                                 <input type="checkbox" checked={isSelected} onChange={() => handleFeeSelection(fee.id)} />
                               </td>
-                              <td className="no-col">{firstIndex + index + 1}</td>
+                              <td className="no-col">{index + 1}</td>
                               <td>
                                 <span className={isFuture ? 'future-date-badge' : ''}>
                                   {formatDate(fee.date)}
@@ -308,28 +269,14 @@ const ParentPendingFee = () => {
                   </div>
                 )}
 
-                {/* ── Mobile cards (never mounts on desktop) ── */}
+                {/* ── Mobile Card List ── */}
                 {isMobile && (
-                  <div className="fee-cards">
-                    {/* Select-all header — mirrors desktop thead checkbox */}
-                    <div className="fee-cards-select-all">
-                      <label className="fee-cards-select-all-label">
-                        <input
-                          type="checkbox"
-                          checked={allOnPageSelected}
-                          onChange={handleSelectAllPage}
-                        />
-                        <span>
-                          {allOnPageSelected
-                            ? `Deselect all (${paginatedFees.length})`
-                            : `Select all (${paginatedFees.length})`}
-                        </span>
+                  <div className="fee-card-list">
+                    <div className="fee-card-selectall">
+                      <label className="fee-card-checkbox">
+                        <input type="checkbox" checked={allOnPageSelected} onChange={handleSelectAllPage} />
+                        <span>Select All ({paginatedFees.length})</span>
                       </label>
-                      {someSelected && (
-                        <span className="fee-cards-selected-count">
-                          {selectedFees.length} selected
-                        </span>
-                      )}
                     </div>
 
                     {paginatedFees.map((fee) => {
@@ -341,36 +288,39 @@ const ParentPendingFee = () => {
                         <div
                           key={fee.id}
                           className={`fee-card ${isSelected ? 'selected' : ''} ${isFuture ? 'future' : ''}`}
-                          onClick={() => handleFeeSelection(fee.id)}
                         >
-                          {/* Per-card checkbox */}
-                          <div className="fee-card-checkbox" onClick={e => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleFeeSelection(fee.id)}
-                            />
-                          </div>
+                          {/* Checkbox — left end */}
+                          <input
+                            type="checkbox"
+                            className="fee-card-check"
+                            checked={isSelected}
+                            onChange={() => handleFeeSelection(fee.id)}
+                          />
 
-                          <div className="fee-card-info">
+                          {/* Main content */}
+                          <div className="fee-card-content">
                             <div className="fee-card-top">
                               <span className="fee-card-month">{fee.month}</span>
-                              {isFuture
-                                ? <span className="future-date-badge">{formatDate(fee.date)}</span>
-                                : <span className="fee-card-date">{formatDate(fee.date)}</span>
-                              }
+                              <span className={`fee-card-date ${isFuture ? 'future-date-badge' : ''}`}>
+                                {formatDate(fee.date)}
+                              </span>
                             </div>
-                            <div className="fee-card-particulars">{fee.particulars || '-'}</div>
-                            <div className="fee-card-amount">₹{feeTotal.toFixed(2)}</div>
+                            <div className="fee-card-body">
+                              <div className="fee-card-info">
+                                <span className="fee-card-particulars">{fee.particulars || '-'}</span>
+                                <span className="fee-card-amount">₹{feeTotal.toFixed(2)}</span>
+                                {fineValue > 0 && (
+                                  <span className="fee-card-fine">Fine: ₹{fineValue.toFixed(2)}</span>
+                                )}
+                              </div>
+                              <button
+                                className="fee-card-view-btn"
+                                onClick={() => setViewFee(fee)}
+                              >
+                                View
+                              </button>
+                            </div>
                           </div>
-
-                          <button
-                            type="button"
-                            className="fee-card-view"
-                            onClick={e => { e.stopPropagation(); setViewFee(fee); }}
-                          >
-                            View
-                          </button>
                         </div>
                       );
                     })}

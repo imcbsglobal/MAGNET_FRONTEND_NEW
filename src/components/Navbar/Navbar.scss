@@ -1,2 +1,110 @@
-// Navbar styles removed — user profile lives in Sidebar footer.
-// File kept so existing imports don't throw a build error.
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$ink:        #0F1E3D;
+$navy:       #1B2A4E;
+$subtext:    #6B7B96;
+$border:     #E5E9F0;
+$bg:         #F6F8FB;
+$accent:     #4F46E5;
+$sidebar-bg: #111c44;
+
+/* ── Mobile-only navbar ─────────────────────────────────────
+   Visible only on mobile (≤1024px), hidden on desktop.
+   Sits fixed at the top, right side only — left side is
+   reserved for the sidebar toggle button.                   */
+.mobile-navbar {
+  display: none; /* hidden on desktop */
+}
+
+@media (max-width: 1024px) {
+  .mobile-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 66px;
+    z-index: 1050;
+    background: #ffffff;
+    border-bottom: 1px solid #E5E9F0;
+    padding: 0 14px;
+    box-shadow: 0 2px 8px rgba(15, 30, 62, 0.08);
+  }
+
+  /* Push content below fixed navbar */
+  .dashboard-main {
+    padding-top: 66px;
+  }
+
+  /* Left spacer — width matches toggle button (14px left + 38px wide + 14px gap) */
+  .mobile-navbar-left {
+    width: 66px;
+    flex-shrink: 0;
+  }
+
+  .mobile-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .mobile-navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .mobile-navbar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: $accent;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .mobile-navbar-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: $ink;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  .mobile-navbar-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #E5E9F0;
+    background: #F6F8FB;
+    color: #6B7B96;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+    &:hover {
+      background: #FEE2E2;
+      border-color: #FECACA;
+      color: #E11D48;
+    }
+
+    svg { display: block; }
+  }
+}

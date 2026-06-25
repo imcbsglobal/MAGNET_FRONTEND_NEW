@@ -66,8 +66,8 @@ $text-muted: #a3aed0;
   border-radius: 16px;
   padding: 0;
   box-shadow: 0 4px 24px rgba(61, 90, 241, 0.08);
-  overflow: hidden;
   border: 1px solid rgba(61, 90, 241, 0.1);
+  min-width: 0;
 
   .table-controls {
     display: flex;
@@ -81,7 +81,13 @@ $text-muted: #a3aed0;
   }
 
   .table-responsive {
+    display: block;
+    width: 100%;
+    min-width: 0;
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
     padding: 0 0 4px;
 
     &::-webkit-scrollbar { height: 5px; }

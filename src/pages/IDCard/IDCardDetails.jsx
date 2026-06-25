@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
+import PhotoCropEditor from '../../components/PhotoCropEditor/PhotoCropEditor';
 import { fetchIDCardStudents, fetchAdminIDCardStudents, updateIDCardSubmission, toggleIDCardForm, fetchIDCardFormStatus, uploadStudentPhoto, fetchHouseGroups } from '../../services/api';
 import './IDCard.scss';
 
@@ -93,6 +94,8 @@ const IDCardDetails = () => {
   const [formEnabled, setFormEnabled]       = useState(true);
   const [toggleLoading, setToggleLoading]   = useState(false);
   const [houseGroups, setHouseGroups]       = useState([]);
+  const [photoCropData, setPhotoCropData]   = useState({ show: false, imageData: null });
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
   const photoInputRef = React.useRef(null);
 
   // Determine if user is admin
@@ -178,98 +181,129 @@ const IDCardDetails = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    // Apply uppercase to everything except email
-    const finalValue = name === 'email' ? value : value.toUpperCase();
+    // email and house_group are kept as-is (house_group value comes from the dropdown)
+    const noUppercase = ['email', 'house_group'];
+    const finalValue = noUppercase.includes(name) ? value : value.toUpperCase();
     setEditForm((prev) => ({ ...prev, [name]: finalValue }));
   };
 
   const handleSave = async () => {
-    if (!editStudent?.form_id) return;
-    setSaving(true);
-    setSaveMsg('');
     try {
-      await updateIDCardSubmission(editStudent.form_id, editForm);
-      setSaveMsg('Details updated successfully.');
-      // refresh list so eye modal also reflects new data
+      setSaving(true);
+      setSaveMsg('');
+
+      await updateIDCardSubmission(editStudent.form_id, {
+        student_name: editForm.student_name,
+        father_name: editForm.father_name,
+        mother_name: editForm.mother_name,
+        dob: editForm.dob,
+        phone: editForm.phone,
+        email: editForm.email,
+        house_name: editForm.house_name,
+        house_group: editForm.house_group,
+        place: editForm.place,
+        city: editForm.city,
+        pin: editForm.pin,
+      });
+
+      setSaveMsg('✅ Details updated successfully.');
       await loadStudents();
-      // close after short delay so user sees success
-      setTimeout(() => { setEditStudent(null); setSaveMsg(''); }, 1200);
     } catch (err) {
-      setSaveMsg(err.response?.data?.message || 'Failed to save. Please try again.');
+      setSaveMsg('❌ Failed to save details.');
+      console.error(err);
     } finally {
       setSaving(false);
     }
   };
 
+  const handleGenerateLink = async () => {
+    try {
+      // Generate a link based on institution ID
+      const link = `${window.location.origin}/parent-idcard-form?inst=${institutionId}`;
+      setGeneratedLink(link);
+      setShowLinkModal(true);
+    } catch (err) {
+      console.error('Failed to generate link:', err);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generatedLink);
+    alert('Link copied to clipboard!');
+  };
+
+  const handleToggleForm = async () => {
+    try {
+      setToggleLoading(true);
+      await toggleIDCardForm(institutionId, !formEnabled);
+      setFormEnabled(!formEnabled);
+    } catch (err) {
+      console.error('Failed to toggle form:', err);
+    } finally {
+      setToggleLoading(false);
+    }
+  };
+
+  // ─── Photo Crop Handlers ────────────────────────────────────────────────
   const handlePhotoChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !editStudent) return;
     if (!file.type.startsWith('image/')) { setSaveMsg('❌ Only image files allowed.'); return; }
     if (file.size > 5 * 1024 * 1024) { setSaveMsg('❌ Photo must be under 5MB.'); return; }
 
-    setUploadingPhoto(true);
-    setSaveMsg('');
-    const fd = new FormData();
-    fd.append('institution_id', institutionId);
-    fd.append('admno', editStudent.admno);
-    fd.append('photo', file);
+    // Read and open full-screen crop editor
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPhotoCropData({
+        show: true,
+        imageData: event.target.result,
+        studentData: { ...editStudent }
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropConfirm = async (blob) => {
     try {
+      setUploadingPhoto(true);
+      setSaveMsg('');
+
+      const fd = new FormData();
+      fd.append('institution_id', institutionId);
+      fd.append('admno', editStudent.admno);
+      fd.append('photo', blob, 'cropped-photo.jpg');
+
       await uploadStudentPhoto(fd);
-      setSaveMsg('✅ Photo uploaded successfully.');
+      setSaveMsg('✅ Photo updated successfully.');
+      
+      // Close crop editor
+      setPhotoCropData({ show: false, imageData: null });
+      
+      // Bust browser image cache
+      setPhotoTimestamp(Date.now());
+      
+      // Reload students
       await loadStudents();
 
-      // Update local editStudent so photo reflects in modal
+      // Update local editStudent
       let res;
       if (isAdmin) {
         res = await fetchAdminIDCardStudents(institutionId);
       } else {
         res = await fetchIDCardStudents(institutionId, assignedClass, assignedDivision);
       }
-
       const updatedList = Array.isArray(res.data) ? res.data : [];
       const updated = updatedList.find(s => s.admno === editStudent.admno);
       if (updated) setEditStudent(updated);
     } catch (err) {
-      setSaveMsg('❌ ' + (err.response?.data?.message || 'Upload failed.'));
+      setSaveMsg('❌ Failed to upload photo.');
     } finally {
       setUploadingPhoto(false);
     }
   };
 
-  const handleGenerateLink = () => {
-    const link = `https://magnetpro.in/id-card/form/${institutionId}`;
-    setGeneratedLink(link);
-    setShowLinkModal(true);
-  };
-
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedLink);
-      alert('Link copied to clipboard!');
-    } catch (err) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = generatedLink;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert('Link copied to clipboard!');
-    }
-  };
-
-  const handleToggleForm = async () => {
-    setToggleLoading(true);
-    try {
-      const res = await toggleIDCardForm(institutionId, !formEnabled);
-      setFormEnabled(!formEnabled);
-      alert(res.data.message);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update form status');
-    } finally {
-      setToggleLoading(false);
-    }
+  const handleCropCancel = () => {
+    setPhotoCropData({ show: false, imageData: null });
   };
 
   const filtered = students.filter((s) => {
@@ -502,7 +536,7 @@ const IDCardDetails = () => {
                 <div className="modal-edit-photo-section">
                   <div className="modal-edit-photo-container">
                     {editStudent.photo_url ? (
-                      <img src={editStudent.photo_url} alt="Student" />
+                      <img src={`${editStudent.photo_url}?v=${photoTimestamp}`} alt="Student" />
                     ) : (
                       <div className="photo-placeholder">🎓</div>
                     )}
@@ -552,7 +586,7 @@ const IDCardDetails = () => {
                       >
                         <option value="">Select {label}</option>
                         {houseGroups.map((g) => (
-                          <option key={g.id || g.name} value={g.name}>{g.name}</option>
+                          <option key={g.id || g.name} value={g.name.toUpperCase()}>{g.name}</option>
                         ))}
                       </select>
                     ) : (
@@ -622,6 +656,14 @@ const IDCardDetails = () => {
           </div>
         </div>
       )}
+
+      {/* ── Full-Screen Photo Crop Editor ── */}
+      <PhotoCropEditor
+        isOpen={photoCropData.show}
+        imageData={photoCropData.imageData}
+        onCropConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
+      />
     </div>
   );
 };

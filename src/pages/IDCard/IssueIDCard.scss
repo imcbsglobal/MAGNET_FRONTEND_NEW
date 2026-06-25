@@ -76,6 +76,13 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   overflow-x: hidden;
 }
 
+@media (max-width: 1024px) {
+  .idcard-page {
+    padding-top: 80px !important;
+    margin-top: 0 !important;
+  }
+}
+
 /* ─── Header ────────────────────────────────────────────────────────────── */
 .idcard-header {
   display: flex;
@@ -153,6 +160,9 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   letter-spacing: 0.04em;
   border: 1px solid transparent;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &::before {
     content: "";
@@ -719,7 +729,21 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   margin-bottom: 2px;
 }
 
-.idt-class { font-size: 0.85rem; font-weight: 800; color: #7e57c2; margin-bottom: 12px; }
+.idt-class { font-size: 0.85rem; font-weight: 800; color: #7e57c2; margin-bottom: 6px; }
+
+/* House group badge on the ID card */
+.idt-house-group-badge {
+  display: inline-block;
+  background: #4527a0;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
 
 .idt-info-table { text-align: left; display: flex; flex-direction: column; gap: 4px; }
 
@@ -801,21 +825,60 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
 }
 
 @media (max-width: 900px) {
-  .issue-layout { grid-template-columns: 1fr; }
+  .issue-layout { grid-template-columns: 1fr; position: relative; }
   .issue-list-panel { position: static; }
-  .issue-student-list { max-height: 280px; }
+  .issue-student-list { max-height: none; overflow-y: visible; }
   .idt-preview-row { justify-content: center; }
   .idcard-edit-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Mobile pane switching: on mobile, show either list OR detail, never both */
+  .issue-layout--mobile-detail .issue-list-panel {
+    display: none;
+  }
+
+  /* On mobile when in list view, hide the preview panel */
+  .issue-preview-panel--hidden {
+    display: none;
+  }
+
+  /* Mobile back button */
+  .issue-mobile-back-btn {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    width: 100%;
+    padding: 10px 16px;
+    background: linear-gradient(90deg, #4a5568 0%, #2d3748 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: none; /* hidden on desktop */
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
+    &:hover {
+      background: linear-gradient(90deg, #2d3748 0%, #1a202c 100%);
+    }
+  }
+
+  .issue-layout--mobile-detail .issue-mobile-back-btn {
+    display: flex;
+  }
 }
 
 @media (max-width: 640px) {
-  .idcard-page { padding: 12px 12px 28px; gap: 14px; }
+  .idcard-page { padding: 80px 12px 28px !important; gap: 14px; margin-top: 0 !important; }
 
+  /* ── Header ── */
   .idcard-header {
     flex-direction: column;
     align-items: stretch;
     padding: 14px 16px;
-    gap: 14px;
+    gap: 12px;
 
     h1 { font-size: 1.05rem; }
     p  { font-size: 0.78rem; }
@@ -823,32 +886,52 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
   .idcard-header-main { gap: 10px; }
   .idcard-header-icon { width: 36px; height: 36px; svg { width: 18px; height: 18px; } }
 
+  /* Stack action buttons full-width */
   .idcard-header-actions {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
   .idcard-header-actions .secondary-btn,
   .idcard-header-actions .primary-btn {
     width: 100%;
     justify-content: center;
+    text-align: center;
   }
 
+  /* ── Edit panel ── */
   .idcard-edit-grid { grid-template-columns: 1fr; }
+  .idcard-edit-panel { padding: 14px; }
+  .idcard-edit-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .idcard-edit-actions .primary-btn,
+  .idcard-edit-actions .secondary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .idcard-edit-panel-header { flex-wrap: wrap; gap: 4px; }
 
-  /* Selected banner — stack neatly */
+  /* ── Selected banner ── */
   .issue-selected-banner {
     gap: 10px;
     padding: 12px 14px;
   }
-  .issue-selected-info { flex: 1 1 auto; }
+  .issue-selected-info { flex: 1 1 auto; min-width: 0; }
   .issue-selected-actions {
     width: 100%;
     justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
   }
-  .issue-selected-actions .primary-btn { flex: 1; justify-content: center; }
+  .issue-selected-actions .primary-btn {
+    flex: 1;
+    justify-content: center;
+  }
 
-  /* Preview cards centered + stacked */
+  /* ── Card preview ── */
   .issue-preview-card { padding: 14px; }
   .idt-preview-row {
     flex-direction: column;
@@ -856,39 +939,21 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
     gap: 18px;
   }
 
-  /* Edit panel */
-  .idcard-edit-panel { padding: 14px 14px; }
-  .idcard-edit-actions { flex-direction: column; }
-  .idcard-edit-actions .primary-btn,
-  .idcard-edit-actions .secondary-btn { width: 100%; justify-content: center; }
-
-  .idcard-edit-panel-header { flex-wrap: wrap; gap: 4px; }
-
-  /* ── Student rows: the actual fix for the cut-off badges/buttons ──
-     Below 640px there's no room for avatar + name/meta + badge + download
-     button all on one line at full size. Rather than letting flex squeeze
-     or clip the actions column (which is what was happening), shrink the
-     non-essential pieces and let text truncate via the min-width: 0 +
-     ellipsis already set on .issue-student-info above, so the actions
-     column (badge + button) always stays fully visible. */
-  .issue-student-row {
-    padding: 9px 10px;
-    gap: 8px;
+  /* ── Student list: remove height cap on mobile so all rows are reachable ── */
+  .issue-student-list {
+    max-height: none;
+    overflow-y: visible;
   }
-  .issue-student-avatar {
-    width: 32px;
-    height: 32px;
-  }
+
+  /* ── Student list rows ── */
+  .issue-student-row { padding: 9px 10px; gap: 8px; }
+  .issue-student-avatar { width: 32px; height: 32px; }
   .issue-student-name { font-size: 0.78rem; }
   .issue-student-meta { font-size: 0.66rem; }
-  .issue-student-actions { gap: 4px; }
-  .badge {
-    padding: 2px 7px;
-    font-size: 0.6rem;
-  }
+  .issue-student-actions { gap: 4px; flex-shrink: 0; }
+  .badge { padding: 2px 7px; font-size: 0.6rem; }
   .issue-download-btn {
-    width: 26px;
-    height: 26px;
+    width: 26px; height: 26px;
     svg { width: 12px; height: 12px; }
   }
 
