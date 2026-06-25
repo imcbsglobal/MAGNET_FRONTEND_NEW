@@ -820,6 +820,15 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
 .idt-contact-val  { color: #334155; }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+/* Desktop safety: ensure pane-switching classes never affect ≥ 901px layout */
+@media (min-width: 901px) {
+  .issue-mobile-back-btn           { display: none !important; }
+  .issue-list-panel--hidden        { display: flex !important; }
+  .issue-preview-panel--hidden     { display: flex !important; }
+  .issue-layout--mobile-detail .issue-list-panel { display: flex !important; }
+}
+
 @media (max-width: 1100px) {
   .issue-layout { grid-template-columns: 260px 1fr; }
 }
