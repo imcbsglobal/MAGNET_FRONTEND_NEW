@@ -721,3 +721,10 @@ $shadow-lg:      0 8px 24px rgba(15, 23, 42, 0.09);
   }
   .calendar-events-list { padding: 16px 12px; }
 }
+
+/* Push content below the fixed mobile navbar (66px) */
+@media (max-width: 1024px) {
+  .calendar-page {
+    padding-top: calc(66px + 20px) !important;
+  }
+}

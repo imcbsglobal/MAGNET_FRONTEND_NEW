@@ -694,10 +694,21 @@
   }
 }
 
+@media (max-width: 1024px) {
+  /* Push content below the fixed mobile navbar (height: 66px).
+     !important required — Evaluations.scss sets
+     .dashboard-main { padding: 20px !important } globally, which kills the
+     62px top padding that SuperUserDashboard.scss sets on .dashboard-main. */
+  .admin-dashboard-content {
+    padding-top: calc(66px + 16px) !important;
+  }
+}
+
 @media (max-width: 760px) {
   .admin-dashboard-content {
     padding: 16px;
     gap: 14px;
+    padding-top: calc(66px + 16px) !important;
   }
 
   .admin-hero {

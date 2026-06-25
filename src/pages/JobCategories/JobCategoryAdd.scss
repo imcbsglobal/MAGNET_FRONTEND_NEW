@@ -185,3 +185,12 @@ $accent:  #4F46E5;
     .form-header { flex-direction: column; align-items: flex-start; }
   }
 }
+
+/* Push content below the fixed mobile navbar (66px).
+   !important wins over Evaluations.scss padding: 20px !important
+   on .dashboard-main which otherwise collapses the top clearance. */
+@media (max-width: 1024px) {
+  .job-category-form-page {
+    padding-top: calc(66px + 20px) !important;
+  }
+}

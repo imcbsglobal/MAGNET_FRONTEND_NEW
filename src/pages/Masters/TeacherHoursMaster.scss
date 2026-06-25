@@ -423,4 +423,8 @@ $shadow-modal:   0 16px 40px rgba(15, 30, 62, 0.25);
     overflow-x: auto !important;
     min-width: 0 !important;
   }
+  /* Push content below the fixed mobile navbar (66px) */
+  .thm-page {
+    padding-top: calc(66px + 20px) !important;
+  }
 }

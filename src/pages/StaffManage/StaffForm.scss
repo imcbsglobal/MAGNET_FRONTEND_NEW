@@ -367,3 +367,12 @@ $red-border: #FBD2DA;
     .form-actions .save-btn { width: 100%; }
   }
 }
+
+/* Push content below the fixed mobile navbar (height: 66px).
+   !important wins over Evaluations.scss: .dashboard-main { padding: 20px !important }
+   which collapses the top clearance on all pages globally. */
+@media (max-width: 1024px) {
+  .staff-form-page {
+    padding-top: calc(66px + 20px) !important;
+  }
+}
