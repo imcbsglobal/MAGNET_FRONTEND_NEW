@@ -258,7 +258,7 @@ const IDCardDetails = () => {
           admno: editStudent.admno,
           url: editStudent.photo_url,
         });
-        const proxyUrl = `http://127.0.0.1:8000/api/id-card/proxy-photo/?${params}`;
+        const proxyUrl = `${import.meta.env.VITE_API_BASE_URL}id-card/proxy-photo/?${params}`;
         const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error('proxy failed');
         const json = await res.json();

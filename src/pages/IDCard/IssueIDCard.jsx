@@ -487,7 +487,7 @@ const IssueIDCard = () => {
           admno: selected.admno,
           url: selected.photo_url,
         });
-        const res = await fetch(`http://127.0.0.1:8000/api/id-card/proxy-photo/?${params}`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}id-card/proxy-photo/?${params}`);
         if (!res.ok) throw new Error('proxy failed');
         const json = await res.json();
         setFetchingPhoto(false);
