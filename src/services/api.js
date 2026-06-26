@@ -200,6 +200,10 @@ export const saveHouseGroup = (data) =>
 export const deleteHouseGroup = (groupId) =>
   api.delete(`id-card/house-groups-delete/${groupId}/`);
 
+// Proxy R2 photo through Django to avoid canvas CORS restrictions
+export const proxyStudentPhoto = (photoUrl) =>
+  api.get(`id-card/proxy-photo/?url=${encodeURIComponent(photoUrl)}`);
+
 // Subject Master
 export const fetchSubjects = (institutionId) =>
   api.get(`subjects/${encodeURIComponent(institutionId)}/`);

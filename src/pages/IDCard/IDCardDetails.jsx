@@ -88,6 +88,7 @@ const IDCardDetails = () => {
   const [editForm, setEditForm]             = useState({});
   const [saving, setSaving]                 = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [fetchingPhoto, setFetchingPhoto]   = useState(false);
   const [saveMsg, setSaveMsg]               = useState('');
   const [generatedLink, setGeneratedLink]   = useState('');
   const [showLinkModal, setShowLinkModal]   = useState(false);
@@ -96,7 +97,6 @@ const IDCardDetails = () => {
   const [houseGroups, setHouseGroups]       = useState([]);
   const [photoCropData, setPhotoCropData]   = useState({ show: false, imageData: null });
   const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
-  const photoInputRef = React.useRef(null);
 
   // Determine if user is admin
   const isAdmin = userType === 'admin' || userType === 'administration';
@@ -245,25 +245,51 @@ const IDCardDetails = () => {
   };
 
   // ─── Photo Crop Handlers ────────────────────────────────────────────────
-  const handlePhotoChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !editStudent) return;
-    if (!file.type.startsWith('image/')) { setSaveMsg('❌ Only image files allowed.'); return; }
-    if (file.size > 5 * 1024 * 1024) { setSaveMsg('❌ Photo must be under 5MB.'); return; }
+  const handleCameraClick = async () => {
+    if (!editStudent) return;
 
-    // Read and open full-screen crop editor
-    const reader = new FileReader();
-    reader.onload = (event) => {
+    if (editStudent.photo_url) {
+      setFetchingPhoto(true);
+      try {
+        // Call local proxy directly with admno+institution so it returns the
+        // full original photo (not the cropped version)
+        const params = new URLSearchParams({
+          institution_id: institutionId,
+          admno: editStudent.admno,
+          url: editStudent.photo_url,
+        });
+        const proxyUrl = `http://127.0.0.1:8000/api/id-card/proxy-photo/?${params}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error('proxy failed');
+        const json = await res.json();
+        setFetchingPhoto(false);
+        setPhotoCropData({
+          show: true,
+          imageData: json.data_url,
+          existingPhotoUrl: editStudent.photo_url,
+          studentData: { ...editStudent }
+        });
+      } catch {
+        setFetchingPhoto(false);
+        // Proxy unavailable — show existing photo read-only
+        setPhotoCropData({
+          show: true,
+          imageData: null,
+          existingPhotoUrl: editStudent.photo_url,
+          studentData: { ...editStudent }
+        });
+      }
+    } else {
       setPhotoCropData({
         show: true,
-        imageData: event.target.result,
+        imageData: null,
+        existingPhotoUrl: null,
         studentData: { ...editStudent }
       });
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
-  const handleCropConfirm = async (blob) => {
+  const handleCropConfirm = async (croppedBlob, originalBlob) => {
     try {
       setUploadingPhoto(true);
       setSaveMsg('');
@@ -271,7 +297,20 @@ const IDCardDetails = () => {
       const fd = new FormData();
       fd.append('institution_id', institutionId);
       fd.append('admno', editStudent.admno);
-      fd.append('photo', blob, 'cropped-photo.jpg');
+
+      if (originalBlob) {
+        // User picked a new file:
+        //   full_photo    = the complete original → stored as photo_url (for re-cropping)
+        //   display_photo = the cropped circle   → stored as display_photo_url (shown on ID card)
+        fd.append('full_photo', originalBlob, 'original.jpg');
+        fd.append('display_photo', croppedBlob, 'display.jpg');
+        // Legacy fallback for production server (old code expects 'photo' = display version)
+        fd.append('photo', originalBlob, 'original.jpg');
+      } else {
+        // Re-crop of existing photo using proxy data URL
+        fd.append('full_photo', croppedBlob, 'photo.jpg');
+        fd.append('photo', croppedBlob, 'photo.jpg');
+      }
 
       await uploadStudentPhoto(fd);
       setSaveMsg('✅ Photo updated successfully.');
@@ -543,18 +582,11 @@ const IDCardDetails = () => {
                     <button
                       type="button"
                       className="photo-edit-btn"
-                      onClick={() => photoInputRef.current?.click()}
-                      disabled={uploadingPhoto}
+                      onClick={handleCameraClick}
+                      disabled={uploadingPhoto || fetchingPhoto}
                     >
-                      {uploadingPhoto ? '...' : <CameraIcon />}
+                      {(uploadingPhoto || fetchingPhoto) ? '...' : <CameraIcon />}
                     </button>
-                    <input
-                      type="file"
-                      ref={photoInputRef}
-                      onChange={handlePhotoChange}
-                      style={{ display: 'none' }}
-                      accept="image/*"
-                    />
                   </div>
                 </div>
                 <div>
@@ -661,6 +693,7 @@ const IDCardDetails = () => {
       <PhotoCropEditor
         isOpen={photoCropData.show}
         imageData={photoCropData.imageData}
+        existingPhotoUrl={photoCropData.existingPhotoUrl || null}
         onCropConfirm={handleCropConfirm}
         onCancel={handleCropCancel}
       />

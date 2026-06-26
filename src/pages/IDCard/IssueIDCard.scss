@@ -630,21 +630,6 @@ $jira-surface: mix($jira-blue-light, #ffffff, 38%);
 /* ── FRONT ─────────────────────────────────────────────────────────────────── */
 .idt-front { display: flex; flex-direction: column; }
 
-.idt-grid-pattern {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 80px;
-  opacity: 0.1;
-  background-image:
-    linear-gradient(45deg, #1a237e 25%, transparent 25%),
-    linear-gradient(-45deg, #1a237e 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #1a237e 75%),
-    linear-gradient(-45deg, transparent 75%, #1a237e 75%);
-  background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px 8px, 8px 0;
-  z-index: 1;
-}
-
 .idt-header {
   padding: 12px 14px;
   display: flex;

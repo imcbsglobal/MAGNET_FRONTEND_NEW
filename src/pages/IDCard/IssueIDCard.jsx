@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
+import PhotoCropEditor from '../../components/PhotoCropEditor/PhotoCropEditor';
 import {
   fetchIDCardStudents, fetchIDCardSchoolInfo,
-  updateIDCardSubmission, uploadStudentPhoto,
+  updateIDCardSubmission, uploadStudentPhoto, fetchHouseGroups,
 } from '../../services/api';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -80,7 +81,6 @@ const IDCardFront = ({ student, school, photoUrl }) => {
 
   return (
     <div className="idt-card idt-front">
-      <div className="idt-grid-pattern" />
       <div className="idt-header">
         <div className="idt-header-left">
           <div className="idt-logo-area">
@@ -197,16 +197,17 @@ const IDCardBack = ({ school }) => (
 
 // ── Edit fields ───────────────────────────────────────────────────────────────
 const EDIT_FIELDS = [
-  { name: 'student_name', label: 'Student Name',  type: 'text'  },
-  { name: 'father_name',  label: 'Father Name',   type: 'text'  },
-  { name: 'mother_name',  label: 'Mother Name',   type: 'text'  },
-  { name: 'dob',          label: 'Date of Birth', type: 'date'  },
-  { name: 'phone',        label: 'Phone',         type: 'tel'   },
-  { name: 'email',        label: 'Email',         type: 'email' },
-  { name: 'house_name',   label: 'House Name',    type: 'text'  },
-  { name: 'place',        label: 'Place',         type: 'text'  },
-  { name: 'city',         label: 'City',          type: 'text'  },
-  { name: 'pin',          label: 'PIN Code',      type: 'text'  },
+  { name: 'student_name', label: 'Student Name',  type: 'text'   },
+  { name: 'father_name',  label: 'Father Name',   type: 'text'   },
+  { name: 'mother_name',  label: 'Mother Name',   type: 'text'   },
+  { name: 'dob',          label: 'Date of Birth', type: 'date'   },
+  { name: 'phone',        label: 'Phone',         type: 'tel'    },
+  { name: 'email',        label: 'Email',         type: 'email'  },
+  { name: 'house_name',   label: 'House Name',    type: 'text'   },
+  { name: 'house_group',  label: 'House Group',   type: 'select' },
+  { name: 'place',        label: 'Place',         type: 'text'   },
+  { name: 'city',         label: 'City',          type: 'text'   },
+  { name: 'pin',          label: 'PIN Code',      type: 'text'   },
 ];
 
 // ── Image helpers (PDF generation) ───────────────────────────────────────────
@@ -400,9 +401,12 @@ const IssueIDCard = () => {
   const [saveMsg, setSaveMsg]               = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+  const [fetchingPhoto,  setFetchingPhoto]  = useState(false);
+  const [photoCropData,  setPhotoCropData]  = useState({ show: false, imageData: null, existingPhotoUrl: null });
   // mobile: 'list' shows the student list, 'detail' shows preview+edit
   const [mobilePane, setMobilePane]         = useState('list');
-  const photoInputRef = useRef(null);
+  const [houseGroups, setHouseGroups]       = useState([]);
   const cardFrontRef  = useRef(null);
   const cardBackRef   = useRef(null);
 
@@ -410,13 +414,16 @@ const IssueIDCard = () => {
     if (!institutionId) { setError('Institution ID missing.'); setLoading(false); return; }
     setLoading(true); setError('');
     try {
-      const [studRes, schoolRes] = await Promise.all([
+      const [studRes, schoolRes, hgRes] = await Promise.all([
         fetchIDCardStudents(institutionId, assignedClass, assignedDivision),
         fetchIDCardSchoolInfo(institutionId),
+        fetchHouseGroups(institutionId),
       ]);
       const list = Array.isArray(studRes.data) ? studRes.data : [];
       setStudents(list);
       setSchool(schoolRes.data || null);
+      setHouseGroups(Array.isArray(hgRes.data) ? hgRes.data : []);
+      setPhotoTimestamp(Date.now());
       if (selected) {
         const updated = list.find(s => s.admno === selected.admno);
         if (updated) { setSelected(updated); setEditForm({ ...updated.details }); }
@@ -439,14 +446,28 @@ const IssueIDCard = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    const noUppercase = ['email', 'house_group'];
+    const finalValue = noUppercase.includes(name) ? value : value.toUpperCase();
+    setEditForm(prev => ({ ...prev, [name]: finalValue }));
   };
 
   const handleSave = async () => {
     if (!selected?.form_id) return;
     setSaving(true); setSaveMsg('');
     try {
-      await updateIDCardSubmission(selected.form_id, editForm);
+      await updateIDCardSubmission(selected.form_id, {
+        student_name: editForm.student_name,
+        father_name:  editForm.father_name,
+        mother_name:  editForm.mother_name,
+        dob:          editForm.dob,
+        phone:        editForm.phone,
+        email:        editForm.email,
+        house_name:   editForm.house_name,
+        house_group:  editForm.house_group,
+        place:        editForm.place,
+        city:         editForm.city,
+        pin:          editForm.pin,
+      });
       setSaveMsg('✅ Details updated successfully.');
       await loadAll();
     } catch (err) {
@@ -456,26 +477,59 @@ const IssueIDCard = () => {
     }
   };
 
-  const handlePhotoChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !selected) return;
-    if (!file.type.startsWith('image/')) { setSaveMsg('❌ Only image files allowed.'); return; }
-    if (file.size > 5 * 1024 * 1024) { setSaveMsg('❌ Photo must be under 5MB.'); return; }
+  const handleCameraClick = async () => {
+    if (!selected) return;
+    if (selected.photo_url) {
+      setFetchingPhoto(true);
+      try {
+        const params = new URLSearchParams({
+          institution_id: institutionId,
+          admno: selected.admno,
+          url: selected.photo_url,
+        });
+        const res = await fetch(`http://127.0.0.1:8000/api/id-card/proxy-photo/?${params}`);
+        if (!res.ok) throw new Error('proxy failed');
+        const json = await res.json();
+        setFetchingPhoto(false);
+        setPhotoCropData({ show: true, imageData: json.data_url, existingPhotoUrl: selected.photo_url });
+      } catch {
+        setFetchingPhoto(false);
+        setPhotoCropData({ show: true, imageData: null, existingPhotoUrl: selected.photo_url });
+      }
+    } else {
+      setPhotoCropData({ show: true, imageData: null, existingPhotoUrl: null });
+    }
+  };
 
+  const handleCropConfirm = async (croppedBlob, originalBlob) => {
+    if (!selected) return;
     setUploadingPhoto(true); setSaveMsg('');
-    const fd = new FormData();
-    fd.append('institution_id', institutionId);
-    fd.append('admno', selected.admno);
-    fd.append('photo', file);
     try {
+      const fd = new FormData();
+      fd.append('institution_id', institutionId);
+      fd.append('admno', selected.admno);
+      if (originalBlob) {
+        fd.append('full_photo',    originalBlob, 'original.jpg');
+        fd.append('display_photo', croppedBlob,  'display.jpg');
+        fd.append('photo',         originalBlob, 'original.jpg'); // legacy fallback
+      } else {
+        fd.append('full_photo', croppedBlob, 'photo.jpg');
+        fd.append('photo',      croppedBlob, 'photo.jpg');
+      }
       await uploadStudentPhoto(fd);
-      setSaveMsg('✅ Photo uploaded.');
+      setSaveMsg('✅ Photo updated.');
+      setPhotoCropData({ show: false, imageData: null, existingPhotoUrl: null });
+      setPhotoTimestamp(Date.now());
       await loadAll();
     } catch (err) {
       setSaveMsg('❌ ' + (err.response?.data?.message || 'Upload failed.'));
     } finally {
       setUploadingPhoto(false);
     }
+  };
+
+  const handleCropCancel = () => {
+    setPhotoCropData({ show: false, imageData: null, existingPhotoUrl: null });
   };
 
   const handleDownloadPDF = async () => {
@@ -676,7 +730,7 @@ const IssueIDCard = () => {
                       >
                         <div className="issue-student-avatar">
                           <img
-                            src={s.photo_url || generateInitialsPhoto(s.student_name)}
+                            src={s.photo_url ? `${s.photo_url}?v=${photoTimestamp}` : generateInitialsPhoto(s.student_name)}
                             alt=""
                           />
                         </div>
@@ -722,7 +776,7 @@ const IssueIDCard = () => {
                   <div className="issue-selected-banner">
                     <div className="issue-selected-avatar">
                       <img
-                        src={selected.photo_url || generateInitialsPhoto(selected.student_name)}
+                        src={selected.photo_url ? `${selected.photo_url}?v=${photoTimestamp}` : generateInitialsPhoto(selected.student_name)}
                         alt=""
                       />
                     </div>
@@ -736,21 +790,14 @@ const IssueIDCard = () => {
                       </div>
                     </div>
                     <div className="issue-selected-actions">
-                      <input
-                        type="file"
-                        ref={photoInputRef}
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        style={{ display: 'none' }}
-                      />
                       <button
                         type="button"
                         className="action-btn camera-btn"
-                        onClick={() => photoInputRef.current?.click()}
-                        disabled={uploadingPhoto}
-                        title="Upload photo"
+                        onClick={handleCameraClick}
+                        disabled={uploadingPhoto || fetchingPhoto}
+                        title="Adjust photo"
                       >
-                        <CameraIcon />
+                        {(uploadingPhoto || fetchingPhoto) ? '...' : <CameraIcon />}
                       </button>
                       <button
                         type="button"
@@ -769,7 +816,7 @@ const IssueIDCard = () => {
                     <div className="issue-preview-label">Preview</div>
                     <div className="idt-preview-row">
                       <div ref={cardFrontRef}>
-                        <IDCardFront student={selected} school={school} photoUrl={selected.photo_url} />
+                        <IDCardFront student={selected} school={school} photoUrl={selected.photo_url ? `${selected.photo_url}?v=${photoTimestamp}` : null} />
                       </div>
                       <div ref={cardBackRef}>
                         <IDCardBack school={school} />
@@ -788,14 +835,32 @@ const IssueIDCard = () => {
                         {EDIT_FIELDS.map(({ name, label, type }) => (
                           <div className="idcard-field" key={name}>
                             <label htmlFor={`ef-${name}`}>{label}</label>
-                            <input
-                              id={`ef-${name}`}
-                              type={type}
-                              name={name}
-                              value={editForm[name] || ''}
-                              onChange={handleEditChange}
-                              disabled={saving}
-                            />
+                            {type === 'select' ? (
+                              <select
+                                id={`ef-${name}`}
+                                name={name}
+                                value={editForm[name] || ''}
+                                onChange={handleEditChange}
+                                disabled={saving}
+                                className="modal-select"
+                              >
+                                <option value="">Select {label}</option>
+                                {houseGroups.map((g) => (
+                                  <option key={g.id || g.name} value={g.name.toUpperCase()}>
+                                    {g.name}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                id={`ef-${name}`}
+                                type={type}
+                                name={name}
+                                value={editForm[name] || ''}
+                                onChange={handleEditChange}
+                                disabled={saving}
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
@@ -818,6 +883,15 @@ const IssueIDCard = () => {
           </div>
         </div>
       </main>
+
+      {/* ── Photo Crop Editor ── */}
+      <PhotoCropEditor
+        isOpen={photoCropData.show}
+        imageData={photoCropData.imageData}
+        existingPhotoUrl={photoCropData.existingPhotoUrl}
+        onCropConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
+      />
     </div>
   );
 };
