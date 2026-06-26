@@ -9,9 +9,11 @@ const AdminEvaluationDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [evaluations, setEvaluations] = useState([]);
-  const [teachers, setTeachers] = useState([]);
+  const [allStaff, setAllStaff] = useState([]);
+  const [selectedHodId, setSelectedHodId] = useState('');
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [hodName, setHodName] = useState('');
 
   const institutionId = localStorage.getItem('institutionId');
 
@@ -27,8 +29,13 @@ const AdminEvaluationDashboard = () => {
         fetchTeachers(institutionId)
       ]);
       setEvaluations(evalsRes.data);
-      const teacherOnly = teachersRes.data.filter(teacher => teacher.job_category && teacher.job_category.toLowerCase() === 'Teacher'.toLowerCase());
-      setTeachers(teacherOnly);
+      setAllStaff(teachersRes.data);
+      const hod = teachersRes.data.find(t => t.job_category?.toLowerCase() === 'hod');
+      if (hod) {
+        setHodName(hod.name || hod.username);
+      } else {
+        setHodName(localStorage.getItem('username') || '');
+      }
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
@@ -135,6 +142,15 @@ const AdminEvaluationDashboard = () => {
     return filtered;
   };
 
+  const hods = allStaff.filter(s => s.job_category?.toLowerCase() === 'hod');
+  const selectedHod = allStaff.find(s => s.id === parseInt(selectedHodId));
+  const hodAssignedIds = selectedHod ? (selectedHod.assigned_teachers || []).map(t => String(t.id)) : [];
+  const filteredTeachers = allStaff.filter(s => {
+    if (s.job_category?.toLowerCase() !== 'teacher') return false;
+    if (selectedHodId && !hodAssignedIds.includes(String(s.id))) return false;
+    return true;
+  });
+
   return (
     <div className="dashboard-wrapper">
       <Sidebar userType="admin" />
@@ -157,9 +173,15 @@ const AdminEvaluationDashboard = () => {
             <div className="form-card">
               <div className="pf-row">
                 <label>View:</label>
+                <select value={selectedHodId} onChange={(e) => { setSelectedHodId(e.target.value); setSelectedTeacherId(''); }}>
+                  <option value="">All HODs</option>
+                  {hods.map(h => (
+                    <option key={h.id} value={h.id}>{h.name || h.username}</option>
+                  ))}
+                </select>
                 <select value={selectedTeacherId} onChange={(e) => setSelectedTeacherId(e.target.value)}>
                   <option value="">All Teachers</option>
-                  {teachers.map(t => (
+                  {filteredTeachers.map(t => (
                     <option key={t.id} value={t.id}>{t.username}</option>
                   ))}
                 </select>
@@ -183,7 +205,7 @@ const AdminEvaluationDashboard = () => {
               ) : (
                 filteredEvaluations().map(evaluation => {
                   const scores = calculateTotal(evaluation);
-                  const teacher = teachers.find(t => t.id === evaluation.teacher_id);
+                  const teacher = allStaff.find(t => t.id === evaluation.teacher_id);
                   return (
                     <div key={evaluation.id} className="tcard">
                       <div className="tcard-top">
@@ -239,31 +261,31 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Lesson Plan</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.lessonPlan.replace('.00', '')}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
                             <tr>
                               <td>Subject Knowledge</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.subjectKnowledge.replace('.00', '')}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
                             <tr>
                               <td>Classroom Management</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.classroomManagement}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
                             <tr>
                               <td>Activity Based Classroom</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.activityBasedClass}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
                             <tr>
                               <td>Training</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{scores.training}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
@@ -291,19 +313,19 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Classroom Comm.</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_classroom}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
                             </tr>
                             <tr>
                               <td>Informal Comm.</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_informal}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
                             </tr>
                             <tr>
                               <td>Fluency & Vocab.</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.english_fluency}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>10</td>
                             </tr>
@@ -313,13 +335,13 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Extra Activity</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_extra}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
                             <tr>
                               <td>Reward</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.cocurricular_reward}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>5</td>
                             </tr>
@@ -329,19 +351,19 @@ const AdminEvaluationDashboard = () => {
                             </tr>
                             <tr>
                               <td>Discipline</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_discipline}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>4</td>
                             </tr>
                             <tr>
                               <td>Uniform</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_uniform}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
                             </tr>
                             <tr>
                               <td>Good Deeds</td>
-                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD</td>
+                              <td style={{ fontSize: '12px', color: '#6b7280' }}>HOD{hodName && ` (${hodName})`}</td>
                               <td style={{ textAlign: 'center', fontWeight: 500 }}>{evaluation.moral_good_deeds}</td>
                               <td style={{ textAlign: 'center', color: '#6b7280' }}>3</td>
                             </tr>
