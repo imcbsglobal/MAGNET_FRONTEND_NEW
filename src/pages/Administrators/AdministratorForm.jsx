@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createAdministrator, updateAdministrator, api } from '../../services/api';
+import { createAdministrator, updateAdministrator, api, checkLicense } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './Administrators.scss';
@@ -26,6 +26,7 @@ const AdministratorForm = () => {
 });
 
   const [loading, setLoading] = useState(false);
+  const [fetchingSchool, setFetchingSchool] = useState(false);
 
   useEffect(() => {
     if (isEdit) {
@@ -58,8 +59,33 @@ const AdministratorForm = () => {
       }
   };
 
+  const fetchSchoolName = useCallback(async (id) => {
+    if (!id || id.length < 2) return;
+    setFetchingSchool(true);
+    try {
+      const res = await checkLicense(id);
+      if (res.data?.customer_name) {
+        setFormData(prev => ({ ...prev, school_name: res.data.customer_name }));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setFetchingSchool(false);
+    }
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleInstitutionIdBlur = () => {
+    fetchSchoolName(formData.institution_id);
+  };
+
+  const handleInstitutionIdKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      fetchSchoolName(formData.institution_id);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -109,13 +135,13 @@ const AdministratorForm = () => {
               <div className="form-section">
                 <h3>🏫 School Information</h3>
                 <div className="form-grid">
-                  <div className="form-group span-2">
-                    <label>School Name</label>
-                    <input name="school_name" value={formData.school_name} onChange={handleChange} required placeholder="Enter School Name" />
-                  </div>
                   <div className="form-group">
                     <label>Institution ID (Unique)</label>
-                    <input name="institution_id" value={formData.institution_id} onChange={handleChange} required disabled={isEdit} placeholder="Ex: MAG001" />
+                    <input name="institution_id" value={formData.institution_id} onChange={handleChange} onBlur={handleInstitutionIdBlur} onKeyDown={handleInstitutionIdKeyDown} required disabled={isEdit} placeholder="Ex: MAG001" />
+                  </div>
+                  <div className="form-group span-2">
+                    <label>School Name {fetchingSchool && <span className="fetching-hint">(auto-fetching...)</span>}</label>
+                    <input name="school_name" value={formData.school_name} readOnly placeholder="Auto-fetched from Institution ID" disabled={fetchingSchool} />
                   </div>
                   <div className="form-group full-width">
                     <label>Address</label>

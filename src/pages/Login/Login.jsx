@@ -127,7 +127,12 @@ const Login = () => {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      const licenseData = err.response?.data?.license;
+      let errorMsg = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      if (licenseData) {
+        errorMsg += ` (Status: ${licenseData.status || 'N/A'}, Expired: ${licenseData.is_expired !== null ? (licenseData.is_expired ? 'Yes' : 'No') : 'N/A'})`;
+      }
+      setError(errorMsg);
       triggerShake();
     } finally {
       if (!isSuccess) {

@@ -77,7 +77,7 @@ const generateInitialsPhoto = (studentName) => {
 // ── ID Card Template (front) ──────────────────────────────────────────────────
 const IDCardFront = ({ student, school, photoUrl }) => {
   const d = student?.details || {};
-  const address = [d.house_name, d.place, d.city, d.pin].filter(Boolean).join(', ');
+  const address = [d.place, d.city, d.pin].filter(Boolean).join(', ');
 
   return (
     <div className="idt-card idt-front">
@@ -132,7 +132,7 @@ const IDCardFront = ({ student, school, photoUrl }) => {
           <div className="idt-info-row">
             <span className="idt-info-label">Address</span>
             <span className="idt-info-sep">:</span>
-            <span className="idt-info-val">{(address || '').toUpperCase()}</span>
+            <span className="idt-info-val">{(address || '-').toUpperCase()}</span>
           </div>
         </div>
       </div>
@@ -282,7 +282,7 @@ const captureCardToPdf = async (pdf, student, school, logoB64, isFirst) => {
   }
 
   const d = student?.details || {};
-  const fullAddress = [d.house_name, d.place, d.city, d.pin].filter(Boolean).join(', ');
+  const fullAddress = [d.place, d.city, d.pin].filter(Boolean).join(', ');
   const studentName = (d.student_name || student?.student_name || '').toUpperCase();
 
   const cardHTML = `
@@ -314,7 +314,8 @@ const captureCardToPdf = async (pdf, student, school, logoB64, isFirst) => {
           <div style="text-align:left;display:flex;flex-direction:column;gap:10px;">
             <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">Ad No</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;">${(student?.admno || '').toUpperCase()}</span></div>
             <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">Phone</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;">${(d.phone || student?.mobile || '-').toUpperCase()}</span></div>
-            <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">Address</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;line-height:1.4;flex:1;word-wrap:break-word;max-width:170px;">${(fullAddress || '').toUpperCase()}</span></div>
+            <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">House Name</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;">${(d.house_name || '-').toUpperCase()}</span></div>
+            <div style="display:flex;align-items:flex-start;font-size:13px;"><span style="color:#374151;font-weight:700;min-width:65px;">Address</span><span style="color:#6b7280;margin:0 8px;">:</span><span style="color:#1f2937;font-weight:600;line-height:1.4;flex:1;word-wrap:break-word;max-width:170px;">${(fullAddress || '-').toUpperCase()}</span></div>
           </div>
           <div style="margin-top:16px;height:8px;background:linear-gradient(90deg,transparent 0%,#7c3aed 20%,#5b21b6 50%,#7c3aed 80%,transparent 100%);border-radius:4px;opacity:0.6;"></div>
         </div>

@@ -472,6 +472,13 @@ $text-muted: #a3aed0;
   }
 }
 
+.fetching-hint {
+  font-size: 0.75rem;
+  color: $primary-blue;
+  font-weight: 400;
+  font-style: italic;
+}
+
 .form-actions {
   margin-top: 20px;
   display: flex;

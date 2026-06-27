@@ -242,3 +242,6 @@ export const deleteTeacherHours = (hoursId) => api.delete(`evaluation/teacher-ho
 
 export const initiatePayment = (data) =>
   api.post("payments/initiate/", data);
+
+export const checkLicense = (institutionId) =>
+  api.get(`check-license/?institution_id=${encodeURIComponent(institutionId)}`);
