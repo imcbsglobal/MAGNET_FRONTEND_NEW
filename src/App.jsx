@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/Login/Login';
 import SuperUserLogin from './pages/Login/SuperUserLogin';
+import useLicenseChecker from './hooks/useLicenseChecker';
 import SuperUserDashboard from './pages/SuperUserDashboard/SuperUserDashboard';
 import AdministratorsList from './pages/Administrators/AdministratorsList';
 import AdministratorForm from './pages/Administrators/AdministratorForm';
@@ -50,6 +51,9 @@ function AppContent() {
   const isLoginPage    = location.pathname === '/login';
   const isSuperUserLogin = location.pathname === '/login/suser';
   const isIDCardForm   = location.pathname.startsWith('/id-card/form');
+
+  // Periodically check if institution license is still active
+  useLicenseChecker();
 
   // Hide the floating chat widget on landing, login, and ID card form pages
   const hideChat = isLandingPage || isLoginPage || isSuperUserLogin || isIDCardForm;

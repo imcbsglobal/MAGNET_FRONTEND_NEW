@@ -10,6 +10,7 @@ const SchoolInfo = () => {
 
   const [form, setForm] = useState({
     school_name: '',
+    description: '',   
     address: '',
     place: '',
     pincode: '',
@@ -36,6 +37,7 @@ const SchoolInfo = () => {
         if (data && data.school_name) {
           setForm({
             school_name: data.school_name || '',
+            description: data.description || '',  
             address: data.address || '',
             place: data.place || '',
             pincode: data.pincode || '',
@@ -176,6 +178,14 @@ const SchoolInfo = () => {
                       value={form.school_name} onChange={handleChange}
                       placeholder="e.g. St. Mary's Higher Secondary School"
                       required
+                    />
+                  </div>
+                  <div className="si-field">
+                    <label htmlFor="description">Description / Tagline</label>
+                    <input
+                      id="description" name="description" type="text"
+                      value={form.description} onChange={handleChange}
+                      placeholder="e.g. CBSE School · Est. 1990"
                     />
                   </div>
                   <div className="si-field">

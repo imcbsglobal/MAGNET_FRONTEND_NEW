@@ -244,12 +244,54 @@ $red-border: #FBD2DA;
   /* ── Subjects tag picker ── */
   .subjects-section {
     .subjects-picker {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-
       .subjects-select-wrapper {
-        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        label {
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: $navy;
+        }
+
+        .picker-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          select {
+            flex: 1;
+            min-width: 0;
+            padding: 9px 34px 9px 12px;
+            background: #F8FAFC;
+            border: 1.5px solid $border;
+            border-radius: 10px;
+            color: $ink;
+            font-family: inherit;
+            font-size: 0.85rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+
+            &:focus {
+              outline: none;
+              border-color: $accent;
+              background-color: #fff;
+              box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+            }
+          }
+
+          .add-btn {
+            flex-shrink: 0;
+            height: 38px;
+            padding: 0 20px;
+          }
+        }
       }
     }
 

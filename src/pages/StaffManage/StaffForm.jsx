@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createTeacher, fetchTeacherById, updateTeacher, fetchTeachers, fetchJobCategories, fetchClassesDivisions, fetchSubjects } from '../../services/api';
+import { createTeacher, fetchTeacherById, updateTeacher, fetchTeachers, fetchJobCategories, fetchClassesDivisions, fetchMarkEntrySubjects } from '../../services/api';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './StaffForm.scss';
@@ -40,7 +40,7 @@ const StaffForm = () => {
   const [classes, setClasses] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [subjectsList, setSubjectsList] = useState([]);
-  const [selectedSubjectId, setSelectedSubjectId] = useState('');
+  const [selectedSubjectCode, setSelectedSubjectCode] = useState('');
   const [teachersList, setTeachersList] = useState([]);
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,9 +76,12 @@ const StaffForm = () => {
     }
   };
 
+  // Subjects are sourced from SyncMagSubject (the `mag_subject` table),
+  // synced from Sybase by MAGNET SYNC. Rows use `code` as their identifier
+  // (no `id` field), so selection/storage below keys off `code`.
   const loadSubjects = async () => {
     try {
-      const res = await fetchSubjects(institutionId);
+      const res = await fetchMarkEntrySubjects(institutionId);
       setSubjectsList(res.data || []);
     } catch (err) {
       console.error('Failed to fetch subjects:', err);
@@ -149,15 +152,15 @@ const StaffForm = () => {
   };
 
   const handleAddSubject = () => {
-    if (!selectedSubjectId) return;
-    const subject = subjectsList.find(s => String(s.id) === String(selectedSubjectId));
+    if (!selectedSubjectCode) return;
+    const subject = subjectsList.find(s => String(s.code) === String(selectedSubjectCode));
     if (!subject) return;
-    if (formData.subjects.some(s => String(s.id) === String(subject.id))) return;
+    if (formData.subjects.some(s => String(s.code) === String(subject.code))) return;
     setFormData({
       ...formData,
-      subjects: [...formData.subjects, { id: subject.id, name: subject.name }],
+      subjects: [...formData.subjects, { code: subject.code, name: subject.name }],
     });
-    setSelectedSubjectId('');
+    setSelectedSubjectCode('');
   };
 
   const handleRemoveSubject = (index) => {
@@ -286,27 +289,25 @@ const StaffForm = () => {
                   <h3>Assigned Teachers</h3>
                   <p className="section-desc">Select the teachers under this HOD's supervision</p>
                   <div className="subjects-picker">
-                    <div className="subjects-select-wrapper form-group">
+                    <div className="subjects-select-wrapper">
                       <label>Select Teachers</label>
-                      <select
-                        value={selectedTeacherId}
-                        onChange={(e) => setSelectedTeacherId(e.target.value)}
-                      >
-                        <option value="">Select Teacher</option>
-                        {teachersList
-                          .filter(t => t.job_category === 'Teacher')
-                          .map((t) => (
-                            <option key={t.id} value={t.id}>{t.name || t.username}</option>
-                          ))}
-                      </select>
+                      <div className="picker-row">
+                        <select
+                          value={selectedTeacherId}
+                          onChange={(e) => setSelectedTeacherId(e.target.value)}
+                        >
+                          <option value="">Select Teacher</option>
+                          {teachersList
+                            .filter(t => t.job_category === 'Teacher')
+                            .map((t) => (
+                              <option key={t.id} value={t.id}>{t.name || t.username}</option>
+                            ))}
+                        </select>
+                        <button type="button" className="add-btn" onClick={handleAddTeacher}>
+                          + Add
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      className="add-btn"
-                      onClick={handleAddTeacher}
-                    >
-                      + Add
-                    </button>
                   </div>
                   <div className="subjects-tags">
                     {formData.assigned_teachers.length === 0 ? (
@@ -450,25 +451,23 @@ const StaffForm = () => {
                   <h3>Subjects</h3>
                 </div>
                 <div className="subjects-picker">
-                  <div className="subjects-select-wrapper form-group">
+                  <div className="subjects-select-wrapper">
                     <label>Assign Subjects</label>
-                    <select
-                      value={selectedSubjectId}
-                      onChange={(e) => setSelectedSubjectId(e.target.value)}
-                    >
-                      <option value="">Select Subject</option>
-                      {subjectsList.map((sub) => (
-                        <option key={sub.id} value={sub.id}>{sub.name}</option>
-                      ))}
-                    </select>
+                    <div className="picker-row">
+                      <select
+                        value={selectedSubjectCode}
+                        onChange={(e) => setSelectedSubjectCode(e.target.value)}
+                      >
+                        <option value="">Select Subject</option>
+                        {subjectsList.map((sub) => (
+                          <option key={sub.code} value={sub.code}>{sub.name}</option>
+                        ))}
+                      </select>
+                      <button type="button" className="add-btn" onClick={handleAddSubject}>
+                        + Add
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    className="add-btn"
-                    onClick={handleAddSubject}
-                  >
-                    + Add
-                  </button>
                 </div>
                 <div className="subjects-tags">
                   {formData.subjects.length === 0 ? (

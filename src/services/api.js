@@ -267,3 +267,12 @@ export const fetchSavedMarks          = (params) =>
 
 export const fetchAssessmentParts = (institutionId) =>
   api.get(`mark-entry/assessment-parts/?institution_id=${encodeURIComponent(institutionId)}`);
+export const checkLicense = (institutionId) =>
+  api.get(`check-license/?institution_id=${encodeURIComponent(institutionId)}`);
+
+// Subject-Class Assignments
+export const fetchSubjectClassAssignments = (institutionId) =>
+  api.get(`mark-entry/subject-class-assignments/?institution_id=${encodeURIComponent(institutionId)}`);
+
+export const saveSubjectClassAssignments = (data) =>
+  api.post('mark-entry/subject-class-assignments/save/', data);

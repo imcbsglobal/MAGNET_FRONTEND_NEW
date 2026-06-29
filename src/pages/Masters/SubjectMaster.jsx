@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
-import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
-import { fetchSubjects, saveSubject, deleteSubject } from '../../services/api';
+import {
+  fetchMarkEntrySubjects,
+  fetchMarkEntryClasses,
+  fetchSubjectClassAssignments,
+  saveSubjectClassAssignments,
+} from '../../services/api';
 import '../Administrators/Administrators.scss';
 import './HouseGroupMaster.scss';
 
@@ -13,23 +17,50 @@ const BookIcon = () => (
   </svg>
 );
 
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 const SubjectMaster = () => {
   const institutionId = localStorage.getItem('institutionId') || '';
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [currentSubject, setCurrentSubject] = useState({ id: null, name: '' });
-  const [saving, setSaving] = useState(false);
-  
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
 
-  const loadSubjects = async () => {
+  const [subjects, setSubjects]         = useState([]);
+  const [classes, setClasses]           = useState([]);
+  const [assignments, setAssignments]   = useState({}); // { subject_code: [class, ...] }
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState('');
+
+  // Modal state
+  const [modalOpen, setModalOpen]       = useState(false);
+  const [modalSubject, setModalSubject] = useState(null);   // { code, name }
+  const [selected, setSelected]         = useState([]);     // classes ticked in modal
+  const [saving, setSaving]             = useState(false);
+  const [modalError, setModalError]     = useState('');
+
+  // ── Load everything ────────────────────────────────────────
+  const loadAll = async () => {
     try {
       setLoading(true);
-      const res = await fetchSubjects(institutionId);
-      setSubjects(res.data);
+      setError('');
+      const [subRes, clsRes, asnRes] = await Promise.all([
+        fetchMarkEntrySubjects(institutionId),
+        fetchMarkEntryClasses(institutionId),
+        fetchSubjectClassAssignments(institutionId),
+      ]);
+
+      setSubjects(subRes.data);
+      setClasses(clsRes.data || []);
+
+      // Build a map: { subject_code: ['1','2',...] }
+      const map = {};
+      (asnRes.data || []).forEach(({ subject_code, student_class }) => {
+        if (!map[subject_code]) map[subject_code] = [];
+        map[subject_code].push(student_class);
+      });
+      setAssignments(map);
     } catch (err) {
       setError('Failed to load subjects.');
     } finally {
@@ -38,45 +69,46 @@ const SubjectMaster = () => {
   };
 
   useEffect(() => {
-    if (institutionId) loadSubjects();
+    if (institutionId) loadAll();
   }, [institutionId]);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    const rawName = currentSubject.name.trim();
-    if (!rawName) return;
-    
-    const capitalizedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-    
+  // ── Open modal ─────────────────────────────────────────────
+  const openModal = (subject) => {
+    setModalSubject(subject);
+    setSelected(assignments[subject.code] || []);
+    setModalError('');
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalSubject(null);
+  };
+
+  // ── Toggle a class checkbox ────────────────────────────────
+  const toggleClass = (cls) => {
+    setSelected(prev =>
+      prev.includes(cls) ? prev.filter(c => c !== cls) : [...prev, cls]
+    );
+  };
+
+  // ── Save assignments ───────────────────────────────────────
+  const handleSave = async () => {
     setSaving(true);
+    setModalError('');
     try {
-      await saveSubject({
+      await saveSubjectClassAssignments({
         institution_id: institutionId,
-        id: currentSubject.id,
-        name: capitalizedName
+        subject_code:   modalSubject.code,
+        classes:        selected,
       });
-      setShowModal(false);
-      setCurrentSubject({ id: null, name: '' });
-      loadSubjects();
+      // Update local map without full reload
+      setAssignments(prev => ({ ...prev, [modalSubject.code]: selected }));
+      closeModal();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save subject.');
+      setModalError('Failed to save. Please try again.');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleDeleteClick = (id) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await deleteSubject(deleteId);
-      loadSubjects();
-      setShowDeleteConfirm(false);
-    } catch (err) {
-      setError('Failed to delete subject.');
     }
   };
 
@@ -85,14 +117,16 @@ const SubjectMaster = () => {
       <Sidebar userType="admin" />
       <div className="dashboard-main">
         <Navbar title="Masters" />
-        
+
         <div className="admins-page-container house-group-page">
+
+          {/* ── Header ── */}
           <header className="page-header hgm-header">
             <div className="header-left hgm-header-main">
               <div className="hgm-header-icon"><BookIcon /></div>
               <div>
                 <h1>Subjects</h1>
-                <p>Manage subjects for your school</p>
+                <p>Click a subject to assign classes</p>
               </div>
             </div>
             <div className="hgm-header-right">
@@ -100,14 +134,12 @@ const SubjectMaster = () => {
                 <span>Total Subjects</span>
                 <strong>{subjects.length}</strong>
               </div>
-              <button className="add-btn hgm-add-btn" onClick={() => { setCurrentSubject({ id: null, name: '' }); setShowModal(true); }}>
-                + Add New Subject
-              </button>
             </div>
           </header>
 
           {error && <div className="error-alert" style={{ margin: '0 0 14px' }}>{error}</div>}
 
+          {/* ── Table ── */}
           <div className="table-card hgm-table-card">
             {loading ? (
               <div className="loader hgm-loader" style={{ padding: '20px' }}>Loading subjects...</div>
@@ -116,31 +148,53 @@ const SubjectMaster = () => {
                 <table className="admins-table hgm-table">
                   <thead>
                     <tr>
-                      <th>No</th>
+                      <th style={{ width: 50 }}>No</th>
                       <th>Subject Name</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      <th>Assigned Classes</th>
+                      <th style={{ width: 120, textAlign: 'right' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {subjects.length === 0 ? (
                       <tr>
-                        <td colSpan="3" className="hgm-empty-cell">
-                          No subjects added yet.
-                        </td>
+                        <td colSpan="4" className="hgm-empty-cell">No subjects found.</td>
                       </tr>
                     ) : (
-                      subjects.map((subject, index) => (
-                        <tr key={subject.id}>
-                          <td className="hgm-no-cell">{index + 1}</td>
-                          <td className="hgm-name-cell">{subject.name}</td>
-                          <td>
-                            <div className="action-btns hgm-action-btns">
-                              <button className="edit-btn hgm-edit-btn" onClick={() => { setCurrentSubject(subject); setShowModal(true); }}>Edit</button>
-                              <button className="delete-btn hgm-delete-btn" onClick={() => handleDeleteClick(subject.id)}>Delete</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                      subjects.map((subject, index) => {
+                        const assignedClasses = assignments[subject.code] || [];
+                        return (
+                          <tr key={subject.code}>
+                            <td className="hgm-no-cell">{index + 1}</td>
+                            <td className="hgm-name-cell">{subject.name}</td>
+                            <td>
+                              {assignedClasses.length === 0 ? (
+                                <span className="sma-unassigned">Not assigned</span>
+                              ) : (
+                                <div className="sma-class-tags">
+                                  {assignedClasses
+                                    .slice()
+                                    .sort((a, b) => Number(a) - Number(b))
+                                    .map(cls => (
+                                      <span key={cls} className="sma-class-tag">
+                                        Class {cls}
+                                      </span>
+                                    ))}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <div className="hgm-action-btns">
+                                <button
+                                  className="hgm-edit-btn"
+                                  onClick={() => openModal(subject)}
+                                >
+                                  Assign
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -148,44 +202,66 @@ const SubjectMaster = () => {
             )}
           </div>
         </div>
-      </div>
 
-      {showModal && (
-        <div className="hgm-modal-overlay">
-          <div className="hgm-modal-content">
-            <h3>{currentSubject.id ? 'Edit Subject' : 'Add New Subject'}</h3>
-            <form onSubmit={handleSave}>
-              <div className="hgm-form-group">
-                <label>Subject Name</label>
-                <input 
-                  type="text" 
-                  value={currentSubject.name} 
-                  onChange={(e) => setCurrentSubject({...currentSubject, name: e.target.value})}
-                  placeholder="e.g. Mathematics"
-                  autoFocus
-                  required
-                />
+        {/* ── Modal ── */}
+        {modalOpen && modalSubject && (
+          <div className="hgm-modal-overlay" onClick={closeModal}>
+            <div className="hgm-modal-content sma-modal" onClick={e => e.stopPropagation()}>
+
+              <div className="sma-modal-header">
+                <div>
+                  <h3>Assign Classes</h3>
+                  <p className="sma-modal-sub">{modalSubject.name}</p>
+                </div>
+                <button className="sma-close-btn" onClick={closeModal}><CloseIcon /></button>
               </div>
+
+              {modalError && (
+                <div className="error-alert" style={{ marginBottom: 16 }}>{modalError}</div>
+              )}
+
+              {classes.length === 0 ? (
+                <p className="sma-no-classes">No classes found for this institution.</p>
+              ) : (
+                <div className="sma-class-grid">
+                  {classes
+                    .slice()
+                    .sort((a, b) => Number(a) - Number(b))
+                    .map(cls => {
+                      const checked = selected.includes(String(cls));
+                      return (
+                        <label
+                          key={cls}
+                          className={`sma-class-checkbox ${checked ? 'checked' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleClass(String(cls))}
+                          />
+                          <span>Class {cls}</span>
+                        </label>
+                      );
+                    })}
+                </div>
+              )}
+
+              <div className="sma-selected-count">
+                {selected.length === 0
+                  ? 'No classes selected'
+                  : `${selected.length} class${selected.length > 1 ? 'es' : ''} selected`}
+              </div>
+
               <div className="hgm-modal-actions">
-                <button type="button" className="hgm-cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="hgm-save-btn" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Subject'}
+                <button className="hgm-cancel-btn" onClick={closeModal}>Cancel</button>
+                <button className="hgm-save-btn" onClick={handleSave} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
-
-      <ConfirmModal 
-        isOpen={showDeleteConfirm} 
-        title="Delete Subject" 
-        message="Are you sure you want to delete this subject?" 
-        onConfirm={confirmDelete} 
-        onCancel={() => setShowDeleteConfirm(false)} 
-        confirmText="Delete" 
-        type="danger" 
-      />
+        )}
+      </div>
     </div>
   );
 };
