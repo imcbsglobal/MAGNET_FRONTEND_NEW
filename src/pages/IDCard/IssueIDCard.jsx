@@ -156,7 +156,7 @@ const IDCardBack = ({ school }) => (
     </div>
     <div className="idt-back-rules">
       {[
-        'This card is issued for the academic year 2025-26',
+'This card is issued for the academic year 2026-27',
         'This card is non-transferable.',
         'Always carry your card during school hours.',
         'In case of loss, inform issuing authority.',
@@ -170,7 +170,6 @@ const IDCardBack = ({ school }) => (
     </div>
     <div className="idt-back-footer">
       <div className="idt-back-school-name">{school?.school_name || 'School Name'}</div>
-      <div className="idt-back-sub-name">{school?.school_name || 'School Name'}</div>
       <div className="idt-back-contact">
         {school?.place && (
           <div className="idt-contact-row">
@@ -332,7 +331,7 @@ const captureCardToPdf = async (pdf, student, school, logoB64, isFirst) => {
           </div>
         </div>
         <div style="padding:0 20px 16px;display:flex;flex-direction:column;gap:8px;">
-          ${['This card is issued for the academic year 2025-26','This card is non-transferable.','Always carry your card during school hours.','In case of loss, inform issuing authority.','If found, please post it to given address'].map(r => `<div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span><span>${r}</span></div>`).join('')}
+          ${['This card is issued for the academic year 2026-27','This card is non-transferable.','Always carry your card during school hours.','In case of loss, inform issuing authority.','If found, please post it to given address'].map(r => `<div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4b5563;line-height:1.4;"><span style="color:#7c3aed;font-weight:bold;margin-top:2px;font-size:8px;">●</span><span>${r}</span></div>`).join('')}
         </div>
         <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;background:linear-gradient(to top,rgba(255,255,255,0.95),rgba(255,255,255,0.8));border-top:1px solid rgba(107,114,128,0.2);">
           <div style="font-size:14px;font-weight:900;color:#1f2937;text-transform:uppercase;margin-bottom:4px;">${(school?.school_name || '').toUpperCase()}</div>
