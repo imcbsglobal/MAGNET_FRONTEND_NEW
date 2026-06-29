@@ -196,6 +196,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
         ],
       },
       { icon: <Icons.Teachers />, label: 'Evaluations', path: '/admin/evaluations' },
+      { icon: <Icons.Teachers />, label: 'Class Report', path: '/admin/class-report' },
     ],
     // "teacher" key — used when jobCategory or userType is "teacher"
     teacher: [
@@ -211,6 +212,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
         ],
       },
       { icon: <Icons.Teachers />, label: 'My Evaluation', path: '/teacher/evaluation' },
+      { icon: <Icons.Attendance />, label: 'Mark Entry',    path: '/staff/mark-entry' },
       { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
     hod: [
@@ -232,6 +234,7 @@ const Sidebar = ({ userType = 'superuser' }) => {
       { icon: <Icons.Dashboard />, label: 'Dashboard', path: '/parent-dashboard' },
       { icon: <Icons.PendingFee />, label: 'Pending Fee', path: '/parent/pending-fee' },
       { icon: <Icons.PaidFee />, label: 'Paid Fee', path: '/parent/paid-fee' },
+      { icon: <Icons.PaidFee />,    label: 'My Report',   path: '/parent/report' },
       { icon: <Icons.Chat />, label: 'Chat', path: '/chat' },
     ],
   };

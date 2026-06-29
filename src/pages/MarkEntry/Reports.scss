@@ -1,0 +1,491 @@
+/* =========================================================
+   Reports (ClassReport + StudentReport)
+   Matches ParentPendingFee design system
+   Mobile: result cards; Desktop: table
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+$accent:       #4F46E5;
+$accent-light: #EEF2FF;
+$ink:          #0F1E3D;
+$navy:         #1B2A4E;
+$subtext:      #6B7B96;
+$border:       #E5E9F0;
+$bg:           #F6F8FB;
+$head-bg:      #F8FAFC;
+$green:        #16A34A;
+$green-light:  #E8F8EE;
+$red:          #E11D48;
+$red-light:    #FDEAEE;
+$grey:         #A4AEC2;
+$yellow:       #D97706;
+
+$radius-sm:   8px;
+$radius-md:   12px;
+$radius-lg:   16px;
+$radius-pill: 100px;
+
+$shadow-raised:  0 4px 10px rgba(15,30,62,.07), 0 1px 3px rgba(15,30,62,.05);
+$shadow-card-lg: 0 1px 2px rgba(15,30,62,.04), 0 10px 28px rgba(15,30,62,.07);
+$shadow-card:    0 1px 2px rgba(15,30,62,.05);
+
+/* ─── Page ─────────────────────────────────────────────── */
+.rp-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 24px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: $bg;
+  min-height: 100%;
+}
+
+/* ─── Header card ───────────────────────────────────────── */
+.rp-header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 24px;
+  background: #fff;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card-lg;
+
+  h1 { margin: 0; font-size: 1.15rem; font-weight: 800; color: $ink; letter-spacing: -.015em; }
+  p  { margin: 4px 0 0; font-size: 0.82rem; color: $subtext; }
+}
+
+.rp-header-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.rp-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px; height: 50px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366F1, #4338CA);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba($accent, .38);
+  svg { width: 24px; height: 24px; stroke-width: 1.8; }
+}
+
+/* ─── Header pills ──────────────────────────────────────── */
+.rp-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  &--info {
+    background: $accent-light;
+    color: $accent;
+    border-color: rgba($accent, .3);
+  }
+}
+
+/* ─── Term tabs ─────────────────────────────────────────── */
+.rp-term-tabs {
+  display: flex;
+  gap: 4px;
+  background: $head-bg;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.rp-term-tab {
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: $subtext;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s, color .12s, box-shadow .12s;
+  line-height: 1.4;
+
+  &:hover { color: $accent; }
+
+  &--active {
+    background: #fff;
+    border-color: $border;
+    color: $accent;
+    box-shadow: $shadow-card;
+  }
+}
+
+/* ─── Filter card ───────────────────────────────────────── */
+.rp-filter-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-raised;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rp-filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.rp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 150px;
+  flex: 1;
+
+  label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: $subtext;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  select {
+    height: 40px;
+    padding: 0 12px;
+    border: 1.5px solid $border;
+    border-radius: $radius-sm;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    color: $ink;
+    background: $bg;
+    outline: none;
+    transition: border-color .12s, box-shadow .12s;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus    { border-color: $accent; box-shadow: 0 0 0 3px rgba($accent,.12); }
+    &:disabled { opacity: .45; cursor: not-allowed; }
+  }
+}
+
+.rp-filter-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rp-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $accent;
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  padding: 10px 22px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba($accent, .32);
+  transition: background .12s, box-shadow .12s, transform .12s, opacity .12s;
+  white-space: nowrap;
+  line-height: 1.4;
+
+  &:hover:not(:disabled)  { background: darken($accent, 6%); box-shadow: 0 6px 16px rgba($accent,.42); transform: translateY(-1px); }
+  &:active  { transform: translateY(0); }
+  &:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
+}
+
+/* ─── Summary stat cards ────────────────────────────────── */
+.rp-summary-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rp-stat-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 110px;
+  box-shadow: $shadow-card;
+
+  &--accent .rp-stat-value { color: $accent; }
+}
+
+.rp-stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: $subtext;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.rp-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: $ink;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* ─── Table card ────────────────────────────────────────── */
+.rp-table-card {
+  background: #fff;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  box-shadow: $shadow-raised;
+  overflow: hidden;
+}
+
+.rp-empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: $grey;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: #fff;
+  border-radius: $radius-md;
+  border: 1px solid $border;
+  box-shadow: $shadow-raised;
+}
+
+/* ─── Desktop table ─────────────────────────────────────── */
+.rp-table-responsive {
+  overflow-x: auto;
+  &::-webkit-scrollbar       { height: 6px; }
+  &::-webkit-scrollbar-track { background: $bg; }
+  &::-webkit-scrollbar-thumb { background: #C5CCD9; border-radius: 10px; }
+}
+
+.rp-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 600px;
+
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid $border;
+    border-right: 1px solid $border;
+    font-size: 0.82rem;
+    color: $ink;
+    vertical-align: middle;
+  }
+  th:last-child, td:last-child { border-right: none; }
+  th {
+    font-weight: 800;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: $navy;
+    background: $head-bg;
+    white-space: nowrap;
+    border-bottom: 2px solid darken($border, 10%);
+    position: sticky; top: 0; z-index: 1;
+  }
+  tbody tr {
+    transition: background .1s;
+    &:nth-child(even) { background: #FAFBFD; }
+    &:nth-child(odd)  { background: #fff; }
+    &:hover td        { background: $accent-light; }
+    &:last-child td   { border-bottom: none; }
+  }
+
+  .rp-col-num   { width: 48px; }
+  .rp-col-adm   { width: 120px; }
+  .rp-col-money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+}
+
+.rp-td-num     { color: $subtext; font-weight: 600; font-size: 0.78rem; }
+.rp-td-adm     { font-weight: 700; color: $subtext; font-size: 0.82rem; }
+.rp-td-name    { font-weight: 500; }
+.rp-td-subject { font-weight: 600; }
+.rp-td-mark    { font-weight: 700; color: $ink; }
+.rp-td-max     { color: $subtext; }
+
+/* ─── Badges ────────────────────────────────────────────── */
+.rp-grade-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  background: $accent-light;
+  color: $accent;
+  border-radius: $radius-pill;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  border: 1px solid rgba($accent, .2);
+}
+
+.rp-pct-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: $radius-pill;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+
+  &--pass { background: $green-light; color: darken($green, 4%); border-color: rgba($green, .25); }
+  &--fail { background: $red-light;   color: darken($red, 4%);   border-color: rgba($red, .25); }
+}
+
+/* ─── Mobile result cards ───────────────────────────────── */
+.rp-result-card-list { display: none; }
+
+.rp-result-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid $border;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background .1s;
+  &:last-child { border-bottom: none; }
+  &:active { background: $accent-light; }
+}
+
+.rp-result-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rp-result-card-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rp-result-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: $accent-light;
+  color: $accent;
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rp-result-adm {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $subtext;
+  background: $head-bg;
+  border: 1px solid $border;
+  padding: 2px 8px;
+  border-radius: $radius-pill;
+}
+
+.rp-result-subject-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.rp-result-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.rp-result-assess {
+  font-size: 0.75rem;
+  color: $subtext;
+  font-weight: 500;
+}
+
+.rp-result-subject {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $subtext;
+  flex: 1;
+}
+
+.rp-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rp-result-scores {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rp-result-mark {
+  font-size: 1rem;
+  font-weight: 800;
+  color: $accent;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .rp-page       { padding: 14px 12px 32px; gap: 14px; }
+
+  .rp-header-card { padding: 14px 16px; }
+  .rp-header-card h1 { font-size: 1rem; }
+  .rp-header-icon { width: 38px; height: 38px; border-radius: 10px; }
+
+  .rp-term-tabs  { flex-shrink: 0; }
+  .rp-term-tab   { font-size: .76rem; padding: 7px 10px; }
+
+  .rp-filter-card { padding: 14px 16px; }
+  .rp-filter-grid { gap: 10px; }
+  .rp-field       { min-width: calc(50% - 5px); }
+
+  .rp-filter-action { justify-content: stretch; }
+  .rp-view-btn      { width: 100%; justify-content: center; }
+
+  .rp-summary-row { gap: 8px; }
+  .rp-stat-card   { min-width: calc(50% - 4px); padding: 14px 16px; }
+  .rp-stat-value  { font-size: 1.25rem; }
+
+  /* Hide desktop table, show cards */
+  .rp-table-responsive { display: none; }
+  .rp-result-card-list { display: block; }
+}
+
+@media (max-width: 480px) {
+  .rp-page        { padding: 12px 10px 28px; gap: 12px; }
+  .rp-header-card { padding: 14px 12px; }
+  .rp-filter-card { padding: 12px; }
+  .rp-field       { min-width: 100%; }
+  .rp-stat-card   { min-width: calc(50% - 4px); padding: 12px 14px; }
+  .rp-result-card { padding: 12px 14px; }
+  .rp-term-tab    { font-size: .72rem; padding: 6px 8px; }
+}
+
+@media (max-width: 1024px) {
+  .rp-page { padding-top: 72px; }
+}

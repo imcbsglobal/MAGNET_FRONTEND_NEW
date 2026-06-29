@@ -242,3 +242,28 @@ export const deleteTeacherHours = (hoursId) => api.delete(`evaluation/teacher-ho
 
 export const initiatePayment = (data) =>
   api.post("payments/initiate/", data);
+
+// Mark Entry
+export const fetchMarkEntryClasses    = (institutionId) =>
+  api.get(`mark-entry/classes/?institution_id=${encodeURIComponent(institutionId)}`);
+
+export const fetchMarkEntryDivisions  = (institutionId, studentClass) =>
+  api.get(`mark-entry/divisions/?institution_id=${encodeURIComponent(institutionId)}&class=${encodeURIComponent(studentClass)}`);
+
+export const fetchMarkEntrySubjects   = (institutionId) =>
+  api.get(`mark-entry/subjects/?institution_id=${encodeURIComponent(institutionId)}`);
+
+export const fetchAssessmentItems     = (institutionId) =>
+  api.get(`mark-entry/assessment-items/?institution_id=${encodeURIComponent(institutionId)}`);
+
+export const fetchMarkEntryStudents   = (params) =>
+  api.get('mark-entry/students/', { params });
+
+export const saveMarks                = (data) =>
+  api.post('mark-entry/save/', data);
+
+export const fetchSavedMarks          = (params) =>
+  api.get('mark-entry/saved/', { params });
+
+export const fetchAssessmentParts = (institutionId) =>
+  api.get(`mark-entry/assessment-parts/?institution_id=${encodeURIComponent(institutionId)}`);

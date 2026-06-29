@@ -38,6 +38,9 @@ import AdminEvaluationTeachers from './pages/Evaluations/AdminEvaluationTeachers
 import PaymentSuccess from "./components/Payment/PaymentSuccess";
 import PaymentFailure from "./components/Payment/PaymentFailure";
 import LandingPage from './pages/LandingPage/LandingPage';
+import MarkEntryPage from './pages/MarkEntry/MarkEntryPage';
+import StudentReport from './pages/MarkEntry/StudentReport';
+import ClassReport   from './pages/MarkEntry/ClassReport';
 import './App.css';
 
 function AppContent() {
@@ -138,6 +141,11 @@ function AppContent() {
         <Route path="/payment-success"element={<PaymentSuccess />}/>
         <Route path="/payment-failed"element={<PaymentFailure />}/>
         <Route path="/hod/evaluation"     element={<HODEvaluation />} />
+
+        <Route path="/staff/mark-entry"       element={<MarkEntryPage />} />
+        <Route path="/staff/marks/results"    element={<ClassReport />} /> 
+        <Route path="/parent/report"          element={<StudentReport />} />
+        <Route path="/admin/class-report"     element={<ClassReport />} />
       </Routes>
 
       {!hideChat && <ChatWidget />}
