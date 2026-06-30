@@ -5,6 +5,16 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './Administrators.scss';
 
+const MOBILE_FEATURES = [
+  { key: 'payment_gateway', label: 'Payment Gateway' },
+  { key: 'mark_entry', label: 'Mark Entry' },
+  { key: 'assessment', label: 'Assessment of Teacher' },
+  { key: 'attendance', label: 'Attendance' },
+  { key: 'fees', label: 'Fees' },
+  { key: 'id_card', label: 'ID Card' },
+  { key: 'diary', label: 'Diary' },
+];
+
 const AdministratorForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -22,7 +32,9 @@ const AdministratorForm = () => {
     institution_id: '',
     username: '',
     password: '',
-    has_payment: false,        // ← add this
+    has_payment: false,
+    mobile_app_enabled: false,
+    mobile_app_features: [],
 });
 
   const [loading, setLoading] = useState(false);
@@ -39,20 +51,21 @@ const AdministratorForm = () => {
         const response = await api.get(`admins/${id}/`);
         const data = response.data;
 
-        // Replace null values with empty string to avoid uncontrolled input issues
         setFormData({
-          school_name:      data.school_name      || '',
-          address:          data.address          || '',
-          city:             data.city             || '',
-          district:         data.district         || '',
-          pincode:          data.pincode          || '',
-          state:            data.state            || '',
-          email:            data.email            || '',
-          phone_number:     data.phone_number     || '',
-          institution_id:   data.institution_id   || '',
-          username:         data.username         || '',
-          password:         data.password === '********' ? '' : (data.password || ''),
-          has_payment:      data.has_payment      ?? false,   // ← add this
+          school_name:         data.school_name         || '',
+          address:             data.address             || '',
+          city:                data.city                || '',
+          district:            data.district            || '',
+          pincode:             data.pincode             || '',
+          state:               data.state               || '',
+          email:               data.email               || '',
+          phone_number:        data.phone_number        || '',
+          institution_id:      data.institution_id      || '',
+          username:            data.username            || '',
+          password:            isEdit ? '********' : (data.password || ''),
+          has_payment:         data.has_payment         ?? false,
+          mobile_app_enabled:  data.mobile_app_enabled  ?? false,
+          mobile_app_features: data.mobile_app_features ?? [],
         });
       } catch (err) {
         console.error('Failed to load administrator:', err);
@@ -75,7 +88,22 @@ const AdministratorForm = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleFeatureToggle = (featureKey) => {
+    setFormData(prev => {
+      const features = prev.mobile_app_features;
+      if (features.includes(featureKey)) {
+        return { ...prev, mobile_app_features: features.filter(f => f !== featureKey) };
+      }
+      return { ...prev, mobile_app_features: [...features, featureKey] };
+    });
   };
 
   const handleInstitutionIdBlur = () => {
@@ -97,16 +125,22 @@ const AdministratorForm = () => {
       return;
     }
 
-    const passwordRegex = /^(?=.*[0-9!@#$%^&*])(?=.{4,})/;
-    if (!passwordRegex.test(formData.password)) {
-      alert('Password must be at least 4 characters long and contain at least one number or special character');
-      return;
+    if (!isEdit || formData.password !== '********') {
+      const passwordRegex = /^(?=.*[0-9!@#$%^&*])(?=.{4,})/;
+      if (!passwordRegex.test(formData.password)) {
+        alert('Password must be at least 4 characters long and contain at least one number or special character');
+        return;
+      }
     }
 
     setLoading(true);
     try {
       if (isEdit) {
-        await updateAdministrator(id, formData);
+        const payload = { ...formData };
+        if (payload.password === '********') {
+          delete payload.password;
+        }
+        await updateAdministrator(id, payload);
       } else {
         await createAdministrator(formData);
       }
@@ -221,6 +255,57 @@ const AdministratorForm = () => {
                   </div>
                 </div>
               </div>
+              <div className="form-section">
+                <h3>⚙️ Settings — Mobile App</h3>
+
+                <div className="settings-toggle-row">
+                  <span className="toggle-label">Enable Mobile App for this school?</span>
+                  <div className="toggle-options">
+                    <label className={`toggle-option ${formData.mobile_app_enabled ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="mobile_app_enabled"
+                        checked={formData.mobile_app_enabled === true}
+                        onChange={() => setFormData(prev => ({ ...prev, mobile_app_enabled: true, mobile_app_features: [] }))}
+                      />
+                      Yes
+                    </label>
+                    <label className={`toggle-option ${!formData.mobile_app_enabled ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="mobile_app_enabled"
+                        checked={formData.mobile_app_enabled === false}
+                        onChange={() => setFormData(prev => ({ ...prev, mobile_app_enabled: false, mobile_app_features: [] }))}
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                {formData.mobile_app_enabled && (
+                  <div className="features-grid">
+                    <p className="features-hint">Select the features to enable in the mobile app:</p>
+                    {MOBILE_FEATURES.map(feature => (
+                      <label key={feature.key} className={`feature-checkbox ${formData.mobile_app_features.includes(feature.key) ? 'checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={formData.mobile_app_features.includes(feature.key)}
+                          onChange={() => handleFeatureToggle(feature.key)}
+                        />
+                        <span className="checkmark">
+                          {formData.mobile_app_features.includes(feature.key) && (
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </span>
+                        <span className="feature-label">{feature.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="form-actions">
                 <button type="submit" className="save-btn" disabled={loading}>
                   {loading ? 'Saving...' : (isEdit ? 'Update Administrator' : 'Create Administrator')}
