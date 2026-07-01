@@ -219,7 +219,7 @@ const IDCardDetails = () => {
   const handleGenerateLink = async () => {
     try {
       // Generate a link based on institution ID
-      const link = `${window.location.origin}/parent-idcard-form?inst=${institutionId}`;
+      const link = `${window.location.origin}/id-card/form/${institutionId}`;
       setGeneratedLink(link);
       setShowLinkModal(true);
     } catch (err) {
