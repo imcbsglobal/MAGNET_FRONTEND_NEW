@@ -102,7 +102,7 @@ function FilterPage({ onSubmit }) {
     setLoading(true);
     try {
       const [sRes, stuRes] = await Promise.all([
-        fetchMarkEntrySubjects(institutionId),
+        fetchMarkEntrySubjects(institutionId, filter.student_class),
         fetchMarkEntryStudents({
           institution_id: institutionId,
           class:          filter.student_class,
@@ -296,26 +296,32 @@ function MarkSheetPage({ data, onBack }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await saveMarks({
-        student_class:  filter.student_class,
-        division:       filter.division,
-        term:           filter.term,
-        assessmentitem: filter.assessmentitem,
-        institution_id: institutionId,
-        maxmarks:       maxMarks,
-        marks: students.map(s => ({
-          admission:    s.admission,
-          student_name: s.name,
-          marks:        s.marks,
-        })),
-      });
+      await Promise.all(
+        subjects.map(sub =>
+          saveMarks({
+            institution_id: institutionId,
+            student_class:  filter.student_class,
+            division:       filter.division,
+            term:           filter.term,
+            assessmentitem: filter.assessmentitem,
+            subject:        sub.code,
+            maxmark:        Number(maxMarks[sub.code]) || 100,
+            marks: students.map(s => ({
+              admission:    s.admission,
+              student_name: s.name,
+              mark:         s.marks[sub.code] === '' || s.marks[sub.code] == null ? null : s.marks[sub.code],
+              grade:        '',
+            })),
+          })
+        )
+      );
       showToast('Marks saved successfully.');
     } catch {
       showToast('Failed to save marks.', 'error');
     } finally {
       setSaving(false);
     }
-  };
+  }; 
 
   return (
     <div className="me-sheet-page">
@@ -501,10 +507,6 @@ function MarkSheetPage({ data, onBack }) {
       {/* Footer */}
       {filteredStudents.length > 0 && (
         <div className="me-sheet-footer">
-          <p className="me-footer-note">
-            Pass mark: {passmark}/100 per subject ·
-            <span className="me-fail-legend"> red = below pass mark</span>
-          </p>
           <button className="me-save-btn" onClick={handleSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save marks'}
           </button>

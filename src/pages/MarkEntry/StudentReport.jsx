@@ -1,63 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar  from '../../components/Navbar/Navbar';
-import { fetchSavedMarks, fetchMarkEntrySubjects, fetchAssessmentItems } from '../../services/api';
+import {
+  fetchSavedMarks,
+  fetchMarkEntrySubjects,
+  fetchAssessmentItems,
+  fetchAssessmentParts,
+} from '../../services/api';
 import './Reports.scss';
 
-const TERMS = ['Term 1', 'Term 2', 'Term 3'];
-
-const ReportCardIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
-    <polyline points="10 9 9 9 8 9"/>
-  </svg>
-);
+const PASS_MARK_PCT = 35;
 
 export default function StudentReport() {
   const institutionId = localStorage.getItem('institutionId') || '';
   const admno         = localStorage.getItem('admno') || '';
   const studentName   = localStorage.getItem('studentName') || 'Student';
 
-  const [subjects,    setSubjects]    = useState([]);
-  const [assessments, setAssessments] = useState([]);
-  const [term,        setTerm]        = useState('Term 1');
+  const [assessments, setAssessments] = useState([]); // [{code, name}]
+  const [terms,       setTerms]       = useState([]); // [{code, name}]
   const [marks,       setMarks]       = useState([]);
-  const [loading,     setLoading]     = useState(false);
+  const [subjects,    setSubjects]    = useState([]); // subjects assigned to this student's ACTUAL class
+  const [studentClass,setStudentClass]= useState('');
+  const [studentDiv,  setStudentDiv]  = useState('');
+  const [loading,     setLoading]     = useState(true);
 
+  // Lookup data: assessment types + term names (not class-dependent)
   useEffect(() => {
     if (!institutionId) return;
     Promise.all([
-      fetchMarkEntrySubjects(institutionId),
       fetchAssessmentItems(institutionId),
-    ]).then(([s, a]) => {
-      setSubjects(s.data);
-      setAssessments(a.data);
+      fetchAssessmentParts(institutionId),
+    ]).then(([a, t]) => {
+      setAssessments(a.data || []);
+      setTerms(t.data || []);
     });
   }, [institutionId]);
 
+  // Every mark entered for this student, across all terms/assessments
   useEffect(() => {
-    if (!admno || !term) return;
+    if (!admno) return;
     setLoading(true);
-    fetchSavedMarks({ institution_id: institutionId, term, admission: admno })
-      .then(r => setMarks(r.data))
+    fetchSavedMarks({ institution_id: institutionId, admission: admno })
+      .then(r => setMarks(r.data || []))
       .catch(() => setMarks([]))
       .finally(() => setLoading(false));
-  }, [term, admno, institutionId]);
+  }, [admno, institutionId]);
 
-  const subjectName = (code) => subjects.find(s => s.code === code)?.name  || code;
-  const assessName  = (code) => assessments.find(a => a.code === code)?.name || code;
+  // Derive the student's REAL class/division from their own saved marks —
+  // never trust a guessed localStorage key, since MarkEntry rows already
+  // carry the authoritative student_class/division for this admission no.
+  useEffect(() => {
+    if (marks.length === 0) return;
+    const cls = marks[0].student_class;
+    const div = marks[0].division;
+    setStudentClass(cls || '');
+    setStudentDiv(div || '');
+  }, [marks]);
 
-  const pct = (mark, maxmark) => {
-    if (!mark || !maxmark) return null;
-    return ((parseFloat(mark) / parseFloat(maxmark)) * 100).toFixed(1);
-  };
+  // Once we know the real class, fetch ONLY the subjects assigned to it
+  // (via Subject Master's SubjectClassAssignment) — not all institution subjects.
+  useEffect(() => {
+    if (!institutionId || !studentClass) return;
+    fetchMarkEntrySubjects(institutionId, studentClass)
+      .then(r => setSubjects(r.data || []))
+      .catch(() => setSubjects([]));
+  }, [institutionId, studentClass]);
 
-  const totalMark = marks.reduce((s, m) => s + (parseFloat(m.mark)    || 0), 0);
-  const totalMax  = marks.reduce((s, m) => s + (parseFloat(m.maxmark) || 0), 0);
-  const overallPct = pct(totalMark, totalMax);
+  const assessName = (code) => assessments.find(a => a.code === code)?.name || code;
+  const termName    = (code) => terms.find(t => t.code === code)?.name       || code;
+
+  // Only build sections for (term, assessmentitem) combinations the teacher
+  // has actually saved marks for — never invent combinations speculatively.
+  const comboKeys = Array.from(
+    new Set(marks.map(m => `${m.term}__${m.assessmentitem}`))
+  );
+
+  const sections = comboKeys
+    .map(key => {
+      const [term, assessmentitem] = key.split('__');
+      const entriesForCombo = marks.filter(
+        m => m.term === term && m.assessmentitem === assessmentitem
+      );
+
+      // Show only subjects assigned to this student's class for that combo,
+      // marking the ones the teacher hasn't entered yet as Pending.
+      const rows = subjects.map(sub => {
+        const entry = entriesForCombo.find(m => m.subject === sub.code);
+        return {
+          subjectCode: sub.code,
+          subjectName: sub.name,
+          mark:        entry ? entry.mark    : null,
+          maxmark:     entry ? entry.maxmark : 100,
+          pending:     !entry,
+        };
+      });
+
+      if (rows.length === 0) return null;
+
+      const enteredRows = rows.filter(r => !r.pending);
+      const total       = enteredRows.reduce((s, r) => s + (parseFloat(r.mark) || 0), 0);
+      const possible     = rows.reduce((s, r) => s + (parseFloat(r.maxmark) || 100), 0);
+      const overallPct   = possible > 0 ? ((total / possible) * 100).toFixed(1) : null;
+
+      return {
+        key,
+        term,
+        assessmentitem,
+        title: `${assessName(assessmentitem)} · ${termName(term)}`,
+        rows,
+        total,
+        overallPct,
+      };
+    })
+    .filter(Boolean);
 
   return (
     <div className="dashboard-wrapper">
@@ -66,80 +121,61 @@ export default function StudentReport() {
         <Navbar />
         <div className="rp-page">
 
-          {/* ── Header ── */}
+          {/* Header */}
           <div className="rp-header-card">
             <div className="rp-header-main">
-              <div className="rp-header-icon"><ReportCardIcon /></div>
               <div>
-                <h1>My Report Card</h1>
-                <p>{studentName} · {admno}</p>
+                <h1 className="rp-student-name">{studentName}</h1>
+                <p className="rp-student-meta">
+                  Roll no. {localStorage.getItem('rollNo') || admno}
+                  {studentClass && <> · Class {studentClass}{studentDiv ? ` ${studentDiv}` : ''}</>}
+                </p>
               </div>
-            </div>
-            {/* Term tabs */}
-            <div className="rp-term-tabs">
-              {TERMS.map(t => (
-                <button
-                  key={t}
-                  className={`rp-term-tab ${term === t ? 'rp-term-tab--active' : ''}`}
-                  onClick={() => setTerm(t)}
-                >
-                  {t}
-                </button>
-              ))}
             </div>
           </div>
 
           {loading ? (
             <div className="rp-empty">Loading marks…</div>
-          ) : marks.length === 0 ? (
-            <div className="rp-empty">No marks recorded for {term} yet.</div>
+          ) : sections.length === 0 ? (
+            <div className="rp-empty">No marks have been entered yet.</div>
           ) : (
-            <>
-              {/* ── Summary ── */}
-              <div className="rp-summary-row">
-                <div className="rp-stat-card">
-                  <span className="rp-stat-label">Subjects</span>
-                  <span className="rp-stat-value">{marks.length}</span>
+            sections.map(section => (
+              <div key={section.key} className="rp-assessment-card">
+                <div className="rp-assessment-head">
+                  <h2 className="rp-assessment-title">{section.title}</h2>
+                  {section.overallPct != null && (
+                    <span className="rp-assessment-pct">{section.overallPct}%</span>
+                  )}
                 </div>
-                <div className="rp-stat-card">
-                  <span className="rp-stat-label">Total Mark</span>
-                  <span className="rp-stat-value">{totalMark} / {totalMax}</span>
-                </div>
-                <div className="rp-stat-card rp-stat-card--accent">
-                  <span className="rp-stat-label">Overall %</span>
-                  <span className="rp-stat-value">{overallPct ? `${overallPct}%` : '—'}</span>
-                </div>
-              </div>
 
-              {/* ── Table / Cards ── */}
-              <div className="rp-table-card">
-                {/* Desktop table */}
                 <div className="rp-table-responsive">
                   <table className="rp-table">
                     <thead>
                       <tr>
                         <th>Subject</th>
-                        <th>Assessment</th>
-                        <th className="rp-col-money">Mark</th>
-                        <th className="rp-col-money">Max</th>
-                        <th className="rp-col-money">%</th>
-                        <th>Grade</th>
+                        <th className="rp-col-money">Marks</th>
+                        <th>Result</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {marks.map(m => {
-                        const p    = pct(m.mark, m.maxmark);
-                        const fail = p && parseFloat(p) < 35;
+                      {section.rows.map(r => {
+                        const pct  = !r.pending && r.maxmark ? (parseFloat(r.mark) / parseFloat(r.maxmark)) * 100 : null;
+                        const fail = pct != null && pct < PASS_MARK_PCT;
                         return (
-                          <tr key={m.id}>
-                            <td className="rp-td-subject">{subjectName(m.subject)}</td>
-                            <td>{assessName(m.assessmentitem)}</td>
-                            <td className="rp-col-money rp-td-mark">{m.mark ?? '—'}</td>
-                            <td className="rp-col-money rp-td-max">{m.maxmark ?? '—'}</td>
-                            <td className="rp-col-money">
-                              {p ? <span className={`rp-pct-badge ${fail ? 'rp-pct-badge--fail' : 'rp-pct-badge--pass'}`}>{p}%</span> : '—'}
+                          <tr key={r.subjectCode}>
+                            <td className="rp-td-subject">{r.subjectName}</td>
+                            <td className="rp-col-money rp-td-mark">
+                              {r.pending ? '-- / 100' : `${r.mark ?? '—'} / ${r.maxmark ?? 100}`}
                             </td>
-                            <td>{m.grade ? <span className="rp-grade-badge">{m.grade}</span> : '—'}</td>
+                            <td>
+                              {r.pending ? (
+                                <span className="rp-result-badge rp-result-badge--pending">Pending</span>
+                              ) : (
+                                <span className={`rp-result-badge ${fail ? 'rp-result-badge--fail' : 'rp-result-badge--pass'}`}>
+                                  {fail ? 'Fail' : 'Pass'}
+                                </span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
@@ -147,28 +183,38 @@ export default function StudentReport() {
                   </table>
                 </div>
 
-                {/* Mobile result cards */}
+                {/* Mobile cards */}
                 <div className="rp-result-card-list">
-                  {marks.map(m => {
-                    const p    = pct(m.mark, m.maxmark);
-                    const fail = p && parseFloat(p) < 35;
+                  {section.rows.map(r => {
+                    const pct  = !r.pending && r.maxmark ? (parseFloat(r.mark) / parseFloat(r.maxmark)) * 100 : null;
+                    const fail = pct != null && pct < PASS_MARK_PCT;
                     return (
-                      <div key={m.id} className="rp-result-card">
+                      <div key={r.subjectCode} className="rp-result-card">
                         <div className="rp-result-card-top">
-                          <span className="rp-result-subject-badge">{subjectName(m.subject)}</span>
-                          {m.grade && <span className="rp-grade-badge">{m.grade}</span>}
+                          <span className="rp-result-subject-badge">{r.subjectName}</span>
+                          {r.pending ? (
+                            <span className="rp-result-badge rp-result-badge--pending">Pending</span>
+                          ) : (
+                            <span className={`rp-result-badge ${fail ? 'rp-result-badge--fail' : 'rp-result-badge--pass'}`}>
+                              {fail ? 'Fail' : 'Pass'}
+                            </span>
+                          )}
                         </div>
-                        <div className="rp-result-assess">{assessName(m.assessmentitem)}</div>
                         <div className="rp-result-row">
-                          <span className="rp-result-mark">{m.mark ?? '—'} / {m.maxmark ?? '—'}</span>
-                          {p && <span className={`rp-pct-badge ${fail ? 'rp-pct-badge--fail' : 'rp-pct-badge--pass'}`}>{p}%</span>}
+                          <span className="rp-result-mark">
+                            {r.pending ? '-- / 100' : `${r.mark ?? '—'} / ${r.maxmark ?? 100}`}
+                          </span>
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
+                <div className="rp-assessment-foot">
+                  Total: <strong>{section.total}</strong>
+                </div>
               </div>
-            </>
+            ))
           )}
 
         </div>

@@ -489,3 +489,71 @@ $shadow-card:    0 1px 2px rgba(15,30,62,.05);
 @media (max-width: 1024px) {
   .rp-page { padding-top: 72px; }
 }
+
+// ── Assessment section cards (FA1, FA2, etc.) ─────────────────
+.rp-student-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: $ink;
+  margin: 0;
+}
+
+.rp-student-meta {
+  font-size: 0.83rem;
+  color: $subtext;
+  margin: 3px 0 0;
+}
+
+.rp-assessment-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card-lg;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.rp-assessment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid $border;
+}
+
+.rp-assessment-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: $ink;
+  margin: 0;
+}
+
+.rp-assessment-pct {
+  font-size: 1rem;
+  font-weight: 800;
+  color: $accent;
+}
+
+.rp-assessment-foot {
+  padding: 12px 20px;
+  border-top: 1px solid $border;
+  background: $head-bg;
+  font-size: 0.85rem;
+  color: $subtext;
+
+  strong { color: $ink; font-weight: 800; }
+}
+
+.rp-result-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: $radius-pill;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+
+  &--pass    { background: $green-light; color: darken($green, 8%); }
+  &--fail    { background: $red-light;   color: darken($red, 5%);   }
+  &--pending { background: $bg;          color: $subtext;           }
+}

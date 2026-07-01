@@ -250,8 +250,13 @@ export const fetchMarkEntryClasses    = (institutionId) =>
 export const fetchMarkEntryDivisions  = (institutionId, studentClass) =>
   api.get(`mark-entry/divisions/?institution_id=${encodeURIComponent(institutionId)}&class=${encodeURIComponent(studentClass)}`);
 
-export const fetchMarkEntrySubjects   = (institutionId) =>
-  api.get(`mark-entry/subjects/?institution_id=${encodeURIComponent(institutionId)}`);
+export const fetchMarkEntrySubjects = (institutionId, studentClass) =>
+  api.get('/mark-entry/subjects/', {
+    params: {
+      institution_id: institutionId,
+      ...(studentClass ? { class: studentClass } : {}),
+    },
+  });
 
 export const fetchAssessmentItems     = (institutionId) =>
   api.get(`mark-entry/assessment-items/?institution_id=${encodeURIComponent(institutionId)}`);
