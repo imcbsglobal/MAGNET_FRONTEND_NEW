@@ -15,19 +15,19 @@ $text-muted: #a3aed0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  padding: 0 4px;
+  margin-bottom: 10px;
+  padding: 0 2px;
 
   .header-left {
     h1 {
-      font-size: 1.3rem;
+      font-size: 1.15rem;
       color: $dark-blue;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       font-weight: 700;
     }
     p {
       color: $text-muted;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       margin: 0;
     }
   }
@@ -38,16 +38,15 @@ $text-muted: #a3aed0;
   background: linear-gradient(135deg, #3d5af1 0%, #6366f1 100%);
   color: white;
   border: none;
-  padding: 9px 18px;
-  border-radius: 10px;
+  padding: 7px 16px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 3px 10px rgba(61, 90, 241, 0.25);
 
   &:hover {
-    transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(61, 90, 241, 0.35);
   }
 }
@@ -385,8 +384,8 @@ $text-muted: #a3aed0;
 /* ── Form card ─────────────────────────────────── */
 .form-card {
   background: $white;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 18px;
   box-shadow: 0 4px 24px rgba(61, 90, 241, 0.08);
   border: 1px solid rgba(61, 90, 241, 0.1);
   width: 100%;
@@ -394,21 +393,21 @@ $text-muted: #a3aed0;
 }
 
 .form-section {
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
     border-bottom: 2px solid #eef2ff;
   }
 
   h3 {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: $primary-blue;
-    margin: 0;
+    margin: 0 0 8px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -418,7 +417,7 @@ $text-muted: #a3aed0;
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 8px;
 
   .full-width { grid-column: span 3; }
   .span-2 { grid-column: span 2; }
@@ -427,23 +426,23 @@ $text-muted: #a3aed0;
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 
   label {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: $dark-blue;
     letter-spacing: 0.01em;
   }
 
   input, select, textarea {
-    padding: 9px 12px;
+    padding: 7px 10px;
     background: #f8f9ff;
     border: 1.5px solid #e0e7ff;
-    border-radius: 9px;
+    border-radius: 8px;
     color: $dark-blue;
     font-family: inherit;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     appearance: none;
 
@@ -461,30 +460,30 @@ $text-muted: #a3aed0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%233d5af1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
-    background-size: 16px;
-    padding-right: 34px;
+    background-size: 14px;
+    padding-right: 30px;
     cursor: pointer;
   }
 
   textarea {
-    height: 88px;
+    height: 56px;
     resize: vertical;
   }
 }
 
 .fetching-hint {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: $primary-blue;
   font-weight: 400;
   font-style: italic;
 }
 
 .form-actions {
-  margin-top: 20px;
+  margin-top: 14px;
   display: flex;
   justify-content: flex-end;
 
-  .save-btn { min-width: 160px; padding: 10px 24px; }
+  .save-btn { min-width: 140px; padding: 8px 20px; font-size: 0.8rem; }
 }
 
 /* ── Stat cards ────────────────────────────────── */
@@ -733,14 +732,14 @@ $text-muted: #a3aed0;
 .payment-toggle-row {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 10px 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 8px;
 
   .toggle-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: #374151;
     flex: 1;
@@ -748,25 +747,25 @@ $text-muted: #a3aed0;
 
   .toggle-options {
     display: flex;
-    gap: 8px;
+    gap: 6px;
   }
 
   .toggle-option {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    border-radius: 8px;
+    gap: 4px;
+    padding: 5px 14px;
+    border-radius: 6px;
     border: 1.5px solid #d1d5db;
     background: #fff;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: #6b7280;
     cursor: pointer;
     transition: all 0.2s;
 
     input[type="radio"] {
-      display: none; // hide native radio, style the label
+      display: none;
     }
 
     &.active {
@@ -809,80 +808,19 @@ $text-muted: #a3aed0;
   }
 }
 
-.payment-toggle-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 14px 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-
-  .toggle-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
-    flex: 1;
-  }
-
-  .toggle-options {
-    display: flex;
-    gap: 8px;
-  }
-
-  .toggle-option {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    border-radius: 8px;
-    border: 1.5px solid #d1d5db;
-    background: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    input[type="radio"] { display: none; }
-
-    &.active {
-      border-color: #2563eb;
-      background: #eff6ff;
-      color: #2563eb;
-    }
-
-    &:hover:not(.active) {
-      border-color: #9ca3af;
-      background: #f3f4f6;
-    }
-  }
-}
-
-.payment-btn {
-  &:disabled,
-  &.disabled {
-    background: #f3f4f6;
-    color: #9ca3af;
-    border-color: #e5e7eb;
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
-
-/* ── Settings — Mobile App ──────────────────────── */
+/* ── Settings toggles ─────────────────────────── */
 .settings-toggle-row {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 10px 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  margin-bottom: 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
 
   .toggle-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: #374151;
     flex: 1;
@@ -890,18 +828,18 @@ $text-muted: #a3aed0;
 
   .toggle-options {
     display: flex;
-    gap: 8px;
+    gap: 6px;
   }
 
   .toggle-option {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 20px;
-    border-radius: 8px;
+    gap: 4px;
+    padding: 5px 14px;
+    border-radius: 6px;
     border: 1.5px solid #d1d5db;
     background: #fff;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: #6b7280;
     cursor: pointer;
@@ -924,18 +862,18 @@ $text-muted: #a3aed0;
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-  padding: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px;
+  padding: 10px 12px;
   background: #fafbff;
   border: 1px solid #e0e7ff;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .features-hint {
   grid-column: 1 / -1;
-  margin: 0 0 4px;
-  font-size: 13px;
+  margin: 0 0 2px;
+  font-size: 12px;
   color: #6b7280;
   font-style: italic;
 }
@@ -943,9 +881,9 @@ $text-muted: #a3aed0;
 .feature-checkbox {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
   border: 1.5px solid #e0e7ff;
   background: #fff;
   cursor: pointer;
@@ -958,9 +896,9 @@ $text-muted: #a3aed0;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
     border: 1.5px solid #c7d2fe;
     background: #fff;
     flex-shrink: 0;
@@ -980,7 +918,7 @@ $text-muted: #a3aed0;
   }
 
   .feature-label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #1b254b;
   }
@@ -991,7 +929,7 @@ $text-muted: #a3aed0;
   }
 }
 
-/* ── Mobile App column in table ─────────────────── */
+/* ── Mobile / Web App columns in table ──────────── */
 .mobile-app-info {
   display: flex;
   flex-direction: column;

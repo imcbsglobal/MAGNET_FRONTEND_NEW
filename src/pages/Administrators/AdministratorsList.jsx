@@ -132,6 +132,7 @@ const AdministratorsList = () => {
                         <th>Location</th>
                         <th>Institution ID</th>
                         <th>Mobile App</th>
+                        <th>Web App</th>
                         <th>Credentials</th>
                         <th>Actions</th>
                       </tr>
@@ -165,6 +166,20 @@ const AdministratorsList = () => {
                                 <span className="mobile-badge enabled">Active</span>
                                 <div className="feature-tags">
                                   {(administrator.mobile_app_features || []).map(f => (
+                                    <span key={f} className="feature-tag">{FEATURE_LABELS[f] || f}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="mobile-badge disabled">Not enabled</span>
+                            )}
+                          </td>
+                          <td>
+                            {administrator.web_app_enabled ? (
+                              <div className="mobile-app-info">
+                                <span className="mobile-badge enabled">Active</span>
+                                <div className="feature-tags">
+                                  {(administrator.web_app_features || []).map(f => (
                                     <span key={f} className="feature-tag">{FEATURE_LABELS[f] || f}</span>
                                   ))}
                                 </div>

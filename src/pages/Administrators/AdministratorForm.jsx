@@ -5,7 +5,7 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './Administrators.scss';
 
-const MOBILE_FEATURES = [
+const FEATURES = [
   { key: 'payment_gateway', label: 'Payment Gateway' },
   { key: 'mark_entry', label: 'Mark Entry' },
   { key: 'assessment', label: 'Assessment of Teacher' },
@@ -35,7 +35,9 @@ const AdministratorForm = () => {
     has_payment: false,
     mobile_app_enabled: false,
     mobile_app_features: [],
-});
+    web_app_enabled: false,
+    web_app_features: [],
+  });
 
   const [loading, setLoading] = useState(false);
   const [fetchingSchool, setFetchingSchool] = useState(false);
@@ -62,10 +64,12 @@ const AdministratorForm = () => {
           phone_number:        data.phone_number        || '',
           institution_id:      data.institution_id      || '',
           username:            data.username            || '',
-          password:            isEdit ? '********' : (data.password || ''),
+          password:            isEdit ? '' : (data.password || ''),
           has_payment:         data.has_payment         ?? false,
           mobile_app_enabled:  data.mobile_app_enabled  ?? false,
           mobile_app_features: data.mobile_app_features ?? [],
+          web_app_enabled:     data.web_app_enabled     ?? false,
+          web_app_features:    data.web_app_features    ?? [],
         });
       } catch (err) {
         console.error('Failed to load administrator:', err);
@@ -96,13 +100,13 @@ const AdministratorForm = () => {
     }
   };
 
-  const handleFeatureToggle = (featureKey) => {
+  const handleFeatureToggle = (field, featureKey) => {
     setFormData(prev => {
-      const features = prev.mobile_app_features;
+      const features = prev[field];
       if (features.includes(featureKey)) {
-        return { ...prev, mobile_app_features: features.filter(f => f !== featureKey) };
+        return { ...prev, [field]: features.filter(f => f !== featureKey) };
       }
-      return { ...prev, mobile_app_features: [...features, featureKey] };
+      return { ...prev, [field]: [...features, featureKey] };
     });
   };
 
@@ -125,7 +129,7 @@ const AdministratorForm = () => {
       return;
     }
 
-    if (!isEdit || formData.password !== '********') {
+    if (!isEdit || formData.password) {
       const passwordRegex = /^(?=.*[0-9!@#$%^&*])(?=.{4,})/;
       if (!passwordRegex.test(formData.password)) {
         alert('Password must be at least 4 characters long and contain at least one number or special character');
@@ -137,7 +141,7 @@ const AdministratorForm = () => {
     try {
       if (isEdit) {
         const payload = { ...formData };
-        if (payload.password === '********') {
+        if (!payload.password) {
           delete payload.password;
         }
         await updateAdministrator(id, payload);
@@ -146,7 +150,13 @@ const AdministratorForm = () => {
       }
       navigate('/administrators');
     } catch (err) {
-      alert('Error saving administrator: ' + (err.response?.data?.message || 'Check all fields'));
+      const errData = err.response?.data;
+      if (errData && typeof errData === 'object') {
+        const messages = Object.entries(errData).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join('\n');
+        alert('Error saving administrator:\n' + messages);
+      } else {
+        alert('Error saving administrator: ' + (errData?.message || 'Check all fields'));
+      }
     } finally {
       setLoading(false);
     }
@@ -223,7 +233,7 @@ const AdministratorForm = () => {
                   </div>
                   <div className="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Min 4 + Spcl Char" />
+                    <input type="password" name="password" value={formData.password} onChange={handleChange} required={!isEdit} placeholder={isEdit ? 'Leave blank to keep current' : 'Min 4 + Spcl Char'} />
                   </div>
                 </div>
               </div>
@@ -256,6 +266,57 @@ const AdministratorForm = () => {
                 </div>
               </div>
               <div className="form-section">
+                <h3>⚙️ Settings — Web App</h3>
+
+                <div className="settings-toggle-row">
+                  <span className="toggle-label">Enable Web App for this school?</span>
+                  <div className="toggle-options">
+                    <label className={`toggle-option ${formData.web_app_enabled ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="web_app_enabled"
+                        checked={formData.web_app_enabled === true}
+                        onChange={() => setFormData(prev => ({ ...prev, web_app_enabled: true, web_app_features: [] }))}
+                      />
+                      Yes
+                    </label>
+                    <label className={`toggle-option ${!formData.web_app_enabled ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="web_app_enabled"
+                        checked={formData.web_app_enabled === false}
+                        onChange={() => setFormData(prev => ({ ...prev, web_app_enabled: false, web_app_features: [] }))}
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                {formData.web_app_enabled && (
+                  <div className="features-grid">
+                    <p className="features-hint">Select the features to enable in the web app:</p>
+                    {FEATURES.map(feature => (
+                      <label key={feature.key} className={`feature-checkbox ${formData.web_app_features.includes(feature.key) ? 'checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={formData.web_app_features.includes(feature.key)}
+                          onChange={() => handleFeatureToggle('web_app_features', feature.key)}
+                        />
+                        <span className="checkmark">
+                          {formData.web_app_features.includes(feature.key) && (
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </span>
+                        <span className="feature-label">{feature.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-section">
                 <h3>⚙️ Settings — Mobile App</h3>
 
                 <div className="settings-toggle-row">
@@ -285,12 +346,12 @@ const AdministratorForm = () => {
                 {formData.mobile_app_enabled && (
                   <div className="features-grid">
                     <p className="features-hint">Select the features to enable in the mobile app:</p>
-                    {MOBILE_FEATURES.map(feature => (
+                    {FEATURES.map(feature => (
                       <label key={feature.key} className={`feature-checkbox ${formData.mobile_app_features.includes(feature.key) ? 'checked' : ''}`}>
                         <input
                           type="checkbox"
                           checked={formData.mobile_app_features.includes(feature.key)}
-                          onChange={() => handleFeatureToggle(feature.key)}
+                          onChange={() => handleFeatureToggle('mobile_app_features', feature.key)}
                         />
                         <span className="checkmark">
                           {formData.mobile_app_features.includes(feature.key) && (
